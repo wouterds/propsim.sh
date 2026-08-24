@@ -13,6 +13,8 @@
     "test": "turbo test"
   },
   "devDependencies": {
+    "@commitlint/cli": "^21.2.2",
+    "@commitlint/config-conventional": "^21.2.2",
     "lefthook": "^2.1.10",
     "turbo": "^2.10.11"
   },
