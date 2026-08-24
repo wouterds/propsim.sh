@@ -19,6 +19,13 @@ post-checkout:
     dependencies:
       run: npm install --package-lock-only
 
+pre-commit:
+  parallel: true
+  commands:
+    biome:
+      glob: "*.{ts,tsx,js,jsx,json,jsonc,css}"
+      run: npx biome check --no-errors-on-unmatched {staged_files}
+
 commit-msg:
   parallel: true
   commands:
