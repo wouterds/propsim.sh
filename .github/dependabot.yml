@@ -1,0 +1,26 @@
+version: 2
+
+# Without a prefix, Dependabot copies whatever convention it infers from the
+# history and writes "⬆️ Bump x from a to b". Setting one switches it to
+# conventional commits and lowercases the verb, so its PRs read like the rest
+# of the log. "scope" appends (deps) / (deps-dev).
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+
+  # The root manifest holds the toolchain only. Every workspace that ships a
+  # runtime dependency has to be listed here or it is never watched.
+  - package-ecosystem: "npm"
+    directories:
+      - "/"
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "build"
+      prefix-development: "chore"
+      include: "scope"
