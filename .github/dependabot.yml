@@ -4,13 +4,17 @@ version: 2
 # history and writes "⬆️ Bump x from a to b". Setting one switches it to
 # conventional commits and lowercases the verb, so its PRs read like the rest
 # of the log. "scope" appends (deps) / (deps-dev).
+#
+# Every ecosystem uses the same prefix on purpose: a dependency bump is a chore
+# whether it is npm or an action, so the log reads chore(deps) and
+# chore(deps-dev) and nothing else.
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "monthly"
     commit-message:
-      prefix: "ci"
+      prefix: "chore"
       include: "scope"
 
   # The root manifest holds the toolchain only. Every workspace that ships a
@@ -21,6 +25,6 @@ updates:
     schedule:
       interval: "monthly"
     commit-message:
-      prefix: "build"
+      prefix: "chore"
       prefix-development: "chore"
       include: "scope"
