@@ -1,0 +1,15 @@
+node_modules
+
+build/
+.turbo
+.env
+
+.DS_Store
+
+# Local agent state, machine-specific settings and worktrees. The two entries
+# below are re-included because a rule cannot resurrect a file whose parent is
+# excluded, and both of them are meant to be reviewed: settings.json is the
+# permission grant, and skills is the symlink that points .claude at .agents.
+.claude/*
+!.claude/settings.json
+!.claude/skills
