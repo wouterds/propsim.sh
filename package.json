@@ -3,6 +3,19 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "start": "turbo start",
+    "lint": "turbo lint",
+    "lint:fix": "turbo lint:fix",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test"
+  },
+  "devDependencies": {
+    "lefthook": "^2.1.10",
+    "turbo": "^2.10.11"
+  },
   "engines": {
     "node": ">=24",
     "npm": ">=11.6"
@@ -11,9 +24,5 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ],
-  "devDependencies": {
-    "lefthook": "^2.1.10",
-    "turbo": "^2.10.11"
-  }
+  ]
 }
