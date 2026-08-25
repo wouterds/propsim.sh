@@ -9,6 +9,7 @@ export default [
     // The form is a child, so it opens over the board rather than in place of it.
     route("feature-requests", "routes/features.tsx", [route("new", "routes/feature-new.tsx")]),
     route("feature-requests/:slug", "routes/feature.tsx"),
+    route("leaderboards", "routes/leaderboards.tsx"),
     route("red-folder-events", "routes/red-folder-events.tsx"),
     route("contact", "routes/contact.tsx"),
     route("privacy", "routes/privacy.tsx"),
