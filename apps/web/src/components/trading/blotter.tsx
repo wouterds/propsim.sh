@@ -44,8 +44,18 @@ const Blotter = ({ positions, orders, last, point, className, onClose, onCancel 
   );
 
   return (
-    <Tabs.Root value={tab} onValueChange={(value) => setTab(value as Tab)} render={<div />}>
-      <Panel actions={tabs} className={className} bodyClassName="min-h-0 flex-1 overflow-auto p-0">
+    // The className rides on the tabs wrapper, not the panel: that div is what
+    // the grid places, and a panel inside it would size to its rows instead.
+    <Tabs.Root
+      value={tab}
+      onValueChange={(value) => setTab(value as Tab)}
+      render={<div className={cn("flex min-h-0 flex-col", className)} />}
+    >
+      <Panel
+        actions={tabs}
+        className="min-h-0 flex-1"
+        bodyClassName="min-h-0 flex-1 overflow-auto p-0"
+      >
         <Tabs.Panel value="positions">
           <PositionsTable positions={positions} last={last} point={point} onClose={onClose} />
         </Tabs.Panel>
