@@ -35,14 +35,14 @@ export const worstDayOf = (days: JournalDay[]) =>
   );
 
 /**
- * The share of total profit that came from the single best day. Prop firms cap
- * this, so a run made in one session does not pass.
+ * Largest single day profit over account profit, which is the formula the firms
+ * publish. The denominator is net, so a losing day makes the share worse.
  */
 export const concentrationOf = (days: JournalDay[]) => {
-  const profit = days.reduce((total, day) => total + Math.max(0, day.pnl), 0);
+  const profit = days.reduce((total, day) => total + day.pnl, 0);
   const best = bestDayOf(days);
 
-  if (profit === 0 || !best || best.pnl <= 0) {
+  if (profit <= 0 || !best || best.pnl <= 0) {
     return null;
   }
 

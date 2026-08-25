@@ -38,12 +38,20 @@ describe("concentrationOf", () => {
     expect(concentrationOf(days)).toBeNull();
   });
 
-  it("should measure the best day against the winning days only", () => {
-    // given a losing day that must not shrink the share
+  it("should measure the best day against net profit, so a loss makes it worse", () => {
+    // given 800 won and 400 given back, which is 400 of account profit
     const days = [day(600), day(200), day(-400)];
 
     // then
-    expect(concentrationOf(days)).toBe(0.75);
+    expect(concentrationOf(days)).toBe(1.5);
+  });
+
+  it("should give nothing back while the account is not in profit", () => {
+    // given a best day that never made the account whole
+    const days = [day(600), day(-900)];
+
+    // then
+    expect(concentrationOf(days)).toBeNull();
   });
 });
 
