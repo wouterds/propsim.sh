@@ -75,12 +75,24 @@ export const FAQ: QuestionGroup[] = [
         a: "Open a new account. A breached one stays in your list so the journal that led to it is still there to read.",
       },
       {
+        q: "Is there a minimum number of days?",
+        a: "No day count is published for these accounts. The consistency rule is what stops a one day pass: your largest winning day has to be half or less of the profit on the account, so in practice you need more than one session.",
+      },
+      {
         q: "Why is the trailing drawdown the hard one?",
         a: "It is measured from the highest equity the account has ever reached, so it only ever rises. Go up four hundred and give it back, and the floor keeps the four hundred. It stops climbing once it reaches a hundred above your starting balance, and from then on it never moves again.",
       },
       {
+        q: "Can I use a bot, or a trade copier?",
+        a: "Yes. Automated systems and copiers are permitted, and so is genuine scalping and averaging into a position. What is banned is narrow: hedging the same instrument across two accounts, microscalping to work against how a simulator fills, and high frequency algorithms. You carry the consequences of your own software, so a bot that breaches the account has breached it.",
+      },
+      {
+        q: "When does the session close?",
+        a: "Positions have to be flat by 16:45 New York time, Monday to Friday, and anything still open is closed for you. Being closed out that way does not fail the account. Trading reopens at 18:00 New York time, Sunday to Thursday.",
+      },
+      {
         q: "What is red folder news?",
-        a: "A high impact release on the economic calendar: payrolls, CPI, the FOMC rate decision. You have to be flat from a minute before one to a minute after it. On a daily payout account this is a hard breach, so it ends the account rather than the day, and it counts even if the trade was profitable. The terminal shades the window on the chart and warns you while it is open.",
+        a: "A high impact US release on the economic calendar: payrolls, CPI, the FOMC rate decision. You have to be flat from a minute before one through a minute after it, and you may not open a position inside the window either. On a daily payout account this is a hard breach, so it ends the account rather than the day, and it counts even if the trade was profitable. On the slower plans the same firms sell, news trading is allowed outright. The terminal shades the window on the chart and warns you while it is open.",
       },
       {
         q: "Does an open position count?",
