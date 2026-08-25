@@ -119,6 +119,7 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
         <NewsBanner titles={blackout.titles} endsIn={Math.ceil((blackout.to - now) / 1000)} />
       )}
       <AccountStrip
+        account={account.name}
         balance={book.balance}
         equity={book.equity}
         realised={book.realised}
@@ -161,7 +162,7 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
         </section>
 
         <Panel
-          title="Order ticket"
+          title="New order"
           className="lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:min-h-0"
           bodyClassName="min-h-0 flex-1 overflow-y-auto"
         >
