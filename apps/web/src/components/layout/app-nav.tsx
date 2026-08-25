@@ -1,4 +1,4 @@
-import { href, Link, NavLink } from "react-router";
+import { Form, href, Link, NavLink } from "react-router";
 import Brand from "~/components/layout/brand";
 import { ACCOUNT } from "~/lib/account";
 import { formatMoney } from "~/lib/format";
@@ -43,17 +43,17 @@ const AppNav = () => (
         <span className="text-ink text-xs tabular">{formatMoney(ACCOUNT.balance)}</span>
       </div>
 
-      {/* No session to end, so this drops back to the landing page rather than
-          pretending a sign-out round trip happened. */}
-      <Link
-        to={href("/")}
-        className={cn(
-          "inline-flex h-8 items-center whitespace-nowrap rounded border border-line px-2.5 text-muted text-sm transition-colors hover:text-ink sm:px-3",
-          FOCUS,
-        )}
-      >
-        Log out
-      </Link>
+      <Form method="post" action={href("/logout")}>
+        <button
+          type="submit"
+          className={cn(
+            "inline-flex h-8 items-center whitespace-nowrap rounded border border-line px-2.5 text-muted text-sm transition-colors hover:text-ink sm:px-3",
+            FOCUS,
+          )}
+        >
+          Log out
+        </button>
+      </Form>
     </div>
   </header>
 );

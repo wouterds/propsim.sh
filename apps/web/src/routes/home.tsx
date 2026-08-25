@@ -1,8 +1,18 @@
+import { redirect } from "react-router";
 import SiteFooter from "~/components/layout/site-footer";
 import SiteHeader from "~/components/layout/site-header";
 import Hero from "~/components/marketing/hero";
 import Rules from "~/components/marketing/rules";
+import { getUserId } from "~/lib/auth.server";
 import type { Route } from "./+types/home";
+
+export const loader = async ({ request }: Route.LoaderArgs) => {
+  if (await getUserId(request)) {
+    throw redirect("/dash");
+  }
+
+  return null;
+};
 
 export const meta: Route.MetaFunction = () => [
   { title: "propsim.sh, a free prop trading simulator" },
