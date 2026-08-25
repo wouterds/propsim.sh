@@ -1,5 +1,5 @@
-import { type Candle, getCandles } from "@propsim/datasources";
-import { useMemo, useState } from "react";
+import { type Candle, getCandles, getNewsEvents, isRedFolder } from "@propsim/datasources";
+import { useEffect, useMemo, useState } from "react";
 import type { ChartBar, ChartPriceLine } from "~/components/chart/candle-chart";
 import CandleChart from "~/components/chart/candle-chart";
 import ChartHeader from "~/components/chart/chart-header";
@@ -7,10 +7,12 @@ import TimeframeSwitcher from "~/components/chart/timeframe-switcher";
 import AccountStrip from "~/components/trading/account-strip";
 import Blotter from "~/components/trading/blotter";
 import { barsPerDay, parseTimeframe, rangeFor, SYMBOL } from "~/components/trading/mnq";
+import NewsBanner from "~/components/trading/news-banner";
 import Panel from "~/components/trading/panel";
 import TradePanel from "~/components/trading/trade-panel";
 import { usePaperTrading } from "~/components/trading/use-paper-trading";
 import { findAccount } from "~/lib/accounts";
+import { activeWindow, windowsOf } from "~/lib/blackout";
 import type { Route } from "./+types/terminal";
 
 export const meta: Route.MetaFunction = ({ loaderData }) => [
@@ -28,6 +30,13 @@ export const loader = async ({ url, params }: Route.LoaderArgs) => {
     throw new Response("No such account", { status: 404 });
   }
 
+  // The calendar is not worth failing the screen over, so a feed that is down
+  // leaves the bands off rather than taking the chart with it.
+  const news = await getNewsEvents()
+    .then((events) => events.filter(isRedFolder))
+    .catch(() => []);
+  const windows = windowsOf(news.map((event) => ({ time: event.time, title: event.title })));
+
   try {
     const candles = await getCandles({
       symbol: SYMBOL,
@@ -35,19 +44,32 @@ export const loader = async ({ url, params }: Route.LoaderArgs) => {
       range: rangeFor(timeframe),
     });
 
-    return { account, symbol: SYMBOL, timeframe, candles, error: null };
+    return { account, symbol: SYMBOL, timeframe, candles, windows, error: null };
   } catch (cause) {
     // Caught, not rethrown. An error boundary would take the ticket and the
     // blotter down with the chart.
     const error = cause instanceof Error ? cause.message : "the price feed did not answer";
 
-    return { account, symbol: SYMBOL, timeframe, candles: [] as Candle[], error };
+    return { account, symbol: SYMBOL, timeframe, candles: [] as Candle[], windows, error };
   }
 };
 
 const Trading = ({ loaderData }: Route.ComponentProps) => {
-  const { account, symbol, timeframe, candles, error } = loaderData;
+  const { account, symbol, timeframe, candles, windows, error } = loaderData;
   const [hovered, setHovered] = useState<ChartBar | null>(null);
+
+  // Null until the browser has it. Reading the clock while rendering on the
+  // server puts a different answer in the markup than the one on hydration.
+  const [now, setNow] = useState<number | null>(null);
+
+  useEffect(() => {
+    setNow(Date.now());
+    const tick = setInterval(() => setNow(Date.now()), 1000);
+
+    return () => clearInterval(tick);
+  }, []);
+
+  const blackout = now === null ? null : activeWindow(windows, now);
 
   // Null, not a stand-in. Closing marks to this price and banks it for good.
   const last = candles.at(-1)?.close ?? null;
@@ -96,6 +118,10 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
   return (
     <main className="flex flex-col gap-2 p-2 lg:h-full lg:overflow-hidden">
       <h1 className="sr-only">{`Terminal, ${account.name}`}</h1>
+
+      {blackout && now !== null && (
+        <NewsBanner titles={blackout.titles} endsIn={Math.ceil((blackout.to - now) / 1000)} />
+      )}
       <AccountStrip
         balance={book.balance}
         equity={book.equity}
@@ -126,6 +152,7 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
               <CandleChart
                 candles={candles}
                 priceLines={priceLines}
+                bands={windows}
                 visibleBars={barsPerDay(timeframe)}
                 onHover={setHovered}
               />
