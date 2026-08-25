@@ -5,6 +5,7 @@ import { Form, href, Link, redirect, useNavigation } from "react-router";
 import Brand from "~/components/layout/brand";
 import GridBackdrop from "~/components/layout/grid-backdrop";
 import { getPendingUserId, startSession } from "~/lib/auth.server";
+import { notify } from "~/lib/notify.server";
 import { findUserById, markEmailVerified } from "~/lib/users.server";
 import { asCode, CODE_DIGITS, CODE_TTL_MINUTES } from "~/lib/verification";
 import { checkCode, issueCode } from "~/lib/verifications.server";
@@ -59,7 +60,7 @@ export const action = async ({ request }: Route.ActionArgs) => {
   }
 
   await markEmailVerified(user.id);
-  await sendWelcome({ to: user.email });
+  await notify(() => sendWelcome({ to: user.email }));
 
   return startSession(request, user.id, back);
 };
