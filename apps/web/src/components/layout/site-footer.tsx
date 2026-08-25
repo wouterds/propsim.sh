@@ -19,18 +19,11 @@ const COLUMNS = [
       { to: href("/rules"), label: "How the limits work" },
     ],
   },
-  {
-    title: "Account",
-    links: [
-      { to: href("/auth"), label: "Log in" },
-      { to: href("/accounts/new"), label: "Open an account" },
-    ],
-  },
 ];
 
 const SiteFooter = () => (
   <footer className="border-line/70 border-t">
-    <div className="mx-auto grid max-w-6xl gap-10 px-5 py-12 sm:grid-cols-2 sm:px-8 lg:grid-cols-[1.5fr_repeat(3,1fr)]">
+    <div className="mx-auto grid max-w-6xl gap-10 px-5 py-12 sm:grid-cols-2 sm:px-8 lg:grid-cols-[1.5fr_repeat(2,1fr)]">
       <div>
         <Brand className="text-[15px] text-ink" />
         <p className="mt-3 max-w-sm text-faint text-sm leading-relaxed">
