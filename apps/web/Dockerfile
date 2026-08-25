@@ -39,6 +39,8 @@ COPY --chown=node:node --from=build /code/apps/web/build ./build
 
 ARG COMMIT_SHA
 ENV COMMIT_SHA=$COMMIT_SHA
+ARG BUILD_TIMESTAMP
+ENV BUILD_TIMESTAMP=$BUILD_TIMESTAMP
 ENV PORT=3000
 ENV HOST=0.0.0.0
 ENV NODE_ENV=production
