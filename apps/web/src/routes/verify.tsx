@@ -1,12 +1,12 @@
 import { OTPField } from "@base-ui/react/otp-field";
 import { sendConfirmCode, sendWelcome } from "@propsim/mail";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Form, href, Link, redirect, useNavigation } from "react-router";
 import Brand from "~/components/layout/brand";
 import GridBackdrop from "~/components/layout/grid-backdrop";
 import { getPendingUserId, startSession } from "~/lib/auth.server";
 import { findUserById, markEmailVerified } from "~/lib/users.server";
-import { CODE_DIGITS, CODE_TTL_MINUTES } from "~/lib/verification";
+import { asCode, CODE_DIGITS, CODE_TTL_MINUTES } from "~/lib/verification";
 import { checkCode, issueCode } from "~/lib/verifications.server";
 import type { Route } from "./+types/verify";
 
@@ -34,8 +34,9 @@ const pendingUser = async (request: Request) => {
 
 export const loader = async ({ request }: Route.LoaderArgs) => {
   const user = await pendingUser(request);
+  const wanted = new URL(request.url).searchParams.get("code");
 
-  return { email: user.email };
+  return { email: user.email, code: asCode(wanted) };
 };
 
 export const action = async ({ request }: Route.ActionArgs) => {
@@ -66,7 +67,21 @@ export const action = async ({ request }: Route.ActionArgs) => {
 const Verify = ({ loaderData, actionData }: Route.ComponentProps) => {
   const navigation = useNavigation();
   const busy = navigation.state !== "idle";
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState(loaderData.code);
+  const form = useRef<HTMLFormElement>(null);
+  const sent = useRef<string | null>(null);
+
+  // A full code needs no second action, whether it was typed, pasted, filled by
+  // the keyboard or carried in from the mail. `sent` stops a rejected code from
+  // being posted again on every render.
+  useEffect(() => {
+    if (busy || code.length < CODE_DIGITS || sent.current === code) {
+      return;
+    }
+
+    sent.current = code;
+    form.current?.requestSubmit();
+  }, [busy, code]);
 
   return (
     <main className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden px-5 py-16">
@@ -87,7 +102,7 @@ const Verify = ({ loaderData, actionData }: Route.ComponentProps) => {
             minutes.
           </p>
 
-          <Form method="post" className="space-y-4">
+          <Form method="post" ref={form} className="space-y-4">
             <OTPField.Root
               name="code"
               length={CODE_DIGITS}
