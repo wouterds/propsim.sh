@@ -1,4 +1,5 @@
 import { Form, href, Link, NavLink } from "react-router";
+import NavIcon, { type NavIconName } from "~/components/app/nav-icon";
 import Brand from "~/components/layout/brand";
 import { type Account, netPnlOf, STATUS_LABEL, STATUS_TONE } from "~/lib/accounts";
 import { formatMoney, formatSigned, TONE_TEXT, toneOf } from "~/lib/format";
@@ -20,9 +21,9 @@ const DOT: Record<string, string> = {
   accent: "bg-accent",
 };
 
-const LINKS = [
-  { to: href("/dash"), label: "Overview" },
-  { to: href("/accounts"), label: "Accounts" },
+const LINKS: { to: string; label: string; icon: NavIconName }[] = [
+  { to: href("/dash"), label: "Overview", icon: "overview" },
+  { to: href("/accounts"), label: "Accounts", icon: "accounts" },
 ];
 
 const SidebarNav = ({ accounts, email, onNavigate }: Props) => (
@@ -43,6 +44,7 @@ const SidebarNav = ({ accounts, email, onNavigate }: Props) => (
             cn(ITEM, FOCUS, isActive ? "bg-accent/15 text-accent" : "text-muted hover:text-ink")
           }
         >
+          <NavIcon name={link.icon} />
           {link.label}
         </NavLink>
       ))}
@@ -115,11 +117,13 @@ const SidebarNav = ({ accounts, email, onNavigate }: Props) => (
           cn(ITEM, FOCUS, isActive ? "bg-accent/15 text-accent" : "text-muted hover:text-ink")
         }
       >
+        <NavIcon name="user" />
         <span className="truncate">{email}</span>
       </NavLink>
 
       <Form method="post" action={href("/logout")} className="mt-1">
         <button type="submit" className={cn(ITEM, FOCUS, "w-full text-muted hover:text-ink")}>
+          <NavIcon name="logout" />
           Log out
         </button>
       </Form>
