@@ -8,15 +8,14 @@ const COLUMNS = [
     title: "Product",
     links: [
       { to: href("/plans"), label: "Plans" },
-      { to: href("/rules"), label: "Rules" },
       { to: href("/terminal"), label: "Terminal" },
     ],
   },
   {
-    title: "Help",
+    title: "Learn",
     links: [
+      { to: href("/rules"), label: "Rules" },
       { to: href("/faq"), label: "FAQ" },
-      { to: href("/rules"), label: "How the limits work" },
     ],
   },
 ];
