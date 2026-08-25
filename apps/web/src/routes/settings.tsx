@@ -4,6 +4,7 @@ import {
   sendEmailChanging,
   sendPasswordChanged,
 } from "@propsim/mail";
+import { useEffect, useRef } from "react";
 import { data, Form, href, Link, useNavigation } from "react-router";
 import DeleteAccount from "~/components/settings/delete-account";
 import Field from "~/components/settings/field";
@@ -182,7 +183,27 @@ export const action = async ({ request }: Route.ActionArgs) => {
 
 const Settings = ({ loaderData, actionData }: Route.ComponentProps) => {
   const navigation = useNavigation();
-  const busy = navigation.state !== "idle";
+  const emailForm = useRef<HTMLFormElement>(null);
+  const passwordForm = useRef<HTMLFormElement>(null);
+
+  // Which form is in flight, not whether any of them is: one page wide flag
+  // greys out every button on the page while a single one is working.
+  const sending = navigation.state === "idle" ? null : navigation.formData;
+  const intent = sending?.get("intent")?.toString() ?? null;
+  const busy = (name: string) => intent === name;
+  const revoking = intent === "revoke" ? (sending?.get("session")?.toString() ?? null) : null;
+
+  // Uncontrolled inputs keep what was typed unless something empties them, and
+  // a password left sitting in a field is worse than the retyping.
+  useEffect(() => {
+    if (!actionData?.done) {
+      return;
+    }
+
+    emailForm.current?.reset();
+    passwordForm.current?.reset();
+  }, [actionData]);
+
   const { email, hasPassword, sessions } = loaderData;
   const others = sessions.filter((session) => !session.current).length;
 
@@ -198,7 +219,7 @@ const Settings = ({ loaderData, actionData }: Route.ComponentProps) => {
           title="Email address"
           description="The account keeps this address until the new one confirms. Both are told."
         >
-          <Form method="post" className="grid gap-4 sm:grid-cols-2">
+          <Form ref={emailForm} method="post" className="grid gap-4 sm:grid-cols-2">
             <input type="hidden" name="intent" value="email" />
             <Field name="email" label="New address" type="email" autoComplete="email" />
             <Field name="confirm" label="Confirm new address" type="email" autoComplete="off" />
@@ -214,8 +235,8 @@ const Settings = ({ loaderData, actionData }: Route.ComponentProps) => {
               </>
             )}
             <div className="sm:col-span-2">
-              <button type="submit" disabled={busy} className={PRIMARY_SM}>
-                {busy ? "One moment" : "Send the link"}
+              <button type="submit" disabled={busy("email")} className={PRIMARY_SM}>
+                {busy("email") ? "One moment" : "Send the link"}
               </button>
             </div>
           </Form>
@@ -230,7 +251,7 @@ const Settings = ({ loaderData, actionData }: Route.ComponentProps) => {
           }
         >
           {hasPassword ? (
-            <Form method="post" className="grid gap-4 sm:grid-cols-2">
+            <Form ref={passwordForm} method="post" className="grid gap-4 sm:grid-cols-2">
               <input type="hidden" name="intent" value="password" />
               <Field
                 name="password"
@@ -254,8 +275,8 @@ const Settings = ({ loaderData, actionData }: Route.ComponentProps) => {
               />
               <div className="hidden sm:block" />
               <div className="sm:col-span-2">
-                <button type="submit" disabled={busy} className={PRIMARY_SM}>
-                  {busy ? "One moment" : "Change the password"}
+                <button type="submit" disabled={busy("password")} className={PRIMARY_SM}>
+                  {busy("password") ? "One moment" : "Change the password"}
                 </button>
               </div>
             </Form>
@@ -276,13 +297,13 @@ const Settings = ({ loaderData, actionData }: Route.ComponentProps) => {
           title="Where you are signed in"
           description="A place is worked out from the network the device is on."
         >
-          <SessionList sessions={sessions} busy={busy} />
+          <SessionList sessions={sessions} revoking={revoking} />
 
           {others > 0 && (
             <Form method="post" className="mt-4 border-line/60 border-t pt-4">
               <input type="hidden" name="intent" value="revoke-others" />
-              <button type="submit" disabled={busy} className={SECONDARY_SM}>
-                {busy ? "One moment" : `Sign out everywhere else (${others})`}
+              <button type="submit" disabled={busy("revoke-others")} className={SECONDARY_SM}>
+                {busy("revoke-others") ? "One moment" : `Sign out everywhere else (${others})`}
               </button>
             </Form>
           )}
@@ -291,7 +312,7 @@ const Settings = ({ loaderData, actionData }: Route.ComponentProps) => {
           title="Delete this account"
           description="Everything goes and nothing comes back. You are asked to type the address first."
         >
-          <DeleteAccount email={email} busy={busy} />
+          <DeleteAccount email={email} busy={busy("delete")} />
         </Section>
       </div>
     </main>

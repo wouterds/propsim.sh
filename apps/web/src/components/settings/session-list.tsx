@@ -14,12 +14,13 @@ export type SessionRow = {
 
 type Props = {
   sessions: SessionRow[];
-  busy: boolean;
+  /** The session being signed out, so the other rows stay usable. */
+  revoking: string | null;
 };
 
 const FOCUS = "focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent";
 
-const SessionList = ({ sessions, busy }: Props) => (
+const SessionList = ({ sessions, revoking }: Props) => (
   <ul className="divide-y divide-line/60">
     {sessions.map((session) => (
       <li key={session.id} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
@@ -45,7 +46,7 @@ const SessionList = ({ sessions, busy }: Props) => (
             <input type="hidden" name="session" value={session.id} />
             <button
               type="submit"
-              disabled={busy}
+              disabled={revoking === session.id}
               className={`inline-flex h-8 items-center rounded border border-line px-3 text-muted text-xs transition-colors hover:border-line-strong hover:text-ink disabled:opacity-60 ${FOCUS}`}
             >
               Sign out
