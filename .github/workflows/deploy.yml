@@ -79,34 +79,19 @@ jobs:
       # deployment means giving it a separate config rather than another entry.
       REMOTE_DOCKER_CONFIG: /code/.docker-propsim
     steps:
-      # The image is already built and pushed by the job above, so a machine
-      # that cannot be reached is not a failed build. Until CLOUDFLARE_TUNNEL
-      # and SSH_PRIVATE_KEY exist this reports what is missing and stops, rather
-      # than failing red on every push and training the red out of meaning
-      # something. `secrets` is not readable from a job-level `if`, which is why
-      # the guard sits on each step against `env` instead.
-      - if: env.HOST == ''
-        run: |
-          echo "No deploy target configured." >> $GITHUB_STEP_SUMMARY
-          echo "Set CLOUDFLARE_TUNNEL and SSH_PRIVATE_KEY to enable it." >> $GITHUB_STEP_SUMMARY
       - uses: actions/checkout@v7
-        if: env.HOST != ''
-      - if: env.HOST != ''
-        run: |
+      - run: |
           wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
           sudo dpkg -i cloudflared-linux-amd64.deb
       - uses: webfactory/ssh-agent@v0.10.0
-        if: env.HOST != ''
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-      - if: env.HOST != ''
-        run: |
+      - run: |
           echo "Host ${{ env.HOST }}" >> ~/.ssh/config
           echo "  ProxyCommand $(which cloudflared) access ssh --hostname %h/ssh" >> ~/.ssh/config
           echo "  StrictHostKeyChecking no" >> ~/.ssh/config
           chmod 600 ~/.ssh/config
-      - if: env.HOST != ''
-        run: |
+      - run: |
           ssh ${{ env.USER }}@${{ env.HOST }} "mkdir -p ${{ env.DIRECTORY }}"
           scp docker-compose.yml ${{ env.USER }}@${{ env.HOST }}:${{ env.DIRECTORY }}/docker-compose.yml
           ssh ${{ env.USER }}@${{ env.HOST }} "cd ${{ env.DIRECTORY }} && export DOCKER_CONFIG=${{ env.REMOTE_DOCKER_CONFIG }} && docker compose pull && docker compose up -d --force-recreate --remove-orphans"
