@@ -30,7 +30,8 @@ export const scrubUser = async (id: string) => {
 
   await getDb()
     .update(users)
-    .set({ email: anonymised, deletedAt: new Date(), inactivityNotice: null })
+    // The username goes too, or a deleted account holds a name nobody can take.
+    .set({ email: anonymised, username: null, deletedAt: new Date(), inactivityNotice: null })
     .where(eq(users.id, id));
 
   return true;

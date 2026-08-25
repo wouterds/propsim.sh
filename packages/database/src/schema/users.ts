@@ -16,6 +16,9 @@ export const users = mysqlTable(
     // is how one gets a password later.
     password: varchar("password", { length: 255 }),
     verifiedEmailAt: timestamp("verified_email_at"),
+    // What the board calls them. Null means the generated persona is used, and
+    // the column collation is what makes two spellings of one name collide.
+    username: varchar("username", { length: 20 }),
     // Set when the account is emptied, by its owner or by the dormancy sweep.
     deletedAt: timestamp("deleted_at"),
     // The last dormancy notice sent, so the sweep does not repeat one every run.
@@ -25,6 +28,7 @@ export const users = mysqlTable(
   },
   (table) => [
     unique("email_unique").on(table.email),
+    unique("username_unique").on(table.username),
     // Every lookup and the dormancy sweep read live rows only.
     index("deleted_at_idx").on(table.deletedAt),
   ],
