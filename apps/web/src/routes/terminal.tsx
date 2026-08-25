@@ -18,6 +18,7 @@ import { findAccount } from "~/lib/accounts";
 import { activeWindow, nextWindow } from "~/lib/blackout";
 import { chartPrefs, readChartPrefs } from "~/lib/chart-prefs.server";
 import { redFolderWindows } from "~/lib/news.server";
+import { PRIVATE } from "~/lib/seo";
 import type { Route } from "./+types/terminal";
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -26,6 +27,7 @@ export const meta: Route.MetaFunction = ({ loaderData }) => [
   {
     title: loaderData ? `Terminal, ${loaderData.account.name}, propsim.sh` : "Terminal, propsim.sh",
   },
+  ...PRIVATE,
 ];
 
 /** `url`, not `request.url`: the latter carries a `.data` suffix on client navigation. */

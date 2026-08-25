@@ -15,10 +15,12 @@ import {
 } from "~/lib/accounts";
 import { formatMoney, formatSigned, toneOf } from "~/lib/format";
 import { rulesOf } from "~/lib/rules";
+import { PRIVATE } from "~/lib/seo";
 import type { Route } from "./+types/account";
 
 export const meta: Route.MetaFunction = ({ loaderData }) => [
   { title: loaderData ? `${loaderData.account.name}, propsim.sh` : "Account, propsim.sh" },
+  ...PRIVATE,
 ];
 
 export const loader = ({ params }: Route.LoaderArgs) => {

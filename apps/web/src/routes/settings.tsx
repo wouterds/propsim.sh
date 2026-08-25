@@ -19,11 +19,12 @@ import { countryOf, formatDate, formatRelative } from "~/lib/format";
 import { notify } from "~/lib/notify.server";
 import { hashPassword, verifyPassword } from "~/lib/password.server";
 import { EMAIL_CHANGE_TTL_MINUTES, MIN_PASSWORD } from "~/lib/policy";
+import { PRIVATE } from "~/lib/seo";
 import { listSessions, revokeOtherSessions, revokeSession } from "~/lib/sessions.server";
 import { deleteUser, findUserByEmail, findUserById, updatePassword } from "~/lib/users.server";
 import type { Route } from "./+types/settings";
 
-export const meta: Route.MetaFunction = () => [{ title: "Settings, propsim.sh" }];
+export const meta: Route.MetaFunction = () => [{ title: "Settings, propsim.sh" }, ...PRIVATE];
 
 const asRow = (
   row: Awaited<ReturnType<typeof listSessions>>[number],

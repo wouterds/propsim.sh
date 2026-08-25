@@ -5,12 +5,16 @@ import { notify } from "~/lib/notify.server";
 import { hashPassword } from "~/lib/password.server";
 import { consumeReset, resetIsLive } from "~/lib/password-resets.server";
 import { MIN_PASSWORD } from "~/lib/policy";
+import { PRIVATE } from "~/lib/seo";
 import { revokeAllSessions } from "~/lib/sessions.server";
 import { signIn } from "~/lib/sign-in.server";
 import { findUserById, updatePassword } from "~/lib/users.server";
 import type { Route } from "./+types/reset";
 
-export const meta: Route.MetaFunction = () => [{ title: "Choose a new password, propsim.sh" }];
+export const meta: Route.MetaFunction = () => [
+  { title: "Choose a new password, propsim.sh" },
+  ...PRIVATE,
+];
 
 const tokenOf = (request: Request) => new URL(request.url).searchParams.get("token") ?? "";
 

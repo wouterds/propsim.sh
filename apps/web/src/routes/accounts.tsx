@@ -3,9 +3,10 @@ import AccountCard from "~/components/account/account-card";
 import StatCard from "~/components/ui/stat-card";
 import { ACCOUNTS, totalsOf } from "~/lib/accounts";
 import { formatMoney, formatSigned, toneOf } from "~/lib/format";
+import { PRIVATE } from "~/lib/seo";
 import type { Route } from "./+types/accounts";
 
-export const meta: Route.MetaFunction = () => [{ title: "Accounts, propsim.sh" }];
+export const meta: Route.MetaFunction = () => [{ title: "Accounts, propsim.sh" }, ...PRIVATE];
 
 export const loader = () => ({ accounts: ACCOUNTS, totals: totalsOf(ACCOUNTS) });
 

@@ -4,10 +4,12 @@ import StatCard from "~/components/ui/stat-card";
 import { findAccount } from "~/lib/accounts";
 import { formatMoney, formatPercent, formatSigned, toneOf } from "~/lib/format";
 import { bestDayOf, greenDaysOf, winRateOf, worstDayOf } from "~/lib/journal";
+import { PRIVATE } from "~/lib/seo";
 import type { Route } from "./+types/account-journal";
 
 export const meta: Route.MetaFunction = ({ loaderData }) => [
   { title: loaderData ? `Journal, ${loaderData.account.name}, propsim.sh` : "Journal, propsim.sh" },
+  ...PRIVATE,
 ];
 
 export const loader = ({ params }: Route.LoaderArgs) => {

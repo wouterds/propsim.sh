@@ -13,13 +13,14 @@ import { notify } from "~/lib/notify.server";
 import { hashPassword, verifyPassword } from "~/lib/password.server";
 import { CODE_TTL_MINUTES, MIN_PASSWORD } from "~/lib/policy";
 import { safeReturn } from "~/lib/redirect.server";
+import { PRIVATE } from "~/lib/seo";
 import { signIn } from "~/lib/sign-in.server";
 import { createUser, findUserByEmail } from "~/lib/users.server";
 import { cn } from "~/lib/utils";
 import { issueCode } from "~/lib/verifications.server";
 import type { Route } from "./+types/auth";
 
-export const meta: Route.MetaFunction = () => [{ title: "Log in, propsim.sh" }];
+export const meta: Route.MetaFunction = () => [{ title: "Log in, propsim.sh" }, ...PRIVATE];
 
 const REFUSED_GOOGLE: Record<string, string> = {
   cancelled: "That was cancelled before Google could answer.",

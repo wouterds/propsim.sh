@@ -4,9 +4,10 @@ import StatCard from "~/components/ui/stat-card";
 import { ACCOUNTS, combinedJournalOf, totalsOf } from "~/lib/accounts";
 import { formatMoney, formatPercent, formatSigned, toneOf } from "~/lib/format";
 import { greenDaysOf, winRateOf } from "~/lib/journal";
+import { PRIVATE } from "~/lib/seo";
 import type { Route } from "./+types/dash";
 
-export const meta: Route.MetaFunction = () => [{ title: "Overview, propsim.sh" }];
+export const meta: Route.MetaFunction = () => [{ title: "Overview, propsim.sh" }, ...PRIVATE];
 
 export const loader = () => {
   const days = combinedJournalOf(ACCOUNTS);

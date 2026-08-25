@@ -5,12 +5,14 @@ import StatCard from "~/components/ui/stat-card";
 import { findAccount } from "~/lib/accounts";
 import { formatDay, formatMoney, formatSigned, TONE_TEXT, toneOf } from "~/lib/format";
 import { VERDICT_LABEL, VERDICT_TONE } from "~/lib/journal";
+import { PRIVATE } from "~/lib/seo";
 import { tradesOf } from "~/lib/trades";
 import { cn } from "~/lib/utils";
 import type { Route } from "./+types/account-day";
 
 export const meta: Route.MetaFunction = ({ loaderData }) => [
   { title: loaderData ? `${loaderData.day.label}, propsim.sh` : "Session, propsim.sh" },
+  ...PRIVATE,
 ];
 
 const CLOCK = new Intl.DateTimeFormat("en-GB", {

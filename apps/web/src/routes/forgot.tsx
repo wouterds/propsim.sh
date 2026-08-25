@@ -4,10 +4,14 @@ import AuthShell, { BELOW_LINK } from "~/components/auth/auth-shell";
 import { notify } from "~/lib/notify.server";
 import { issueReset } from "~/lib/password-resets.server";
 import { RESET_TTL_MINUTES } from "~/lib/policy";
+import { PRIVATE } from "~/lib/seo";
 import { findUserByEmail } from "~/lib/users.server";
 import type { Route } from "./+types/forgot";
 
-export const meta: Route.MetaFunction = () => [{ title: "Reset your password, propsim.sh" }];
+export const meta: Route.MetaFunction = () => [
+  { title: "Reset your password, propsim.sh" },
+  ...PRIVATE,
+];
 
 export const action = async ({ request }: Route.ActionArgs) => {
   const form = await request.formData();

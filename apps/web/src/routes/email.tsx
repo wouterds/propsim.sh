@@ -1,11 +1,15 @@
 import { Form, href, Link, useNavigation } from "react-router";
 import AuthShell from "~/components/auth/auth-shell";
 import { consumeEmailChange } from "~/lib/email-changes.server";
+import { PRIVATE } from "~/lib/seo";
 import { revokeAllSessions } from "~/lib/sessions.server";
 import { updateEmail } from "~/lib/users.server";
 import type { Route } from "./+types/email";
 
-export const meta: Route.MetaFunction = () => [{ title: "Confirm your address, propsim.sh" }];
+export const meta: Route.MetaFunction = () => [
+  { title: "Confirm your address, propsim.sh" },
+  ...PRIVATE,
+];
 
 const tokenOf = (request: Request) => new URL(request.url).searchParams.get("token") ?? "";
 

@@ -7,12 +7,16 @@ import GridBackdrop from "~/components/layout/grid-backdrop";
 import { getPendingUserId } from "~/lib/auth.server";
 import { notify } from "~/lib/notify.server";
 import { asCode, CODE_DIGITS, CODE_TTL_MINUTES } from "~/lib/policy";
+import { PRIVATE } from "~/lib/seo";
 import { signIn } from "~/lib/sign-in.server";
 import { findUserById, markEmailVerified } from "~/lib/users.server";
 import { checkCode, issueCode } from "~/lib/verifications.server";
 import type { Route } from "./+types/verify";
 
-export const meta: Route.MetaFunction = () => [{ title: "Confirm your email, propsim.sh" }];
+export const meta: Route.MetaFunction = () => [
+  { title: "Confirm your email, propsim.sh" },
+  ...PRIVATE,
+];
 
 const SLOTS = Array.from({ length: CODE_DIGITS }, (_, index) => `digit-${index + 1}`);
 

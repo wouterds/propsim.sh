@@ -7,9 +7,10 @@ import { PRIMARY, SECONDARY } from "~/components/ui/button";
 import { createAccount } from "~/lib/accounts";
 import { formatDollars } from "~/lib/format";
 import { DEFAULT_PLAN_ID, findPlan, PLANS, planOr } from "~/lib/plans";
+import { PRIVATE } from "~/lib/seo";
 import type { Route } from "./+types/account-new";
 
-export const meta: Route.MetaFunction = () => [{ title: "New account, propsim.sh" }];
+export const meta: Route.MetaFunction = () => [{ title: "New account, propsim.sh" }, ...PRIVATE];
 
 export const loader = ({ request }: Route.LoaderArgs) => {
   const wanted = new URL(request.url).searchParams.get("plan");
