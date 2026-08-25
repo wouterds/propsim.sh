@@ -4,8 +4,7 @@ permissions:
   contents: read
   packages: write
 
-# Manual only. A push to main is not a request to ship, and building an image
-# on every merge spends actions minutes on a deploy nobody asked for.
+# Manual only. A push to main is not a request to ship.
 on:
   workflow_dispatch:
 
@@ -14,15 +13,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # No checks in front of this. Lint, typecheck and the tests run on every
-  # branch including main in .github/workflows/checks.yml, so repeating them
-  # here would only make the deploy wait for a second copy of an answer it
-  # already had.
+  # No checks in front of this. checks.yml already runs them on every branch.
   build:
     strategy:
-      # One entry today. Every image builds from the same context and differs
-      # only in which app turbo prunes to, so a second one is a word here
-      # rather than a copy of the job.
+      # One entry today. A second app is a word here, not a second job.
       matrix:
         app: [web]
     name: "build: ${{ matrix.app }}"
@@ -43,8 +37,7 @@ jobs:
         id: meta
         with:
           images: ${{ env.REGISTRY }}/wouterds/propsim.sh/${{ matrix.app }}
-          # Two raw tags and nothing else: the deploy pulls latest, and the
-          # short sha is the audit trail.
+          # The deploy pulls latest. The sha is the audit trail.
           tags: |
             type=raw,value=latest
             type=raw,value=${{ env.COMMIT_SHA }}
@@ -58,8 +51,7 @@ jobs:
           context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-          # Computed by metadata-action either way. Dropping them costs the ghcr
-          # package its link back to this repository and its revision label.
+          # Without these the ghcr package loses its link back to this repository.
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             COMMIT_SHA=${{ env.COMMIT_SHA }}
@@ -74,9 +66,8 @@ jobs:
       HOST: ${{ secrets.CLOUDFLARE_TUNNEL }}
       USER: code
       DIRECTORY: /code/sh.propsim
-      # A config directory of its own, logged in as the account that owns the
-      # images. Docker keys credentials by registry host, so scoping them to a
-      # deployment means giving it a separate config rather than another entry.
+      # Docker keys credentials by registry host, so a separate deployment needs
+      # a separate config directory.
       REMOTE_DOCKER_CONFIG: /code/.docker-propsim
     steps:
       - uses: actions/checkout@v7

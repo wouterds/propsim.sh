@@ -6,12 +6,8 @@ post-merge:
 
 post-checkout:
   parallel: true
-  # A rebase is a checkout per replayed commit, and this rewrites
-  # package-lock.json, so replaying a commit that touches the lock leaves the
-  # tree dirty before the next one applies, and the commit introducing it lands
-  # empty. Git then reports "nothing to commit, working tree clean" while the
-  # change is missing, and continuing drops it. Skipping here beats LEFTHOOK=0
-  # at the call site, which would also disable the checks.
+  # A rebase is a checkout per commit. Rewriting the lock mid-rebase leaves the
+  # tree dirty and the commit that owns the change lands empty.
   skip:
     - rebase
     - merge

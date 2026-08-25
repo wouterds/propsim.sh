@@ -21,8 +21,7 @@ jobs:
       - run: npm ci
       - run: npm run lint
 
-  # `react-router build` strips types rather than checking them, so nothing in
-  # the deploy would catch a type error. This is the only gate that runs tsc.
+  # `react-router build` strips types. This is the only gate that runs tsc.
   typecheck:
     runs-on: ubuntu-latest
     steps:

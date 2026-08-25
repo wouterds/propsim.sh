@@ -1,13 +1,7 @@
 version: 2
 
-# Without a prefix, Dependabot copies whatever convention it infers from the
-# history and writes "⬆️ Bump x from a to b". Setting one switches it to
-# conventional commits and lowercases the verb, so its PRs read like the rest
-# of the log. "scope" appends (deps) / (deps-dev).
-#
-# Every ecosystem uses the same prefix on purpose: a dependency bump is a chore
-# whether it is npm or an action, so the log reads chore(deps) and
-# chore(deps-dev) and nothing else.
+# Without a prefix Dependabot writes "⬆️ Bump x from a to b". `scope` appends
+# (deps) / (deps-dev). Every ecosystem uses chore, so the log reads one way.
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -17,7 +11,7 @@ updates:
       prefix: "chore"
       include: "scope"
 
-  # Compose pins the image the server actually runs.
+  # Compose pins the image the server runs.
   - package-ecosystem: "docker-compose"
     directory: "/"
     schedule:
@@ -26,8 +20,7 @@ updates:
       prefix: "chore"
       include: "scope"
 
-  # Every app builds from its own base image, so every one has to be watched or
-  # its node stays on whatever it was pinned to the day it was written.
+  # Each app pins its own base image, so each one has to be listed.
   - package-ecosystem: "docker"
     directories:
       - "/apps/web"
@@ -37,8 +30,8 @@ updates:
       prefix: "chore"
       include: "scope"
 
-  # The root manifest holds the toolchain only. Every workspace that ships a
-  # runtime dependency has to be listed here or it is never watched.
+  # The root holds the toolchain only. A workspace with runtime dependencies
+  # has to be listed.
   - package-ecosystem: "npm"
     directories:
       - "/"

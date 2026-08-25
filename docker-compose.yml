@@ -7,8 +7,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
-      # Nothing else in the container listens, but naming the port keeps the
-      # route pinned to the app rather than whatever traefik infers.
+      # Named so the route is pinned to the app, not to what traefik infers.
       - "traefik.http.services.propsimsh.loadbalancer.server.port=3000"
       - "traefik.http.middlewares.propsimsh.redirectscheme.scheme=https"
       - "traefik.http.routers.propsimsh-http.rule=Host(`propsim.sh`) || Host(`www.propsim.sh`)"
@@ -17,16 +16,10 @@ services:
       - "traefik.http.routers.propsimsh.rule=Host(`propsim.sh`) || Host(`www.propsim.sh`)"
       - "traefik.http.routers.propsimsh.entrypoints=websecure"
       - "traefik.http.routers.propsimsh.tls.certresolver=myhttpchallenge"
-      # www is served by the same container, so it is redirected to the apex
-      # rather than left as a second copy of the whole site.
-      #
-      # Added alongside the routers above rather than by narrowing them, so a
-      # label traefik will not take leaves the site serving exactly as it does
-      # now. The priority is what makes these win: traefik ranks by rule length
-      # otherwise, and `Host(a) || Host(b)` is the longer string.
-      #
-      # `$${1}` and not `${1}` - compose substitutes its own variables first,
-      # and would quietly send every path to the bare apex.
+      # www redirects to the apex instead of serving a second copy of the site.
+      # The priority is required: traefik ranks by rule length otherwise, and
+      # `Host(a) || Host(b)` is longer. Use `$${1}`, or compose substitutes it
+      # first and every path lands on the apex.
       - "traefik.http.middlewares.propsimsh-apex.redirectregex.regex=^https?://www\\.propsim\\.sh/(.*)"
       - "traefik.http.middlewares.propsimsh-apex.redirectregex.replacement=https://propsim.sh/$${1}"
       - "traefik.http.middlewares.propsimsh-apex.redirectregex.permanent=true"
