@@ -99,19 +99,30 @@ export type Persona = {
   hue: number;
 };
 
+const initialsOf = (name: string) => {
+  const words = name.split(/[\s_-]+/).filter(Boolean);
+
+  if (words.length > 1) {
+    return `${words[0][0]}${words[1][0]}`.toUpperCase();
+  }
+
+  return name.slice(0, 2).toUpperCase();
+};
+
 /**
- * A name and a face for somebody the board never asked the name of. Both come
- * from the account id and nothing else, so one person reads as one person on
- * every page while the id itself never leaves the server.
+ * A name and a face for somebody the board never asked the name of. A chosen
+ * username replaces the drawn name, but the tint still comes from the id, so
+ * naming yourself does not change the face people already know you by.
  */
-export const personaOf = (userId: string): Persona => {
+export const personaOf = (userId: string, username?: string | null): Persona => {
   const named = hash(userId);
   const adjective = ADJECTIVES[named % ADJECTIVES.length];
   const creature = CREATURES[(named >>> 8) % CREATURES.length];
+  const name = username || `${adjective} ${creature}`;
 
   return {
-    name: `${adjective} ${creature}`,
-    initials: `${adjective[0]}${creature[0]}`,
+    name,
+    initials: initialsOf(name),
     hue: FIRST_TINT + (hash(`${userId}/face`) % TINTS) * (360 / TINTS),
   };
 };

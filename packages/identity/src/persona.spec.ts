@@ -55,3 +55,33 @@ describe("personaOf", () => {
     expect(new Set(names.map((name) => name.split(" ")[1])).size).toBe(32);
   });
 });
+
+describe("personaOf with a chosen name", () => {
+  it("should keep the drawn name when the username is empty", () => {
+    // given an account that set a name and cleared it again
+    const drawn = personaOf("01997e51-1a40-7000-9c3b-5f2a11d4e880");
+
+    // then
+    expect(personaOf("01997e51-1a40-7000-9c3b-5f2a11d4e880", null).name).toBe(drawn.name);
+    expect(personaOf("01997e51-1a40-7000-9c3b-5f2a11d4e880", "").name).toBe(drawn.name);
+  });
+
+  it("should show the chosen name and leave the face alone", () => {
+    // given one account, named and unnamed
+    const id = "01997e51-1a40-7000-9c3b-5f2a11d4e880";
+    const drawn = personaOf(id);
+
+    // when
+    const chosen = personaOf(id, "wouterds");
+
+    // then the tint is what people recognise, so it must not move
+    expect(chosen.name).toBe("wouterds");
+    expect(chosen.initials).toBe("WO");
+    expect(chosen.hue).toBe(drawn.hue);
+  });
+
+  it("should take one letter from each word of a two word name", () => {
+    // then
+    expect(personaOf("01997e51-1a40-7000-9c3b-5f2a11d4e880", "night_owl").initials).toBe("NO");
+  });
+});
