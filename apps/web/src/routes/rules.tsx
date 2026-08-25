@@ -115,14 +115,16 @@ const GROUPS: Group[] = [
         title: "Hedging across accounts is not trading",
         body: [
           "Taking opposing positions on the same instrument in two accounts is prohibited. Long in one and short in the other guarantees one of them profits whichever way the market goes, which is not a strategy, it is a way of manufacturing a payout.",
-          "It counts across accounts, across instruments that track each other, and between minis and micros of the same product. Detection is automated.",
+          "It counts across accounts, across instruments that track each other, between minis and micros of the same product, and across firms. Inside one account you may hold both sides, because there is nothing to manufacture.",
+          "Detection is automated and the first finding is not the end: the accounts are rolled back to the previous day's balance. A repeat breaches all of them.",
         ],
       },
       {
         id: "microscalping",
         title: "Microscalping is about fills, not about speed",
         body: [
-          "Very large size held for a few seconds to skim tiny moves is prohibited, because it works against how a simulator fills orders rather than against the market. It is the size and the intent that flag it, not the holding time on its own.",
+          "Very large size held for a few seconds to skim tiny moves is prohibited, because it works against how a simulator fills orders rather than against the market.",
+          "The published trigger is more than half your profit coming from trades held five seconds or less. That flags the account for a human to look at rather than ending it: a first finding is a warning, and only a repeat forfeits the profit.",
           "Ordinary scalping is fine. The line is whether the trade would have behaved the same way with real money in front of it.",
         ],
       },
@@ -137,8 +139,8 @@ const GROUPS: Group[] = [
         id: "hours",
         title: "The session closes, and closing it is not a breach",
         body: [
-          "Positions have to be flat by 16:45 New York time, Monday to Friday, and anything still open is closed for you. Being closed out this way does not fail the account. Trading reopens at 18:00 New York time, Sunday to Thursday.",
-          "On a holiday with an early close, the early close is the deadline.",
+          "Positions are flat by 16:45 New York time, Monday to Friday, and anything still open is closed for you. Being closed out this way does not fail the account. Trading reopens at 18:00 New York time, Sunday to Thursday, and on a holiday with an early close the early close is the deadline.",
+          "The firms publish these times for their slower plans and say nothing about them for the daily ones. This is the simulator's reading, not a rule quoted from anybody.",
         ],
       },
       {
