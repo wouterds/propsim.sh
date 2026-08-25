@@ -21,7 +21,13 @@ export const safeReturn = (value: string | null) => {
     return "/dash";
   }
 
-  if (url.pathname === "/auth" || url.pathname.endsWith(".data")) {
+  // Everything under /auth, not just the page itself: /auth/google hands
+  // straight back to Google, so returning to it after a sign in is a loop.
+  if (url.pathname === "/auth" || url.pathname.startsWith("/auth/")) {
+    return "/dash";
+  }
+
+  if (url.pathname.endsWith(".data")) {
     return "/dash";
   }
 

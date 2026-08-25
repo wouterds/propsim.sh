@@ -26,6 +26,11 @@ describe("safeReturn", () => {
     expect(safeReturn("/auth")).toBe("/dash");
   });
 
+  it("should refuse the google routes, which would bounce back to google", () => {
+    expect(safeReturn("/auth/google")).toBe("/dash");
+    expect(safeReturn("/auth/google/callback?code=x")).toBe("/dash");
+  });
+
   it("should refuse a single fetch data path", () => {
     expect(safeReturn("/terminal.data")).toBe("/dash");
   });

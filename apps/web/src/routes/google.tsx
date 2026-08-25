@@ -1,6 +1,5 @@
 import { redirect } from "react-router";
 import { handoff, newState, startUrl } from "~/lib/google.server";
-import { asPage } from "~/lib/redirect.server";
 import type { Route } from "./+types/google";
 
 export const loader = async ({ request }: Route.LoaderArgs) => {
@@ -9,7 +8,9 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
 
   throw redirect(startUrl(state), {
     headers: {
-      "Set-Cookie": await handoff.serialize({ state, back: back ?? asPage(new URL(request.url)) }),
+      // No default: this route's own address is the only thing the request
+      // carries, and coming back to it after signing in goes to Google again.
+      "Set-Cookie": await handoff.serialize({ state, back }),
     },
   });
 };
