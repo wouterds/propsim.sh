@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "ab24e135-d845-4026-ba46-12b36cb5c404",
+  "id": "727aaf20-1488-48c1-b1b9-5583daf4b2fc",
   "prevId": "f2c86afe-80e4-442f-a7ea-53545602989c",
   "tables": {
     "email_changes": {
@@ -304,7 +304,7 @@
         },
         "country": {
           "name": "country",
-          "type": "char(2)",
+          "type": "varchar(2)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false

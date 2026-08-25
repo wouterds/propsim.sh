@@ -1,5 +1,4 @@
 import {
-  char,
   datetime,
   index,
   mysqlEnum,
@@ -30,8 +29,8 @@ export const sessions = mysqlTable(
     browser: varchar("browser", { length: 32 }),
     os: varchar("os", { length: 32 }),
     kind: varchar("kind", { length: 16 }),
-    ip: varchar("ip", { length: 45 }),
-    country: char("country", { length: 2 }),
+    ip: varchar("ip", { length: 45 }), // IPv6 max length
+    country: varchar("country", { length: 2 }),
     lastSeenAt: datetime("last_seen_at").notNull(),
     expiresAt: datetime("expires_at").notNull(),
     revokedAt: datetime("revoked_at"),

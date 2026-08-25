@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { readOrigin } from "./origin.server";
+import { normalizeIp, readOrigin } from "./origin.server";
 
 const asRequest = (headers: Record<string, string>) =>
   new Request("https://propsim.sh/", { headers });
@@ -42,5 +42,27 @@ describe("readOrigin", () => {
 
     // then
     expect(readOrigin(request).userAgent).toHaveLength(512);
+  });
+});
+
+describe("normalizeIp", () => {
+  it("should leave an IPv4 address alone", () => {
+    // then
+    expect(normalizeIp("203.0.113.7")).toBe("203.0.113.7");
+  });
+
+  it("should leave anything unparseable alone", () => {
+    // then
+    expect(normalizeIp("not-an-ip")).toBe("not-an-ip");
+  });
+
+  it("should collapse an IPv6 address to the network it belongs to", () => {
+    // given two privacy addresses the same client rotated between
+    const monday = "2a02:1811:c1c:cf00:1c2e:a1ff:fe33:4455";
+    const tuesday = "2a02:1811:c1c:cf00:9d77:b02f:1111:2222";
+
+    // then
+    expect(normalizeIp(monday)).toBe(normalizeIp(tuesday));
+    expect(normalizeIp(monday)).toBe("2a02:1811:c1c:cf00::");
   });
 });

@@ -34,7 +34,7 @@ CREATE TABLE `sessions` (
 	`os` varchar(32),
 	`kind` varchar(16),
 	`ip` varchar(45),
-	`country` char(2),
+	`country` varchar(2),
 	`last_seen_at` datetime NOT NULL,
 	`expires_at` datetime NOT NULL,
 	`revoked_at` datetime,
