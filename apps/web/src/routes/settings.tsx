@@ -1,5 +1,11 @@
-import { sendConfirmNewEmail, sendEmailChanging, sendPasswordChanged } from "@propsim/mail";
+import {
+  sendAccountDeleted,
+  sendConfirmNewEmail,
+  sendEmailChanging,
+  sendPasswordChanged,
+} from "@propsim/mail";
 import { data, Form, useNavigation } from "react-router";
+import DeleteAccount from "~/components/settings/delete-account";
 import Field from "~/components/settings/field";
 import Notice from "~/components/settings/notice";
 import Section from "~/components/settings/section";
@@ -13,7 +19,7 @@ import { notify } from "~/lib/notify.server";
 import { hashPassword, verifyPassword } from "~/lib/password.server";
 import { EMAIL_CHANGE_TTL_MINUTES, MIN_PASSWORD } from "~/lib/policy";
 import { listSessions, revokeOtherSessions, revokeSession } from "~/lib/sessions.server";
-import { findUserByEmail, findUserById, updatePassword } from "~/lib/users.server";
+import { deleteUser, findUserByEmail, findUserById, updatePassword } from "~/lib/users.server";
 import type { Route } from "./+types/settings";
 
 export const meta: Route.MetaFunction = () => [{ title: "Settings, propsim.sh" }];
@@ -128,6 +134,24 @@ export const action = async ({ request }: Route.ActionArgs) => {
     };
   }
 
+  if (intent === "delete") {
+    const typed = String(form.get("email") ?? "")
+      .trim()
+      .toLowerCase();
+
+    // The address is the confirmation, so a stray submit cannot end an account.
+    if (typed !== user.email.toLowerCase()) {
+      return { done: null, error: "That is not the address on this account." };
+    }
+
+    // Sent while there is still somewhere to send it, and through notify: a
+    // provider outage must not leave the account half deleted.
+    await notify(() => sendAccountDeleted({ to: user.email }));
+    await deleteUser(user.id);
+
+    throw await endSession(request);
+  }
+
   if (intent === "revoke-others") {
     await revokeOtherSessions(session.userId, session.id, "revoked");
 
@@ -231,6 +255,12 @@ const Settings = ({ loaderData, actionData }: Route.ComponentProps) => {
               </button>
             </Form>
           )}
+        </Section>
+        <Section
+          title="Delete this account"
+          description="Everything goes and nothing comes back. You are asked to type the address first."
+        >
+          <DeleteAccount email={email} busy={busy} />
         </Section>
       </div>
     </main>
