@@ -1,23 +1,23 @@
 import { Outlet } from "react-router";
-import AppNav from "~/components/layout/app-nav";
+import AppShell from "~/components/app/app-shell";
+import { ACCOUNTS } from "~/lib/accounts";
 import { requireUserId } from "~/lib/auth.server";
+import { findUserById } from "~/lib/users.server";
 import type { Route } from "./+types/app";
 
 // Guards every page under it, so a new route inside this layout is protected by
 // existing rather than by remembering.
 export const loader = async ({ request }: Route.LoaderArgs) => {
-  await requireUserId(request);
+  const userId = await requireUserId(request);
+  const user = await findUserById(userId);
 
-  return null;
+  return { accounts: ACCOUNTS, email: user?.email ?? "" };
 };
 
-const AppLayout = () => (
-  <div className="flex h-dvh flex-col">
-    <AppNav />
-    <div className="min-h-0 flex-1 overflow-y-auto">
-      <Outlet />
-    </div>
-  </div>
+const AppLayout = ({ loaderData }: Route.ComponentProps) => (
+  <AppShell accounts={loaderData.accounts} email={loaderData.email}>
+    <Outlet />
+  </AppShell>
 );
 
 export default AppLayout;
