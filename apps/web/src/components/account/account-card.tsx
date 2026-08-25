@@ -69,7 +69,7 @@ const AccountCard = ({ account }: Props) => {
           </div>
 
           <Meter.Track className="mt-2 block h-1.5 overflow-hidden rounded-full bg-sunken">
-            <Meter.Indicator className="h-full rounded-full bg-accent" />
+            <Meter.Indicator className="h-full rounded-full bg-up" />
           </Meter.Track>
 
           <p className="mt-1.5 text-[11px] text-faint tabular">
