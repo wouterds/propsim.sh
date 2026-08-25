@@ -70,12 +70,16 @@ export const action = async ({ request }: Route.ActionArgs) => {
     const current = String(form.get("current") ?? "");
     const next = String(form.get("password") ?? "");
 
-    if (!(await verifyPassword(current, user.password))) {
-      return { done: null, error: "That is not your current password." };
-    }
-
     if (next.length < MIN_PASSWORD) {
       return { done: null, error: `Use at least ${MIN_PASSWORD} characters.` };
+    }
+
+    if (next !== String(form.get("confirm") ?? "")) {
+      return { done: null, error: "The two new passwords do not match." };
+    }
+
+    if (!(await verifyPassword(current, user.password))) {
+      return { done: null, error: "That is not your current password." };
     }
 
     await updatePassword(user.id, await hashPassword(next));
@@ -96,12 +100,21 @@ export const action = async ({ request }: Route.ActionArgs) => {
       .toLowerCase();
     const current = String(form.get("current") ?? "");
 
-    if (!(await verifyPassword(current, user.password))) {
-      return { done: null, error: "That is not your current password." };
-    }
-
     if (!email || email === user.email) {
       return { done: null, error: "That is already the address on this account." };
+    }
+
+    if (
+      email !==
+      String(form.get("confirm") ?? "")
+        .trim()
+        .toLowerCase()
+    ) {
+      return { done: null, error: "The two addresses do not match." };
+    }
+
+    if (!(await verifyPassword(current, user.password))) {
+      return { done: null, error: "That is not your current password." };
     }
 
     // Silent when the address is taken, or this says which addresses exist.
@@ -158,12 +171,14 @@ const Settings = ({ loaderData, actionData }: Route.ComponentProps) => {
           <Form method="post" className="grid gap-4 sm:grid-cols-2">
             <input type="hidden" name="intent" value="email" />
             <Field name="email" label="New address" type="email" autoComplete="email" />
+            <Field name="confirm" label="Confirm new address" type="email" autoComplete="off" />
             <Field
               name="current"
               label="Current password"
               type="password"
               autoComplete="current-password"
             />
+            <div className="hidden sm:block" />
             <div className="sm:col-span-2">
               <button type="submit" disabled={busy} className={BUTTON}>
                 {busy ? "One moment" : "Send the confirmation"}
@@ -179,18 +194,26 @@ const Settings = ({ loaderData, actionData }: Route.ComponentProps) => {
           <Form method="post" className="grid gap-4 sm:grid-cols-2">
             <input type="hidden" name="intent" value="password" />
             <Field
-              name="current"
-              label="Current password"
-              type="password"
-              autoComplete="current-password"
-            />
-            <Field
               name="password"
               label="New password"
               type="password"
               autoComplete="new-password"
               minLength={MIN_PASSWORD}
             />
+            <Field
+              name="confirm"
+              label="Confirm new password"
+              type="password"
+              autoComplete="new-password"
+              minLength={MIN_PASSWORD}
+            />
+            <Field
+              name="current"
+              label="Current password"
+              type="password"
+              autoComplete="current-password"
+            />
+            <div className="hidden sm:block" />
             <div className="sm:col-span-2">
               <button type="submit" disabled={busy} className={BUTTON}>
                 {busy ? "One moment" : "Change the password"}
