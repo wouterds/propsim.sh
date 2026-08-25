@@ -134,7 +134,7 @@ const Auth = ({ loaderData, actionData }: Route.ComponentProps) => {
 
         <div className="mt-8 rounded-xl border border-line bg-raised p-6 shadow-[0_24px_80px_-40px_rgb(0_0_0)]">
           <ModeTabs mode={mode} onChange={setMode} />
-          <h1 className="mb-6 font-semibold text-ink text-lg tracking-tight">{COPY[mode].title}</h1>
+          <h1 className="mb-4 font-semibold text-ink text-lg tracking-tight">{COPY[mode].title}</h1>
           {loaderData.google && (
             <p
               role="alert"
@@ -163,14 +163,16 @@ const Auth = ({ loaderData, actionData }: Route.ComponentProps) => {
               <GoogleButton to={loaderData.start} />
             </>
           )}
+        </div>
 
+        {mode === "login" && (
           <Link
             to={href("/forgot")}
-            className="mt-4 block rounded-sm text-center text-faint text-xs transition-colors hover:text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
+            className="mt-4 block animate-fade-in rounded-sm text-center text-faint text-xs transition-colors hover:text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
           >
             Forgot your password?
           </Link>
-        </div>
+        )}
       </div>
     </main>
   );

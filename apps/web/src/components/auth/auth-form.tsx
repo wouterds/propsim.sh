@@ -17,7 +17,7 @@ const AuthForm = ({ mode, error }: Props) => {
   const busy = navigation.state !== "idle";
 
   return (
-    <Form method="post" className="space-y-4">
+    <Form method="post" className="space-y-3">
       <input type="hidden" name="mode" value={mode} />
 
       <Field.Root className="block">
