@@ -44,7 +44,7 @@ const Plans = () => (
                   to={`${href("/accounts/new")}?plan=${plan.id}`}
                   className="inline-flex h-9 w-full items-center justify-center rounded bg-accent-strong font-medium text-sm text-ink transition-colors hover:bg-accent-strong/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
                 >
-                  Open this account
+                  Get free account
                 </Link>
               </div>
             </div>
