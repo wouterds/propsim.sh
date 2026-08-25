@@ -16,6 +16,8 @@ export const meta: Route.MetaFunction = () => [
 
 const LIMITS = { name: 80, subject: 120, message: 4000 };
 
+const CONTACT_TO = "hello@propsim.sh";
+
 export const loader = () => ({ siteKey: siteKey(), guarded: turnstileIsSet() });
 
 export const action = async ({ request }: Route.ActionArgs) => {
@@ -43,15 +45,9 @@ export const action = async ({ request }: Route.ActionArgs) => {
     return { sent: false, error: "That did not get past the check. Try again." };
   }
 
-  const to = process.env.CONTACT_TO;
-
-  if (!to) {
-    throw new Error("CONTACT_TO is not set");
-  }
-
   // Through notify, so a provider outage does not throw the message away in
   // front of somebody who has already typed it.
-  await notify(() => sendContactMessage({ to, name, email, subject, message }));
+  await notify(() => sendContactMessage({ to: CONTACT_TO, name, email, subject, message }));
 
   return { sent: true, error: null };
 };
