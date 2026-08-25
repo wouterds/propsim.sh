@@ -84,9 +84,7 @@ const AccountPreview = () => (
         <span className="size-1.5 rounded-full bg-up" />
         Within rules
       </span>
-      <span className="text-faint tabular">
-        {`${ACCOUNT.journal.length} of ${PLAN.minimumDays} days traded`}
-      </span>
+      <span className="text-faint tabular">{`${ACCOUNT.journal.length} sessions traded`}</span>
     </div>
   </div>
 );
