@@ -6,11 +6,14 @@ export default [
     route("plans", "routes/plans.tsx"),
     route("rules", "routes/rules.tsx"),
     route("faq", "routes/faq.tsx"),
-    route("calendar", "routes/calendar.tsx"),
+    route("red-folder-events", "routes/red-folder-events.tsx"),
     route("contact", "routes/contact.tsx"),
     route("privacy", "routes/privacy.tsx"),
     route("terms", "routes/terms.tsx"),
   ]),
+
+  route("robots.txt", "routes/robots.tsx"),
+  route("sitemap.xml", "routes/sitemap.tsx"),
 
   route("auth", "routes/auth.tsx"),
   route("auth/google", "routes/google.tsx"),

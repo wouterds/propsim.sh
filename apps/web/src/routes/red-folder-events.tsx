@@ -1,7 +1,7 @@
 import { getNewsEvents, isRedFolder } from "@propsim/datasources";
 import { AFTER_MINUTES, BEFORE_MINUTES } from "~/lib/blackout";
 import { formatCountdown, formatDay, formatRelative } from "~/lib/format";
-import type { Route } from "./+types/calendar";
+import type { Route } from "./+types/red-folder-events";
 
 export const meta: Route.MetaFunction = () => [
   { title: "Red folder events, propsim.sh" },

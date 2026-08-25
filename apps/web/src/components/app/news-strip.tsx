@@ -46,7 +46,7 @@ const NewsStrip = ({ at, titles }: Props) => {
 
   return (
     <Link
-      to={href("/calendar")}
+      to={href("/red-folder-events")}
       className="flex h-8 shrink-0 items-center gap-2 rounded-lg border border-down/25 bg-down/15 px-3 text-xs transition-colors hover:bg-down/25 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
     >
       <span className="relative flex size-1.5 shrink-0" aria-hidden="true">
