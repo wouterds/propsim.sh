@@ -19,7 +19,7 @@ export const meta: Route.MetaFunction = () => [
   {
     name: "description",
     content:
-      "A simulated futures account with a prop firm's rules on it. Live MNQ prices on a short delay, a daily loss limit and a trailing drawdown. Free, and no real money.",
+      "A simulated futures account with a prop firm's rules on it. Live CME prices on a short delay, a daily loss limit and a trailing drawdown. Free, and no real money.",
   },
 ];
 

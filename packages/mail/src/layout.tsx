@@ -40,12 +40,16 @@ const container: CSSProperties = {
   padding: "32px",
 };
 
+const brand: CSSProperties = {
+  borderCollapse: "collapse",
+  marginBottom: "28px",
+};
+
 const wordmark: CSSProperties = {
   color: INK,
   fontSize: "15px",
   fontWeight: 600,
   letterSpacing: "-0.01em",
-  margin: "0 0 28px",
 };
 
 const suffix: CSSProperties = {
@@ -117,6 +121,39 @@ export const button: CSSProperties = {
   textDecoration: "none",
 };
 
+const UP = "#14b8a6";
+const DOWN = "#f43f5e";
+
+type CandleProps = {
+  color: string;
+  top: number;
+  wick: number;
+  body: number;
+};
+
+const Candle = ({ color, top, wick, body }: CandleProps) => (
+  <td style={{ padding: "0 1.5px", verticalAlign: "top" }}>
+    <div style={{ height: `${top}px`, lineHeight: "1px", fontSize: "1px" }}>&nbsp;</div>
+    <div style={{ width: "1px", height: `${wick}px`, backgroundColor: color, margin: "0 auto" }} />
+    <div
+      style={{ width: "5px", height: `${body}px`, backgroundColor: color, borderRadius: "1px" }}
+    />
+    <div style={{ width: "1px", height: `${wick}px`, backgroundColor: color, margin: "0 auto" }} />
+  </td>
+);
+
+const Mark = () => (
+  <table cellPadding={0} cellSpacing={0} role="presentation" style={{ borderCollapse: "collapse" }}>
+    <tbody>
+      <tr>
+        <Candle color={DOWN} top={5} wick={2} body={6} />
+        <Candle color={UP} top={0} wick={2} body={9} />
+        <Candle color={DOWN} top={2} wick={2} body={6} />
+      </tr>
+    </tbody>
+  </table>
+);
+
 type LayoutProps = {
   preview: string;
   footnote: string;
@@ -134,9 +171,20 @@ export const Layout = ({ preview, footnote, to, children }: LayoutProps) => (
     <Preview>{preview}</Preview>
     <Body style={body}>
       <Container style={container}>
-        <Text style={wordmark}>
-          propsim<span style={suffix}>.sh</span>
-        </Text>
+        <table cellPadding={0} cellSpacing={0} role="presentation" style={brand}>
+          <tbody>
+            <tr>
+              <td style={{ paddingRight: "8px", verticalAlign: "middle" }}>
+                <Mark />
+              </td>
+              <td style={{ verticalAlign: "middle" }}>
+                <span style={wordmark}>
+                  propsim<span style={suffix}>.sh</span>
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
 
         {children}
 
