@@ -27,13 +27,13 @@
      45% and throws nothing. Measured on the three surfaces, teal clears 7.0:1
      and rose 4.75:1, so both hold at 11px on a hovered row.
 
-     White is only 1.21:1 against `ink`, so it can never be the ONLY thing
-     marking something interactive. Every accent-coloured control here also
-     carries a fill, a border or an underline, and a bare `text-accent` on body
-     copy reads as ordinary text. */
+     `accent` is tailwind's blue-500. It carries roughly 4:1 against both
+     `sunken` and white, which clears the 3:1 a control needs but not the 4.5:1
+     body copy wants, so it fills buttons and tints rows rather than setting
+     small text on a dark ground. */
   --color-up: #14b8a6;
   --color-down: #f43f5e;
-  --color-accent: #ffffff;
+  --color-accent: #3b82f6;
   --color-warn: #ffb020;
 
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
