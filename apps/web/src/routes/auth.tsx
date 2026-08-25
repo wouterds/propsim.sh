@@ -9,6 +9,7 @@ import Brand from "~/components/layout/brand";
 import GridBackdrop from "~/components/layout/grid-backdrop";
 import { startPending } from "~/lib/auth.server";
 import { googleIsSet } from "~/lib/google.server";
+import { notify } from "~/lib/notify.server";
 import { hashPassword, verifyPassword } from "~/lib/password.server";
 import { CODE_TTL_MINUTES, MIN_PASSWORD } from "~/lib/policy";
 import { signIn } from "~/lib/sign-in.server";
@@ -41,10 +42,14 @@ export const loader = ({ request }: Route.LoaderArgs) => {
 // Anything more specific tells an attacker which addresses are registered.
 const REFUSED = "Email or password is incorrect.";
 
+// Through notify: the row is already written by the time this runs, so a
+// provider outage would otherwise 500 an account into existence that its owner
+// can neither verify nor sign up for again. They land on the code page and the
+// resend button is what recovers it.
 const sendCode = async (userId: string, email: string) => {
   const code = await issueCode(userId);
 
-  await sendConfirmCode({ to: email, code, expiresInMinutes: CODE_TTL_MINUTES });
+  await notify(() => sendConfirmCode({ to: email, code, expiresInMinutes: CODE_TTL_MINUTES }));
 };
 
 export const action = async ({ request }: Route.ActionArgs) => {

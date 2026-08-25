@@ -48,7 +48,9 @@ export const action = async ({ request }: Route.ActionArgs) => {
 
   if (form.get("intent") === "resend") {
     const code = await issueCode(user.id);
-    await sendConfirmCode({ to: user.email, code, expiresInMinutes: CODE_TTL_MINUTES });
+    await notify(() =>
+      sendConfirmCode({ to: user.email, code, expiresInMinutes: CODE_TTL_MINUTES }),
+    );
 
     return { sent: true };
   }
