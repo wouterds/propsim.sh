@@ -6,6 +6,8 @@ export default [
     route("plans", "routes/plans.tsx"),
     route("rules", "routes/rules.tsx"),
     route("faq", "routes/faq.tsx"),
+    // The form is a child, so it opens over the board rather than in place of it.
+    route("features", "routes/features.tsx", [route("new", "routes/feature-new.tsx")]),
     route("red-folder-events", "routes/red-folder-events.tsx"),
     route("contact", "routes/contact.tsx"),
     route("privacy", "routes/privacy.tsx"),
