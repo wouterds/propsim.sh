@@ -5,23 +5,23 @@ const NOW = new Date("2026-08-25T12:00:00Z");
 const daysAgo = (days: number) => new Date(NOW.getTime() - days * 24 * 60 * 60 * 1000);
 
 describe("stageOf", () => {
-  it("should leave an account alone until the first month is up", () => {
+  it("should leave an account alone for its first three months", () => {
     // given a day either side of the boundary
     // then
-    expect(stageOf(daysAgo(29), NOW)).toBe("active");
-    expect(stageOf(daysAgo(30), NOW)).toBe("warn");
+    expect(stageOf(daysAgo(89), NOW)).toBe("active");
+    expect(stageOf(daysAgo(90), NOW)).toBe("warn");
   });
 
-  it("should hold the first notice until the second month is up", () => {
+  it("should hold the first notice for a month", () => {
     // then
-    expect(stageOf(daysAgo(59), NOW)).toBe("warn");
-    expect(stageOf(daysAgo(60), NOW)).toBe("final");
+    expect(stageOf(daysAgo(119), NOW)).toBe("warn");
+    expect(stageOf(daysAgo(120), NOW)).toBe("final");
   });
 
-  it("should empty the account once the third month is up", () => {
+  it("should empty the account a month after the last notice", () => {
     // then
-    expect(stageOf(daysAgo(89), NOW)).toBe("final");
-    expect(stageOf(daysAgo(90), NOW)).toBe("scrub");
+    expect(stageOf(daysAgo(149), NOW)).toBe("final");
+    expect(stageOf(daysAgo(150), NOW)).toBe("scrub");
   });
 
   it("should not read a clock skewed into the future as a dormant account", () => {
@@ -33,13 +33,14 @@ describe("stageOf", () => {
 
 describe("daysLeft", () => {
   it("should count down to the day the account is emptied", () => {
+    // given the two days a notice goes out on
     // then
-    expect(daysLeft(daysAgo(30), NOW)).toBe(60);
-    expect(daysLeft(daysAgo(60), NOW)).toBe(30);
+    expect(daysLeft(daysAgo(90), NOW)).toBe(60);
+    expect(daysLeft(daysAgo(120), NOW)).toBe(30);
   });
 
   it("should never promise time an account has already used up", () => {
     // then
-    expect(daysLeft(daysAgo(120), NOW)).toBe(0);
+    expect(daysLeft(daysAgo(200), NOW)).toBe(0);
   });
 });

@@ -1,11 +1,11 @@
 /** Nobody has signed in for this long, so the first notice goes out. */
-export const WARN_AFTER_DAYS = 30;
+export const WARN_AFTER_DAYS = 90;
 
 /** Still nothing, and the account has a month left. */
-export const FINAL_AFTER_DAYS = 60;
+export const FINAL_AFTER_DAYS = 120;
 
 /** The account is emptied. */
-export const SCRUB_AFTER_DAYS = 90;
+export const SCRUB_AFTER_DAYS = 150;
 
 export type Stage = "active" | "warn" | "final" | "scrub";
 
