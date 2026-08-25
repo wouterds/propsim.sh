@@ -1,5 +1,5 @@
 import type { VoteSubject } from "@propsim/database";
-import { featureComments, featureRequests, featureVotes, getDb } from "@propsim/database";
+import { featureComments, featureRequests, featureVotes, getDb, users } from "@propsim/database";
 import { personaOf } from "@propsim/identity";
 import { and, asc, desc, eq } from "drizzle-orm";
 import type { MySqlColumn } from "drizzle-orm/mysql-core";
@@ -51,9 +51,11 @@ export const findFeature = async (id: string, userId: string | null) => {
       description: featureRequests.description,
       userId: featureRequests.userId,
       createdAt: featureRequests.createdAt,
+      username: users.username,
       votes: votesOn("request", featureRequests.id),
     })
     .from(featureRequests)
+    .innerJoin(users, eq(users.id, featureRequests.userId))
     .where(eq(featureRequests.id, id))
     .limit(1);
 
@@ -67,7 +69,7 @@ export const findFeature = async (id: string, userId: string | null) => {
     id: row.id,
     title: row.title,
     description: row.description,
-    author: personaOf(row.userId),
+    author: personaOf(row.userId, row.username),
     since: formatAgo(row.createdAt, new Date()),
     votes: row.votes,
     voted: mine.has(row.id),
@@ -88,9 +90,11 @@ export const listComments = async (featureId: string, userId: string | null) => 
       userId: featureComments.userId,
       body: featureComments.body,
       createdAt: featureComments.createdAt,
+      username: users.username,
       votes: votesOn("comment", featureComments.id),
     })
     .from(featureComments)
+    .innerJoin(users, eq(users.id, featureComments.userId))
     .where(eq(featureComments.featureId, featureId))
     .orderBy(asc(featureComments.createdAt));
 
@@ -99,7 +103,7 @@ export const listComments = async (featureId: string, userId: string | null) => 
   const said = (row: (typeof rows)[number]) => ({
     id: row.id,
     body: row.body,
-    author: personaOf(row.userId),
+    author: personaOf(row.userId, row.username),
     since: formatAgo(row.createdAt, now),
   });
 
