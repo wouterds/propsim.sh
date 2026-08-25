@@ -10,8 +10,6 @@ import {
 } from "react-router";
 import type { Route } from "./+types/root";
 
-// Wraps both the app and the error boundary, so a thrown error still renders
-// inside a real document with the stylesheet attached.
 export const Layout = ({ children }: { children: React.ReactNode }) => (
   <html lang="en">
     <head>

@@ -22,7 +22,6 @@ export type ChartTheme = Record<ChartTone, string> & {
 const readToken = (name: string) =>
   getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
-/** The only place a colour is read out of CSS. Keeps the canvas and the utilities on one source. */
 export const readChartTheme = (): ChartTheme => ({
   base: readToken("--color-base"),
   sunken: readToken("--color-sunken"),

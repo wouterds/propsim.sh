@@ -15,8 +15,6 @@ export type Account = {
   daysTraded: number;
 };
 
-// The one account. The dashboard, the nav and the terminal all read it, so a
-// number changed here moves all three.
 export const ACCOUNT: Account = {
   id: "MNQ-25K-EVAL",
   name: "Evaluation, 25K",
@@ -39,8 +37,6 @@ export const dailyFloorOf = (account: Account) =>
 // The hard floor is measured from peak equity and only rises.
 export const trailingFloorOf = (account: Account) => account.peakEquity - account.trailingDrawdown;
 
-// Shared so the landing card and the dashboard cannot show different tones for
-// the same floor.
 export const roomLeftOf = (equity: number, floor: number, limit: number) =>
   Math.min(1, Math.max(0, (equity - floor) / limit));
 

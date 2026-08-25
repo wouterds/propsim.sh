@@ -9,8 +9,6 @@ const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // There is no auth behind this. The form is here so the shape of the product
-  // is right, and the door opens for whatever gets typed into it.
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     navigate(href("/dashboard"));

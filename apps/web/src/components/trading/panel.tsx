@@ -16,8 +16,7 @@ const Panel = ({ title, actions, className, bodyClassName, children }: Props) =>
       <header
         className={cn(
           "flex h-9 shrink-0 items-center gap-3 border-line border-b px-3",
-          // Without a title the actions ARE the header, so they sit where the
-          // title would have rather than being pushed to the far edge.
+          // Untitled panels put their actions where the title would sit.
           title && "justify-between",
           LABEL,
         )}

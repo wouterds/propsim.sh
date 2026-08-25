@@ -13,10 +13,8 @@ const nextId = () => {
 };
 
 /**
- * The blotter, in memory. Nothing is sent anywhere and nothing survives a reload.
- *
- * `last` is null while the feed is down. Writes are refused rather than marked to
- * a stand-in price, because closing banks that price into `realised` for good.
+ * In memory only. `last` is null while the feed is down, and writes are refused
+ * rather than marked to a stand-in, because closing banks that price for good.
  */
 export const usePaperTrading = (last: number | null) => {
   const [state, dispatch] = useReducer(reduceTrading, INITIAL_STATE);
@@ -47,8 +45,6 @@ export const usePaperTrading = (last: number | null) => {
     return state.positions.reduce((total, position) => total + unrealisedPnl(position, last), 0);
   }, [state.positions, last]);
 
-  // Balance is settled and always known. Equity adds the floating part, so it is
-  // unknown while the price is.
   const balance = ACCOUNT.balance + state.realised;
 
   return {

@@ -18,7 +18,6 @@ COPY --from=turbo /code/out/package-lock.json ./package-lock.json
 # needs a .git directory the image does not have.
 RUN npm ci --ignore-scripts
 
-# A branch off deps, so the tree is resolved once.
 FROM deps AS prod-deps
 
 RUN npm prune --workspaces --include-workspace-root --omit=dev
@@ -38,7 +37,6 @@ COPY --chown=node:node --from=prod-deps /code/node_modules /code/node_modules
 COPY --chown=node:node --from=prod-deps /code/apps/web/package.json ./package.json
 COPY --chown=node:node --from=build /code/apps/web/build ./build
 
-# Unread by the app. Lets a running container name its commit.
 ARG COMMIT_SHA
 ENV COMMIT_SHA=$COMMIT_SHA
 ENV PORT=3000

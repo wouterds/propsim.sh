@@ -1,8 +1,6 @@
 import { formatMoney } from "./format";
 import { notionalOf, type OrderDraft, rewardOf, riskOf, rrRatio } from "./trading-state";
 
-// An unset value takes the faint dash rather than the tone: red and green are
-// reserved for a loss and a profit, and "not set" is neither.
 const Row = ({ label, value, tone }: { label: string; value: string | null; tone?: string }) => (
   <div className="flex items-baseline justify-between">
     <span className="text-[11px] text-faint uppercase tracking-wider">{label}</span>

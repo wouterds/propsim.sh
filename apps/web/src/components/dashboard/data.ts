@@ -19,8 +19,6 @@ export type Rule = {
   state: Verdict;
 };
 
-// A replay does not move the balance, so only the live rows sum to the account's
-// net profit and loss. Change one of them and the header stops adding up.
 export const SESSIONS: Session[] = [
   {
     id: "2026-08-25",

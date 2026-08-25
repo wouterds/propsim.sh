@@ -40,7 +40,6 @@
   --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
 }
 
-/* Keeps the browser's own scrollbars and form chrome dark. */
 html {
   @apply bg-base text-ink antialiased;
   color-scheme: dark;

@@ -3,9 +3,6 @@ import { ACCOUNT, dailyFloorOf, floorToneOf, roomLeftOf, trailingFloorOf } from 
 import { FLOOR_BAR, FLOOR_TEXT, formatMoney, formatSigned, TONE_TEXT, toneOf } from "~/lib/format";
 import { cn } from "~/lib/utils";
 
-// Derived from the same account the dashboard renders, tone included, so the
-// card on the landing page cannot advertise a balance or a colour the product
-// no longer has.
 const floorFrom = (label: string, floor: number, limit: number) => {
   const room = ACCOUNT.balance - floor;
   const left = roomLeftOf(ACCOUNT.balance, floor, limit);

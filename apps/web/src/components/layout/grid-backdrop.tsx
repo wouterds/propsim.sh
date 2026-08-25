@@ -4,9 +4,6 @@ type Props = {
   className?: string;
 };
 
-// Purely decorative, so it sits behind everything and is hidden from the tree.
-// The lines are drawn from --color-line rather than a literal, so the backdrop
-// moves with the palette instead of drifting away from it.
 const GridBackdrop = ({ className }: Props) => (
   <div aria-hidden="true" className={cn("pointer-events-none absolute inset-0", className)}>
     <div className="absolute inset-0 [background-image:linear-gradient(to_right,var(--color-line)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-line)_1px,transparent_1px)] [background-size:56px_56px] opacity-60 [mask-image:radial-gradient(80%_60%_at_50%_0%,black,transparent)]" />

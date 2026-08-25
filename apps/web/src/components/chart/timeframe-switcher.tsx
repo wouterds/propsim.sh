@@ -3,10 +3,7 @@ import { TIMEFRAMES, type Timeframe } from "~/components/trading/mnq";
 import { FOCUS_RING } from "~/components/trading/styles";
 import { cn } from "~/lib/utils";
 
-/**
- * Links rather than buttons: the timeframe is the loader's input, so it belongs
- * in the URL where a reload and a shared link both land on the same chart.
- */
+/** Links, not buttons. The timeframe is the loader's input, so it lives in the URL. */
 const TimeframeSwitcher = ({ value }: { value: Timeframe }) => {
   const navigation = useNavigation();
   const pending = navigation.location

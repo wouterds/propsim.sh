@@ -6,7 +6,6 @@ export const TONE_TEXT: Record<Tone, string> = {
   neutral: "text-ink",
 };
 
-/** A floor has a third state the P&L tones do not: running low, but not cut. */
 export type FloorTone = "up" | "warn" | "down";
 
 export const FLOOR_TEXT: Record<FloorTone, string> = {

@@ -71,7 +71,6 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
       return lines;
     });
 
-    // Working orders are drawn even though nothing here fills them.
     const restingLines = book.orders
       .filter((order) => order.status === "working")
       .map<ChartPriceLine>((order) => ({

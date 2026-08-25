@@ -11,8 +11,6 @@ const SignupForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // Nothing is created and nothing is stored. The form exists so the shape of
-  // the product is right, and the door opens for whatever gets typed into it.
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     navigate(href("/dashboard"));

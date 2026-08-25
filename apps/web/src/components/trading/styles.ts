@@ -4,7 +4,6 @@ import { cn } from "~/lib/utils";
 // box-shadow, and only the former leaves an outline to repaint.
 export const FOCUS_RING = "outline-hidden focus-visible:ring-1 focus-visible:ring-accent";
 
-// Without this a disabled field looks editable and its placeholder reads as a value.
 export const FIELD = cn(
   "h-8 w-full rounded border border-line bg-sunken px-2 text-ink text-sm tabular",
   "placeholder:text-faint focus-visible:border-accent",

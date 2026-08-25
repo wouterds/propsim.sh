@@ -18,9 +18,8 @@ type Row = {
   volume: number | null;
 };
 
-// A coherent bar around a close, so each case shows only the value it varies.
-// Volume is derived from the close so a row's own volume is distinguishable
-// from its neighbour's.
+// A coherent bar around a close, so each case varies one value. Volume is
+// derived from the close so rows stay distinguishable.
 const solid = (time: number, close: number): Row => ({
   time,
   open: close - 1,

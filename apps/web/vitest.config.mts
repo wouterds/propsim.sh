@@ -5,8 +5,6 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["src/**/*.spec.{ts,tsx}"],
-    // A workspace with nothing worth testing is not a red run. What earns a
-    // test is a judgement here, not a quota.
     passWithNoTests: true,
     env: { TZ: "UTC" },
   },

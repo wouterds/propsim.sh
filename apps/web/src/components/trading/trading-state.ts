@@ -33,7 +33,6 @@ export type Position = {
   takeProfit: number | null;
 };
 
-/** A long gains what a short loses, so every leg is the same maths mirrored. */
 const direction = (side: Side) => (side === "buy" ? 1 : -1);
 
 const opposite = (side: Side): Side => (side === "buy" ? "sell" : "buy");
@@ -74,7 +73,6 @@ export const notionalOf = (quantity: number, price: number | null) => {
   return quantity * price * POINT_VALUE;
 };
 
-/** A market order takes the tape, everything else rests at the price asked for. */
 export const fillPriceFor = (draft: OrderDraft, last: number) => {
   if (draft.type === "market") return last;
 
