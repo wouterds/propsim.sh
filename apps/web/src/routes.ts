@@ -9,6 +9,9 @@ export default [
   ]),
 
   route("auth", "routes/auth.tsx"),
+  route("forgot", "routes/forgot.tsx"),
+  route("reset", "routes/reset.tsx"),
+  route("email", "routes/email.tsx"),
   route("verify", "routes/verify.tsx"),
   route("logout", "routes/logout.tsx"),
 

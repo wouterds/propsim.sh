@@ -1,14 +1,27 @@
-import { Form, useNavigation } from "react-router";
+import { sendConfirmNewEmail, sendEmailChanging, sendPasswordChanged } from "@propsim/mail";
+import { data, Form, useNavigation } from "react-router";
+import Field from "~/components/settings/field";
+import Notice from "~/components/settings/notice";
 import Section from "~/components/settings/section";
 import SessionList, { type SessionRow } from "~/components/settings/session-list";
-import { endSession, requireSession } from "~/lib/auth.server";
+import { endSession, requireSession, rotateSession } from "~/lib/auth.server";
 import { describeDevice } from "~/lib/device";
+import { EMAIL_CHANGE_TTL_MINUTES, issueEmailChange } from "~/lib/email-changes.server";
 import { countryOf, formatDate, formatRelative } from "~/lib/format";
+import { notify } from "~/lib/notify.server";
+import { hashPassword, verifyPassword } from "~/lib/password.server";
 import { listSessions, revokeOtherSessions, revokeSession } from "~/lib/sessions.server";
-import { findUserById } from "~/lib/users.server";
+import { findUserByEmail, findUserById, updatePassword } from "~/lib/users.server";
+import { MIN_PASSWORD } from "~/lib/verification";
 import type { Route } from "./+types/settings";
 
 export const meta: Route.MetaFunction = () => [{ title: "Settings, propsim.sh" }];
+
+const BUTTON =
+  "inline-flex h-9 items-center rounded bg-accent px-4 font-medium text-sm text-sunken transition-colors hover:bg-accent/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent disabled:opacity-60";
+
+const QUIET =
+  "inline-flex h-9 items-center rounded border border-line px-4 text-muted text-sm transition-colors hover:border-line-strong hover:text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent disabled:opacity-60";
 
 const asRow = (
   row: Awaited<ReturnType<typeof listSessions>>[number],
@@ -44,26 +57,92 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
 
 export const action = async ({ request }: Route.ActionArgs) => {
   const session = await requireSession(request);
-  const form = await request.formData();
+  const user = await findUserById(session.userId);
 
-  if (form.get("intent") === "revoke-others") {
+  if (!user) {
+    throw await endSession(request);
+  }
+
+  const form = await request.formData();
+  const intent = form.get("intent");
+
+  if (intent === "password") {
+    const current = String(form.get("current") ?? "");
+    const next = String(form.get("password") ?? "");
+
+    if (!(await verifyPassword(current, user.password))) {
+      return { done: null, error: "That is not your current password." };
+    }
+
+    if (next.length < MIN_PASSWORD) {
+      return { done: null, error: `Use at least ${MIN_PASSWORD} characters.` };
+    }
+
+    await updatePassword(user.id, await hashPassword(next));
+    await revokeOtherSessions(user.id, session.id, "password_change");
+    await notify(() => sendPasswordChanged({ to: user.email }));
+
+    // The tab doing this stays signed in, on a new token. Everything handed out
+    // before the password changed is now dead.
+    const cookie = await rotateSession(request, session, "password_change");
+
+    return data(
+      { done: "Your password was changed and every other device was signed out.", error: null },
+      { headers: { "Set-Cookie": cookie } },
+    );
+  }
+
+  if (intent === "email") {
+    const email = String(form.get("email") ?? "")
+      .trim()
+      .toLowerCase();
+    const current = String(form.get("current") ?? "");
+
+    if (!(await verifyPassword(current, user.password))) {
+      return { done: null, error: "That is not your current password." };
+    }
+
+    if (!email || email === user.email) {
+      return { done: null, error: "That is already the address on this account." };
+    }
+
+    // Silent when the address belongs to somebody else, or this form would say
+    // which addresses are registered.
+    if (!(await findUserByEmail(email))) {
+      const token = await issueEmailChange(user.id, email);
+
+      // Same reasoning as the reset form: answering differently would say
+      // whether the address already belongs to somebody.
+      await notify(() =>
+        sendConfirmNewEmail({ to: email, token, expiresInMinutes: EMAIL_CHANGE_TTL_MINUTES }),
+      );
+      await notify(() => sendEmailChanging({ to: user.email, email }));
+    }
+
+    return {
+      done: `If ${email} can receive mail, a link to confirm it is on the way.`,
+      error: null,
+    };
+  }
+
+  if (intent === "revoke-others") {
     await revokeOtherSessions(session.userId, session.id, "revoked");
 
-    return { done: "Signed out everywhere else." };
+    return { done: "Signed out everywhere else.", error: null };
   }
 
   const id = String(form.get("session") ?? "");
 
   if (!id || id === session.id) {
-    return { error: "Use log out to close this device." };
+    return { done: null, error: "Use log out to close this device." };
   }
 
   await revokeSession(session.userId, id, "revoked");
 
-  return { done: "Signed out of that device." };
+  return { done: "Signed out of that device.", error: null };
 };
 
-const Account = ({ loaderData, actionData }: Route.ComponentProps) => {
+const Settings = ({ loaderData, actionData }: Route.ComponentProps) => {
   const navigation = useNavigation();
   const busy = navigation.state !== "idle";
   const { email, sessions } = loaderData;
@@ -75,34 +154,66 @@ const Account = ({ loaderData, actionData }: Route.ComponentProps) => {
       <p className="mt-1 text-faint text-xs">{email}</p>
 
       <div className="mt-6 grid gap-3">
+        <Notice done={actionData?.done} error={actionData?.error} />
+
+        <Section
+          title="Email address"
+          description="The account keeps this address until the new one confirms. Both are told."
+        >
+          <Form method="post" className="grid gap-4 sm:grid-cols-2">
+            <input type="hidden" name="intent" value="email" />
+            <Field name="email" label="New address" type="email" autoComplete="email" />
+            <Field
+              name="current"
+              label="Current password"
+              type="password"
+              autoComplete="current-password"
+            />
+            <div className="sm:col-span-2">
+              <button type="submit" disabled={busy} className={BUTTON}>
+                {busy ? "One moment" : "Send the confirmation"}
+              </button>
+            </div>
+          </Form>
+        </Section>
+
+        <Section
+          title="Password"
+          description="Changing it signs out every other device. This one stays signed in."
+        >
+          <Form method="post" className="grid gap-4 sm:grid-cols-2">
+            <input type="hidden" name="intent" value="password" />
+            <Field
+              name="current"
+              label="Current password"
+              type="password"
+              autoComplete="current-password"
+            />
+            <Field
+              name="password"
+              label="New password"
+              type="password"
+              autoComplete="new-password"
+              minLength={MIN_PASSWORD}
+            />
+            <div className="sm:col-span-2">
+              <button type="submit" disabled={busy} className={BUTTON}>
+                {busy ? "One moment" : "Change the password"}
+              </button>
+            </div>
+          </Form>
+        </Section>
+
         <Section
           title="Where you are signed in"
           description="A place is worked out from the network the device is on, so it can name the wrong city and the right country."
         >
-          {actionData?.done && (
-            <p className="mb-3 rounded border border-up/40 bg-up/10 px-3 py-2 text-sm text-up">
-              {actionData.done}
-            </p>
-          )}
-          {actionData?.error && (
-            <p
-              role="alert"
-              className="mb-3 rounded border border-down/40 bg-down/10 px-3 py-2 text-down text-sm"
-            >
-              {actionData.error}
-            </p>
-          )}
-
           <SessionList sessions={sessions} busy={busy} />
 
           {others > 0 && (
             <Form method="post" className="mt-4 border-line/60 border-t pt-4">
               <input type="hidden" name="intent" value="revoke-others" />
-              <button
-                type="submit"
-                disabled={busy}
-                className="inline-flex h-9 items-center rounded border border-line px-4 text-muted text-sm transition-colors hover:border-line-strong hover:text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent disabled:opacity-60"
-              >
+              <button type="submit" disabled={busy} className={QUIET}>
                 {busy ? "One moment" : `Sign out everywhere else (${others})`}
               </button>
             </Form>
@@ -113,4 +224,4 @@ const Account = ({ loaderData, actionData }: Route.ComponentProps) => {
   );
 };
 
-export default Account;
+export default Settings;

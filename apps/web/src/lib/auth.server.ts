@@ -1,7 +1,13 @@
 import type { Session } from "@propsim/database";
 import { createCookieSessionStorage, redirect } from "react-router";
 import { asPage, safeReturn } from "./redirect.server";
-import { findSession, openSession, revokeSession, touchSession } from "./sessions.server";
+import {
+  findSession,
+  openSession,
+  type RevokeReason,
+  revokeSession,
+  touchSession,
+} from "./sessions.server";
 
 const DAYS = 30;
 
@@ -90,6 +96,19 @@ export const startPending = async (userId: string, to: string | null) => {
   return redirect(`/verify${back}`, {
     headers: { "Set-Cookie": await sessions().commitSession(session) },
   });
+};
+
+/**
+ * A new token for the same person, and the old one closed. Anything that proves
+ * the account again has to leave nothing behind that was handed out before it.
+ */
+export const rotateSession = async (request: Request, current: Session, reason: RevokeReason) => {
+  await revokeSession(current.userId, current.id, reason);
+
+  const session = await sessions().getSession();
+  session.set("token", await openSession(request, current.userId));
+
+  return sessions().commitSession(session);
 };
 
 // The row is closed as well as the cookie, or the token would still open the
