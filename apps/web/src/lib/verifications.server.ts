@@ -1,4 +1,4 @@
-import { db, emailVerifications } from "@propsim/database";
+import { emailVerifications, getDb } from "@propsim/database";
 import { eq } from "drizzle-orm";
 import { MAX_ATTEMPTS } from "./verification";
 import { codeMatches, expiresAt, generateCode, hashCode } from "./verification.server";
@@ -11,7 +11,7 @@ export const issueCode = async (userId: string) => {
   const code = generateCode();
   const row = { userId, hash: hashCode(code), expiresAt: expiresAt(), attempts: 0 };
 
-  await db
+  await getDb()
     .insert(emailVerifications)
     .values(row)
     .onDuplicateKeyUpdate({ set: { hash: row.hash, expiresAt: row.expiresAt, attempts: 0 } });
@@ -20,7 +20,7 @@ export const issueCode = async (userId: string) => {
 };
 
 export const checkCode = async (userId: string, code: string): Promise<CheckResult> => {
-  const [row] = await db
+  const [row] = await getDb()
     .select()
     .from(emailVerifications)
     .where(eq(emailVerifications.userId, userId))
@@ -40,7 +40,7 @@ export const checkCode = async (userId: string, code: string): Promise<CheckResu
 
   if (!codeMatches(code, row.hash)) {
     // Counted before the answer is returned, or a guess costs nothing.
-    await db
+    await getDb()
       .update(emailVerifications)
       .set({ attempts: row.attempts + 1 })
       .where(eq(emailVerifications.id, row.id));
@@ -48,7 +48,7 @@ export const checkCode = async (userId: string, code: string): Promise<CheckResu
     return "wrong";
   }
 
-  await db
+  await getDb()
     .update(emailVerifications)
     .set({ consumedAt: new Date() })
     .where(eq(emailVerifications.id, row.id));
