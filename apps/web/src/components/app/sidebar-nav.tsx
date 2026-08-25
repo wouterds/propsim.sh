@@ -19,7 +19,9 @@ const ITEM = "flex h-8 items-center gap-2 rounded px-2.5 text-sm transition-colo
 // active row carries.
 const HOVER = "hover:bg-overlay hover:text-ink";
 
-const ACTIVE = "bg-accent/15 text-accent";
+// Grey, and a step past the hover rather than a colour: the row you are on is
+// the one that is lit, not the one that is blue.
+const ACTIVE = "bg-line text-ink";
 
 const DOT: Record<string, string> = {
   up: "bg-up",
@@ -72,7 +74,7 @@ const SidebarNav = ({ accounts, email, onNavigate }: Props) => (
                   cn(
                     "flex items-center gap-2 rounded border-l-2 px-2.5 py-2 transition-colors",
                     FOCUS,
-                    isActive ? "border-accent bg-accent/15" : cn("border-transparent", HOVER),
+                    isActive ? "border-line-strong bg-line" : cn("border-transparent", HOVER),
                   )
                 }
               >
