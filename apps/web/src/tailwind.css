@@ -55,6 +55,20 @@ body {
   @apply text-sm;
 }
 
+/* Tailwind 4 dropped the pointer from its button reset, so every button in the
+   app looked inert. */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+label:has(> input[type="checkbox"]),
+summary {
+  cursor: pointer;
+}
+
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
 /* Prices redraw on every state change, so the digits are fixed-width to stop
    the blotter from reflowing as a value moves between "9" and "1". */
 .tabular {

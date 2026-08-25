@@ -3,7 +3,7 @@ import { cn } from "~/lib/utils";
 import type { AuthMode } from "./mode";
 
 const TAB =
-  "flex-1 rounded py-1.5 text-center text-muted text-sm transition-colors hover:text-ink data-[selected]:bg-accent data-[selected]:font-medium data-[selected]:text-sunken focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent";
+  "flex-1 rounded py-1.5 text-center text-muted text-sm transition-colors hover:text-ink data-[active]:bg-accent data-[active]:font-medium data-[active]:text-sunken focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent";
 
 type Props = {
   mode: AuthMode;

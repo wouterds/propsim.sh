@@ -32,7 +32,7 @@ const Blotter = ({ positions, orders, last, className, onClose, onCancel }: Prop
           value={name}
           className={cn(
             "rounded px-2 py-1 text-[11px] text-muted uppercase tracking-wider transition-colors hover:text-ink",
-            "data-[selected]:bg-accent/15 data-[selected]:text-accent",
+            "data-[active]:bg-accent/15 data-[active]:text-accent",
             FOCUS_RING,
           )}
         >
