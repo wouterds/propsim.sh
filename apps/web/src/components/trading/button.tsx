@@ -6,8 +6,8 @@ type Variant = "primary" | "buy" | "sell" | "ghost" | "danger";
 
 const VARIANTS: Record<Variant, string> = {
   primary: "bg-accent-strong text-ink hover:bg-accent-strong/85",
-  buy: "bg-up text-sunken hover:bg-up/85",
-  sell: "bg-down text-sunken hover:bg-down/85",
+  buy: "bg-up-strong text-ink hover:bg-up-strong/85",
+  sell: "bg-down-strong text-ink hover:bg-down-strong/85",
   ghost: "border border-line text-muted hover:border-line-strong hover:text-ink",
   danger: "border border-down/40 text-down hover:bg-down/10",
 };

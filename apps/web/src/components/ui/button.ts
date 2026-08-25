@@ -12,7 +12,7 @@ export const PRIMARY_SM = `${BASE} h-9 bg-accent-strong px-4 text-ink hover:bg-a
 export const SECONDARY_SM = `${BASE} h-9 border border-line px-4 text-muted hover:border-line-strong hover:bg-overlay hover:text-ink`;
 
 /** The one thing on the page that cannot be undone. */
-export const DANGER = `${BASE} h-9 bg-down px-4 text-sunken hover:bg-down/85`;
+export const DANGER = `${BASE} h-9 bg-down-strong px-4 text-ink hover:bg-down-strong/85`;
 
 /** What opens the confirmation, rather than what carries it out. */
 export const DANGER_SM = `${BASE} h-9 border border-down/40 px-4 text-down hover:bg-down/10`;

@@ -203,7 +203,7 @@ const TradePanel = ({ last, tick, point, onSubmit }: Props) => {
         block
         variant={draft.side === "buy" ? "buy" : "sell"}
         disabled={stale || incomplete}
-        className="h-9 uppercase tracking-wider"
+        className="h-9 text-sm capitalize"
       >
         {`${draft.side} ${draft.quantity} ${TYPE_LABELS[draft.type]} @ ${entryLabel}`}
       </Button>

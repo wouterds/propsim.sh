@@ -33,6 +33,12 @@
      small text on a dark ground. */
   --color-up: #14b8a6;
   --color-down: #f43f5e;
+
+  /* teal-700 and rose-700, the fills a button carries. Light text needs them:
+     white on the two above sits at 2.4:1 and 3.5:1, and on these at 5.3:1 and
+     6.3:1. The bright pair stays for text, dots and candles. */
+  --color-up-strong: #0f766e;
+  --color-down-strong: #be123c;
   --color-accent: #3b82f6;
   /* blue-600, the fill a primary button carries. Deeper than the accent, so a
      button reads as the one thing to press rather than as another tinted row,

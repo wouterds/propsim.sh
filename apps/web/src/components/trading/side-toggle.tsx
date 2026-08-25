@@ -5,8 +5,8 @@ import { FOCUS_RING } from "./styles";
 import type { Side } from "./trading-state";
 
 const ACTIVE: Record<Side, string> = {
-  buy: "data-[pressed]:bg-up data-[pressed]:text-sunken",
-  sell: "data-[pressed]:bg-down data-[pressed]:text-sunken",
+  buy: "data-[pressed]:bg-up-strong data-[pressed]:text-ink",
+  sell: "data-[pressed]:bg-down-strong data-[pressed]:text-ink",
 };
 
 const SideToggle = ({ value, onChange }: { value: Side; onChange: (side: Side) => void }) => (
@@ -27,7 +27,7 @@ const SideToggle = ({ value, onChange }: { value: Side; onChange: (side: Side) =
         key={side}
         value={side}
         className={cn(
-          "h-9 rounded border border-line font-semibold text-muted text-xs uppercase tracking-wider transition-colors hover:text-ink",
+          "h-9 rounded border border-line font-semibold text-muted text-sm capitalize transition-colors hover:text-ink",
           "data-[pressed]:border-transparent",
           ACTIVE[side],
           FOCUS_RING,
