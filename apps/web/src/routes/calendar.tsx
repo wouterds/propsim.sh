@@ -1,11 +1,10 @@
 import { getNewsEvents, isRedFolder } from "@propsim/datasources";
-import Badge from "~/components/ui/badge";
 import { AFTER_MINUTES, BEFORE_MINUTES } from "~/lib/blackout";
 import { formatCountdown, formatDay, formatRelative } from "~/lib/format";
 import type { Route } from "./+types/calendar";
 
 export const meta: Route.MetaFunction = () => [
-  { title: "Calendar, propsim.sh" },
+  { title: "Red folder events, propsim.sh" },
   {
     name: "description",
     content:
@@ -87,16 +86,15 @@ const Calendar = ({ loaderData }: Route.ComponentProps) => (
     <div className="mx-auto max-w-6xl px-5 py-20 sm:px-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="max-w-2xl">
-          <h1 className="font-semibold text-4xl text-ink leading-[1.1] tracking-tight">Calendar</h1>
+          <h1 className="font-semibold text-4xl text-ink leading-[1.1] tracking-tight">
+            Red folder events
+          </h1>
           <p className="mt-6 text-muted leading-relaxed">
             Every high impact US release on this week's calendar. You have to be flat from{" "}
             {BEFORE_MINUTES} minute before one through {AFTER_MINUTES} minute after it, and on a
             daily payout account being caught inside that window ends the account.
           </p>
         </div>
-        <Badge tone="down" dot>
-          Red folder
-        </Badge>
       </div>
 
       <div className="mt-10 grid gap-3">

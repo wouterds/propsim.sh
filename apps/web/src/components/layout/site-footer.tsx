@@ -15,7 +15,7 @@ const COLUMNS = [
     title: "Learn",
     links: [
       { to: href("/rules"), label: "Rules" },
-      { to: href("/calendar"), label: "Calendar" },
+      { to: href("/calendar"), label: "Red folder" },
       { to: href("/faq"), label: "FAQ" },
       { to: href("/contact"), label: "Contact" },
     ],
