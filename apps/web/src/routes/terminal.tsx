@@ -142,7 +142,6 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
         <NewsBanner titles={blackout.titles} endsIn={Math.ceil((blackout.to - now) / 1000)} />
       )}
       <AccountStrip
-        account={account.name}
         balance={book.balance}
         equity={book.equity}
         realised={book.realised}
