@@ -13,3 +13,6 @@ build/
 .claude/*
 !.claude/settings.json
 !.claude/skills
+
+# Markdown notes and reports stay local
+*.md
