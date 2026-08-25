@@ -1,28 +1,15 @@
 import { href, Link } from "react-router";
 import Brand from "~/components/layout/brand";
 
-const COLUMNS = [
-  {
-    title: "Product",
-    links: [
-      { to: href("/trading"), label: "Terminal" },
-      { to: href("/dash"), label: "Dashboard" },
-      { to: href("/auth"), label: "Log in" },
-    ],
-  },
-  {
-    title: "Instrument",
-    links: [
-      { to: href("/trading"), label: "MNQ, Micro Nasdaq 100" },
-      { to: href("/trading"), label: "1m to 1h bars" },
-      { to: href("/trading"), label: "CME session hours" },
-    ],
-  },
+const LINKS = [
+  { to: href("/trading"), label: "Trading" },
+  { to: href("/dash"), label: "Dashboard" },
+  { to: href("/auth"), label: "Log in" },
 ];
 
 const SiteFooter = () => (
   <footer className="border-line/70 border-t">
-    <div className="mx-auto grid max-w-6xl gap-10 px-5 py-12 sm:px-8 md:grid-cols-[1.5fr_1fr_1fr]">
+    <div className="mx-auto flex max-w-6xl flex-col gap-6 px-5 py-12 sm:flex-row sm:items-start sm:justify-between sm:px-8">
       <div>
         <Brand className="text-[15px] text-ink" />
         <p className="mt-3 max-w-xs text-faint text-sm leading-relaxed">
@@ -31,23 +18,18 @@ const SiteFooter = () => (
         </p>
       </div>
 
-      {COLUMNS.map((column) => (
-        <div key={column.title}>
-          <p className="text-[11px] text-faint uppercase tracking-wider">{column.title}</p>
-          <ul className="mt-3 space-y-2 text-muted text-sm">
-            {column.links.map((link) => (
-              <li key={link.label}>
-                <Link
-                  to={link.to}
-                  className="rounded-sm transition-colors hover:text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
+      <ul className="flex flex-wrap gap-x-6 gap-y-2 text-muted text-sm">
+        {LINKS.map((link) => (
+          <li key={link.label}>
+            <Link
+              to={link.to}
+              className="rounded-sm transition-colors hover:text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
+            >
+              {link.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
     </div>
 
     <div className="border-line/70 border-t">
