@@ -10,7 +10,9 @@ export const FIELD = cn(
   "disabled:cursor-not-allowed disabled:border-line/50 disabled:bg-base disabled:text-muted",
 );
 
-export const LABEL = "text-[11px] text-faint uppercase tracking-wider";
+// Block with a fixed line box: the number field wraps its label in a scrub
+// area and the select does not, and without one they sit on different lines.
+export const LABEL = "block text-[11px] text-faint uppercase leading-4 tracking-wider";
 
 export const TH =
   "h-8 whitespace-nowrap px-3 text-left font-normal text-[11px] text-faint uppercase tracking-wider";

@@ -1,4 +1,5 @@
 import { NumberField as BaseNumberField } from "@base-ui/react/number-field";
+import { Minus, Plus } from "lucide-react";
 import { useId } from "react";
 import { cn } from "~/lib/utils";
 import { FIELD, FOCUS_RING, LABEL } from "./styles";
@@ -44,7 +45,7 @@ const NumberField = ({
       snapOnStep
       className="flex flex-col gap-1"
     >
-      <BaseNumberField.ScrubArea>
+      <BaseNumberField.ScrubArea className="block">
         <label className={LABEL} htmlFor={id}>
           <BaseNumberField.ScrubAreaCursor />
           {label}
@@ -54,7 +55,7 @@ const NumberField = ({
       <BaseNumberField.Group className="flex items-center gap-1">
         {steppers && (
           <BaseNumberField.Decrement className={STEPPER} aria-label={`decrease ${label}`}>
-            &minus;
+            <Minus aria-hidden="true" className="size-3.5" strokeWidth={1.5} />
           </BaseNumberField.Decrement>
         )}
         <BaseNumberField.Input
@@ -63,7 +64,7 @@ const NumberField = ({
         />
         {steppers && (
           <BaseNumberField.Increment className={STEPPER} aria-label={`increase ${label}`}>
-            +
+            <Plus aria-hidden="true" className="size-3.5" strokeWidth={1.5} />
           </BaseNumberField.Increment>
         )}
       </BaseNumberField.Group>
