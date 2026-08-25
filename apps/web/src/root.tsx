@@ -1,14 +1,19 @@
 import "./tailwind.css";
 
 import {
+  href,
   isRouteErrorResponse,
+  Link,
   Links,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
 } from "react-router";
+import Brand from "~/components/layout/brand";
+import GridBackdrop from "~/components/layout/grid-backdrop";
 import PageLoader from "~/components/layout/page-loader";
+import { PRIMARY_SM, SECONDARY_SM } from "~/components/ui/button";
 import type { Route } from "./+types/root";
 
 export const Layout = ({ children }: { children: React.ReactNode }) => (
@@ -39,17 +44,56 @@ const App = () => (
   </>
 );
 
+const COPY: Record<number, { title: string; body: string }> = {
+  404: {
+    title: "Nothing here",
+    body: "That address does not point at a page. It may have been renamed, or it may never have existed.",
+  },
+  500: {
+    title: "That broke",
+    body: "The page failed on the way out. Nothing you did caused it and nothing you were doing was lost.",
+  },
+};
+
 export const ErrorBoundary = ({ error }: Route.ErrorBoundaryProps) => {
-  const isResponse = isRouteErrorResponse(error);
-  const status = isResponse ? error.status : 500;
-  const detail = isResponse && status === 404 ? "Page not found" : "Something went wrong";
+  const status = isRouteErrorResponse(error) ? error.status : 500;
+  const copy = COPY[status] ?? COPY[500];
 
   return (
-    <main className="p-8 font-medium uppercase tracking-wider">
-      <p className="text-down">{`${status}. ${detail}.`}</p>
-      {import.meta.env.DEV && error instanceof Error && error.stack && (
-        <pre className="mt-4 overflow-x-auto text-faint text-xs normal-case">{error.stack}</pre>
-      )}
+    <main className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden px-5 py-16">
+      <GridBackdrop />
+
+      <div className="relative w-full max-w-md text-center">
+        <Link
+          to={href("/")}
+          className="mx-auto flex w-fit rounded-sm focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
+        >
+          <Brand className="text-[1rem] text-ink" />
+        </Link>
+
+        <p className="mt-10 font-semibold text-[5rem] text-line-strong leading-none tabular tracking-tight">
+          {status}
+        </p>
+
+        <h1 className="mt-4 font-semibold text-ink text-xl tracking-tight">{copy.title}</h1>
+        <p className="mt-3 text-muted text-sm leading-relaxed">{copy.body}</p>
+
+        <div className="mt-8 flex items-center justify-center gap-3">
+          <Link to={href("/")} className={PRIMARY_SM}>
+            Back to the site
+          </Link>
+          <Link to={href("/contact")} className={SECONDARY_SM}>
+            Tell us
+          </Link>
+        </div>
+
+        {import.meta.env.DEV && error instanceof Error && error.stack && (
+          <pre className="mt-10 overflow-x-auto rounded-lg border border-line bg-raised p-4 text-left text-faint text-xs">
+            {error.stack}
+          </pre>
+        )}
+      </div>
+
       <Scripts />
     </main>
   );
