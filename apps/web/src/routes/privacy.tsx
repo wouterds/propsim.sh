@@ -15,8 +15,8 @@ const SECTIONS = [
   {
     title: "Who answers for this",
     body: [
-      `${OPERATOR} is run from ${OPERATOR_COUNTRY} and is the controller of everything described here. Write to ${CONTACT_EMAIL} about anything on this page.`,
-      "Deleting the account needs no one's help: the settings page does it, and it takes effect the moment you confirm.",
+      `${OPERATOR} is run from ${OPERATOR_COUNTRY} and is the controller of everything described here. Write to ${CONTACT_EMAIL} about anything on this page, deleting your account included.`,
+      "That last one you can also do yourself, without asking: the settings page has a button for it, and it takes effect the moment you confirm.",
     ],
   },
   {
@@ -59,7 +59,7 @@ const SECTIONS = [
   {
     title: "What you can ask for",
     body: [
-      "Deletion needs nobody: the settings page has a button for it, and it takes effect the moment you confirm.",
+      "Deletion is the one you can do without asking: the settings page has a button for it, and it takes effect the moment you confirm.",
       `For a copy of what is held, a correction, or an objection to any of it, email ${CONTACT_EMAIL} and it is done by hand, without a form to fill in. If the answer is unsatisfactory you can complain to the data protection authority where you live.`,
     ],
   },
