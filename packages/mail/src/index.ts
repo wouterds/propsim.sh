@@ -6,6 +6,7 @@ import { ConfirmCode } from "./emails/confirm-code";
 import { ConfirmNewEmail } from "./emails/confirm-new-email";
 import { ContactMessage } from "./emails/contact-message";
 import { EmailChanging } from "./emails/email-changing";
+import { Inactivity } from "./emails/inactivity";
 import { NewDevice } from "./emails/new-device";
 import { PasswordChanged } from "./emails/password-changed";
 import { ResetPassword } from "./emails/reset-password";
@@ -75,6 +76,14 @@ export const sendPasswordChanged = ({ to }: { to: string }) =>
 
 export const sendAccountDeleted = ({ to }: { to: string }) =>
   deliver("account-deleted", to, "Your account was deleted", createElement(AccountDeleted, { to }));
+
+export const sendInactivityNotice = ({ to, daysLeft }: { to: string; daysLeft: number }) =>
+  deliver(
+    "inactivity",
+    to,
+    `Your account will be deleted in ${daysLeft} days`,
+    createElement(Inactivity, { to, daysLeft }),
+  );
 
 export const sendConfirmNewEmail = ({
   to,
