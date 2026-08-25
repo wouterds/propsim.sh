@@ -9,7 +9,7 @@ import {
   Section,
   Text,
 } from "@react-email/components";
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties, ReactNode, TdHTMLAttributes } from "react";
 
 export const SITE = "https://propsim.sh";
 
@@ -21,6 +21,7 @@ const FAINT = "#7b8493";
 const BASE = "#0a0b0d";
 const RAISED = "#101216";
 const LINE = "#22262d";
+const ACCENT = "#ffffff";
 const UP = "#14b8a6";
 const DOWN = "#f43f5e";
 
@@ -60,7 +61,7 @@ const suffix: CSSProperties = {
 const rule: CSSProperties = {
   border: "none",
   borderTop: `1px solid ${LINE}`,
-  margin: "32px 0 20px",
+  margin: "8px 0 16px",
 };
 
 const footer: CSSProperties = {
@@ -105,9 +106,13 @@ export const digits: CSSProperties = {
 };
 
 const buttonCell: CSSProperties = {
-  backgroundColor: UP,
+  backgroundColor: ACCENT,
   borderRadius: "6px",
 };
+
+// React dropped `bgcolor` from its types. Clients still read it, and Apple Mail
+// in dark mode drops a white background that is only set in CSS.
+const fill = { bgcolor: ACCENT } as TdHTMLAttributes<HTMLTableDataCellElement>;
 
 const buttonLabel: CSSProperties = {
   color: BASE,
@@ -124,15 +129,14 @@ type ButtonLinkProps = {
 };
 
 /**
- * Filled with the rising colour, never with white. Apple Mail in dark mode
- * suppresses a pure white background, which leaves the dark label invisible.
- * The mark in the same mail shows that a saturated colour survives.
+ * The fill is set twice, as an attribute and in CSS. Apple Mail in dark mode
+ * drops the CSS one and the dark label goes invisible on the dark card.
  */
 export const ButtonLink = ({ href, children }: ButtonLinkProps) => (
   <table cellPadding={0} cellSpacing={0} role="presentation" style={{ borderCollapse: "separate" }}>
     <tbody>
       <tr>
-        <td style={buttonCell}>
+        <td {...fill} style={buttonCell}>
           <Link href={href} style={buttonLabel}>
             <span style={{ color: BASE }}>{children}</span>
           </Link>
