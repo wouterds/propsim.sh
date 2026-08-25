@@ -79,6 +79,10 @@ export const FAQ: QuestionGroup[] = [
         a: "It is measured from the highest equity the account has ever reached, so it only ever rises. Go up four hundred and give it back, and the floor keeps the four hundred. It stops climbing once it reaches a hundred above your starting balance, and from then on it never moves again.",
       },
       {
+        q: "What is red folder news?",
+        a: "A high impact release on the economic calendar: payrolls, CPI, the FOMC rate decision. You have to be flat from a minute before one to a minute after it. On a daily payout account this is a hard breach, so it ends the account rather than the day, and it counts even if the trade was profitable. The terminal shades the window on the chart and warns you while it is open.",
+      },
+      {
         q: "Does an open position count?",
         a: "Yes. Your equity includes what is still floating, and the limits are checked continuously. A trade that went through the floor at 14:52 does not survive by finishing green.",
       },

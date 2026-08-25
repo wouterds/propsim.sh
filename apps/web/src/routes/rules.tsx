@@ -1,4 +1,5 @@
 import { href, Link } from "react-router";
+import { AFTER_MINUTES, BEFORE_MINUTES } from "~/lib/blackout";
 import { formatMoney } from "~/lib/format";
 import { CONSISTENCY_CAP, PLANS, planOr, trailStopsAt } from "~/lib/plans";
 import type { Route } from "./+types/rules";
@@ -46,6 +47,15 @@ const SECTIONS = [
     body: [
       "The floors are tested on every tick. A trade that went through the floor at 14:52 does not survive by finishing green at 15:10.",
       "This is the single biggest difference between a prop account and a brokerage account, and it is why a strategy with a good end-of-day record can still fail here.",
+    ],
+  },
+  {
+    id: "news",
+    title: "Be flat for red folder news",
+    body: [
+      `You have to be out of the market from ${BEFORE_MINUTES} minute before a high impact US release to ${AFTER_MINUTES} minute after it. High impact is the red folder on an economic calendar: payrolls, CPI, the FOMC rate decision, PPI, GDP, retail sales.`,
+      "This is the one rule that is harsher on a daily payout account than anywhere else. Elsewhere trading the news is allowed. Here it ends the account rather than the day, and it does so whether the trade won or lost.",
+      "The terminal shades the window on the chart and says so in a banner while it is open, so there is no calendar to keep in another tab.",
     ],
   },
   {
