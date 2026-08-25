@@ -97,7 +97,7 @@ const NewAccount = ({ loaderData, actionData }: Route.ComponentProps) => {
 
         <div className="mt-6 flex items-center gap-3">
           <button type="submit" disabled={busy} className={PRIMARY}>
-            {busy ? "One moment" : `Create the ${plan.label} account`}
+            {busy ? "One moment" : "Create new account"}
           </button>
 
           <Link to={href("/accounts")} className={SECONDARY}>
