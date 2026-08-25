@@ -4,11 +4,13 @@ import {
   formatSignedPoints,
   toneOf,
 } from "~/components/trading/format";
+import InstrumentPicker from "~/components/trading/instrument-picker";
 import { cn } from "~/lib/utils";
 import type { ChartBar } from "./candle-chart";
 
 type Props = {
   symbol: string;
+  onSymbolChange: (code: string) => void;
   period: string;
   first: ChartBar | undefined;
   last: ChartBar | undefined;
@@ -22,14 +24,14 @@ const Quote = ({ label, value }: { label: string; value: number }) => (
   </span>
 );
 
-const ChartHeader = ({ symbol, period, first, last, hovered }: Props) => {
+const ChartHeader = ({ symbol, onSymbolChange, period, first, last, hovered }: Props) => {
   const readout = hovered ?? last;
   const change = first && last ? last.close - first.open : 0;
   const percent = first && change ? (change / first.open) * 100 : 0;
 
   return (
     <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 px-3 py-2">
-      <span className="font-medium text-sm tracking-wide">{symbol}</span>
+      <InstrumentPicker value={symbol} onChange={onSymbolChange} />
 
       {last && (
         <>

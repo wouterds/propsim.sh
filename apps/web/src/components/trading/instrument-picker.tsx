@@ -6,8 +6,10 @@ type Props = {
   onChange: (code: string) => void;
 };
 
+// Sits in the chart bar in place of the symbol, so it reads as the label it
+// replaced until it is hovered.
 const TRIGGER =
-  "flex h-8 items-center gap-2 rounded border border-line bg-sunken px-2.5 text-ink text-sm outline-hidden transition-colors hover:border-line-strong focus-visible:border-accent focus-visible:ring-1 focus-visible:ring-accent";
+  "-mx-1.5 flex items-center gap-1.5 rounded px-1.5 py-0.5 font-medium text-ink text-sm tracking-wide outline-hidden transition-colors hover:bg-line/60 focus-visible:ring-1 focus-visible:ring-accent";
 
 const byGroup = (group: Instrument["group"]) =>
   INSTRUMENTS.filter((instrument) => instrument.group === group);
@@ -43,10 +45,12 @@ const InstrumentPicker = ({ value, onChange }: Props) => (
                 <Select.Item
                   key={instrument.code}
                   value={instrument.code}
-                  className="flex cursor-default items-baseline gap-2 rounded px-2 py-1.5 text-ink text-sm data-[highlighted]:bg-accent data-[highlighted]:text-sunken"
+                  className="group flex cursor-default items-baseline gap-2 rounded px-2 py-1.5 text-ink text-sm data-[highlighted]:bg-accent data-[highlighted]:text-sunken"
                 >
                   <Select.ItemText>{instrument.code}</Select.ItemText>
-                  <span className="ml-auto text-faint text-xs">{instrument.name}</span>
+                  <span className="ml-auto text-faint text-xs group-data-[highlighted]:text-sunken/75">
+                    {instrument.name}
+                  </span>
                 </Select.Item>
               ))}
             </Select.Group>
