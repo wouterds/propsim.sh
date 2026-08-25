@@ -1,7 +1,9 @@
 import AccountRail from "~/components/account/account-rail";
 import JournalTable from "~/components/journal/journal-table";
 import StatCard from "~/components/ui/stat-card";
-import { ACCOUNTS, combinedJournalOf, totalsOf } from "~/lib/accounts";
+import { combinedJournalOf, totalsOf } from "~/lib/accounts";
+import { loadAccounts } from "~/lib/accounts.server";
+import { requireUserId } from "~/lib/auth.server";
 import { formatMoney, formatPercent, formatSigned, toneOf } from "~/lib/format";
 import { greenDaysOf, winRateOf } from "~/lib/journal";
 import { PRIVATE } from "~/lib/seo";
@@ -9,12 +11,13 @@ import type { Route } from "./+types/dash";
 
 export const meta: Route.MetaFunction = () => [{ title: "Overview, propsim.sh" }, ...PRIVATE];
 
-export const loader = () => {
-  const days = combinedJournalOf(ACCOUNTS);
+export const loader = async ({ request }: Route.LoaderArgs) => {
+  const accounts = await loadAccounts(await requireUserId(request));
+  const days = combinedJournalOf(accounts);
 
   return {
-    accounts: ACCOUNTS,
-    totals: totalsOf(ACCOUNTS),
+    accounts,
+    totals: totalsOf(accounts),
     days,
     winRate: winRateOf(days),
     green: greenDaysOf(days),

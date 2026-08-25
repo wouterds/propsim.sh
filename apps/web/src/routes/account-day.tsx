@@ -2,11 +2,11 @@ import { href, Link } from "react-router";
 import AccountHeader from "~/components/account/account-header";
 import Badge from "~/components/ui/badge";
 import StatCard from "~/components/ui/stat-card";
-import { findAccount } from "~/lib/accounts";
+import { loadAccountDay } from "~/lib/accounts.server";
+import { requireUserId } from "~/lib/auth.server";
 import { formatDay, formatMoney, formatSigned, TONE_TEXT, toneOf } from "~/lib/format";
 import { VERDICT_LABEL, VERDICT_TONE } from "~/lib/journal";
 import { PRIVATE } from "~/lib/seo";
-import { tradesOf } from "~/lib/trades";
 import { cn } from "~/lib/utils";
 import type { Route } from "./+types/account-day";
 
@@ -31,18 +31,17 @@ const held = (seconds: number) => {
   return minutes < 60 ? `${minutes}m` : `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
 };
 
-export const loader = ({ params }: Route.LoaderArgs) => {
-  const account = findAccount(params.id);
-  const entry = account?.journal.find((row) => row.date === params.date);
+export const loader = async ({ params, request }: Route.LoaderArgs) => {
+  const session = await loadAccountDay(await requireUserId(request), params.id, params.date);
 
-  if (!account || !entry) {
+  if (!session) {
     throw new Response("No such session", { status: 404 });
   }
 
   return {
-    account,
-    day: { ...entry, label: formatDay(entry.date) },
-    trades: tradesOf(entry).map((trade) => ({
+    account: session.account,
+    day: { ...session.day, label: formatDay(session.day.date) },
+    trades: session.trades.map((trade) => ({
       ...trade,
       time: CLOCK.format(new Date(trade.at)),
       duration: held(trade.seconds),
@@ -151,10 +150,6 @@ const Day = ({ loaderData }: Route.ComponentProps) => {
           </table>
         </div>
       </div>
-
-      <p className="mt-3 text-faint text-xs">
-        Fills are invented for now. They add up to the session and win as often as it did.
-      </p>
     </main>
   );
 };

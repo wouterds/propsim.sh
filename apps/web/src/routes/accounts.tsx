@@ -1,14 +1,20 @@
 import { href, Link } from "react-router";
 import AccountCard from "~/components/account/account-card";
 import StatCard from "~/components/ui/stat-card";
-import { ACCOUNTS, totalsOf } from "~/lib/accounts";
+import { totalsOf } from "~/lib/accounts";
+import { loadAccounts } from "~/lib/accounts.server";
+import { requireUserId } from "~/lib/auth.server";
 import { formatMoney, formatSigned, toneOf } from "~/lib/format";
 import { PRIVATE } from "~/lib/seo";
 import type { Route } from "./+types/accounts";
 
 export const meta: Route.MetaFunction = () => [{ title: "Accounts, propsim.sh" }, ...PRIVATE];
 
-export const loader = () => ({ accounts: ACCOUNTS, totals: totalsOf(ACCOUNTS) });
+export const loader = async ({ request }: Route.LoaderArgs) => {
+  const accounts = await loadAccounts(await requireUserId(request));
+
+  return { accounts, totals: totalsOf(accounts) };
+};
 
 const Accounts = ({ loaderData }: Route.ComponentProps) => {
   const { accounts, totals } = loaderData;

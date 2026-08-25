@@ -1,6 +1,7 @@
+import { planOr } from "@propsim/plans";
 import CandleStrip from "~/components/marketing/candle-strip";
 import {
-  ACCOUNTS,
+  type Account,
   dailyFloorOf,
   dayPnlOf,
   floorToneOf,
@@ -11,8 +12,20 @@ import {
 import { FLOOR_BAR, FLOOR_TEXT, formatMoney, formatSigned, TONE_TEXT, toneOf } from "~/lib/format";
 import { cn } from "~/lib/utils";
 
-// One of the mock accounts, so the landing page and the app never disagree.
-const ACCOUNT = ACCOUNTS[1];
+// A mock. The landing page is public, so there is no account to read.
+const ACCOUNT: Account = {
+  id: "preview",
+  name: "25K Daily",
+  openedOn: "2026-08-18",
+  status: "live",
+  plan: planOr("daily-25k"),
+  balance: 24_661.5,
+  equity: 24_661.5,
+  peakEquity: 25_182,
+  sessionOpenEquity: 24_914,
+  journal: [],
+};
+
 const PLAN = planOf(ACCOUNT);
 
 const floorFrom = (label: string, floor: number, limit: number) => {

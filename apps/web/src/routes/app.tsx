@@ -1,6 +1,6 @@
 import { Outlet } from "react-router";
 import AppShell from "~/components/app/app-shell";
-import { ACCOUNTS } from "~/lib/accounts";
+import { loadAccounts } from "~/lib/accounts.server";
 import { endSession, requireUserId } from "~/lib/auth.server";
 import { findUserById } from "~/lib/users.server";
 import type { Route } from "./+types/app";
@@ -17,7 +17,7 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
     throw await endSession(request);
   }
 
-  return { accounts: ACCOUNTS, email: user.email };
+  return { accounts: await loadAccounts(userId), email: user.email };
 };
 
 const AppLayout = ({ loaderData }: Route.ComponentProps) => (

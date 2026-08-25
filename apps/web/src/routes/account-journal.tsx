@@ -1,7 +1,8 @@
 import AccountHeader from "~/components/account/account-header";
 import JournalTable from "~/components/journal/journal-table";
 import StatCard from "~/components/ui/stat-card";
-import { findAccount } from "~/lib/accounts";
+import { loadAccount } from "~/lib/accounts.server";
+import { requireUserId } from "~/lib/auth.server";
 import { formatMoney, formatPercent, formatSigned, toneOf } from "~/lib/format";
 import { bestDayOf, greenDaysOf, winRateOf, worstDayOf } from "~/lib/journal";
 import { PRIVATE } from "~/lib/seo";
@@ -12,13 +13,14 @@ export const meta: Route.MetaFunction = ({ loaderData }) => [
   ...PRIVATE,
 ];
 
-export const loader = ({ params }: Route.LoaderArgs) => {
-  const account = findAccount(params.id);
+export const loader = async ({ params, request }: Route.LoaderArgs) => {
+  const loaded = await loadAccount(await requireUserId(request), params.id);
 
-  if (!account) {
+  if (!loaded) {
     throw new Response("No such account", { status: 404 });
   }
 
+  const account = loaded.account;
   const days = account.journal;
 
   return {

@@ -1,11 +1,13 @@
 import { Radio } from "@base-ui/react/radio";
 import { RadioGroup } from "@base-ui/react/radio-group";
+import { tradeDateOf } from "@propsim/engine";
 import { DEFAULT_PLAN_ID, findPlan, PLANS, planOr } from "@propsim/plans";
 import { useState } from "react";
 import { Form, href, Link, redirect, useNavigation } from "react-router";
 import PlanRules from "~/components/plans/plan-rules";
 import { PRIMARY, SECONDARY } from "~/components/ui/button";
-import { createAccount } from "~/lib/accounts";
+import { createAccount } from "~/lib/accounts.server";
+import { requireUserId } from "~/lib/auth.server";
 import { formatDollars } from "~/lib/format";
 import { PRIVATE } from "~/lib/seo";
 import type { Route } from "./+types/account-new";
@@ -19,6 +21,7 @@ export const loader = ({ request }: Route.LoaderArgs) => {
 };
 
 export const action = async ({ request }: Route.ActionArgs) => {
+  const userId = await requireUserId(request);
   const form = await request.formData();
   const plan = findPlan(String(form.get("plan") ?? ""));
 
@@ -26,10 +29,9 @@ export const action = async ({ request }: Route.ActionArgs) => {
     return { error: "Pick a plan to carry on." };
   }
 
-  const openedOn = new Date().toISOString().slice(0, 10);
-  const account = createAccount(plan.id, openedOn);
+  const id = await createAccount(userId, plan, tradeDateOf(new Date()));
 
-  return redirect(href("/accounts/:id", { id: account.id }));
+  return redirect(href("/accounts/:id", { id }));
 };
 
 const CARD =

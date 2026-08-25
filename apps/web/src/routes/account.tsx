@@ -7,12 +7,13 @@ import StatCard from "~/components/ui/stat-card";
 import {
   dailyFloorOf,
   dayPnlOf,
-  findAccount,
   netPnlOf,
   planOf,
   targetOf,
   trailingFloorOf,
 } from "~/lib/accounts";
+import { loadAccount } from "~/lib/accounts.server";
+import { requireUserId } from "~/lib/auth.server";
 import { formatMoney, formatSigned, toneOf } from "~/lib/format";
 import { rulesOf } from "~/lib/rules";
 import { PRIVATE } from "~/lib/seo";
@@ -23,14 +24,18 @@ export const meta: Route.MetaFunction = ({ loaderData }) => [
   ...PRIVATE,
 ];
 
-export const loader = ({ params }: Route.LoaderArgs) => {
-  const account = findAccount(params.id);
+export const loader = async ({ params, request }: Route.LoaderArgs) => {
+  const loaded = await loadAccount(await requireUserId(request), params.id);
 
-  if (!account) {
+  if (!loaded) {
     throw new Response("No such account", { status: 404 });
   }
 
-  return { account, plan: planOf(account), rules: rulesOf(account) };
+  return {
+    account: loaded.account,
+    plan: planOf(loaded.account),
+    rules: rulesOf(loaded.account),
+  };
 };
 
 const Account = ({ loaderData }: Route.ComponentProps) => {
@@ -73,14 +78,14 @@ const Account = ({ loaderData }: Route.ComponentProps) => {
           <div className="grid gap-3 sm:grid-cols-2">
             <FloorMeter
               label="Daily floor"
-              equity={account.balance}
+              equity={account.equity}
               floor={dailyFloorOf(account)}
               limit={plan.dailyLossLimit}
               detail="Measured from the session open and reset with it. Breaching it ends the day, not the account."
             />
             <FloorMeter
               label="Trailing floor"
-              equity={account.balance}
+              equity={account.equity}
               floor={trailingFloorOf(account)}
               limit={plan.trailingDrawdown}
               detail="Measured from peak equity and never reset. It rises with a new high and stays there."
