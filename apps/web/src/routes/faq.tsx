@@ -1,15 +1,15 @@
 import Questions from "~/components/marketing/questions";
 import { FAQ } from "~/lib/faq";
+import { pageMeta } from "~/lib/seo";
 import type { Route } from "./+types/faq";
 
-export const meta: Route.MetaFunction = () => [
-  { title: "FAQ, propsim.sh" },
-  {
-    name: "description",
-    content:
+export const meta: Route.MetaFunction = () =>
+  pageMeta({
+    title: "FAQ, propsim.sh",
+    description:
       "What propsim.sh is, where the prices come from, how the loss limits work, and what happens when you breach an account.",
-  },
-];
+    path: "/faq",
+  });
 
 const Faq = () => (
   <>

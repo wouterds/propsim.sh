@@ -1,16 +1,16 @@
 import { getNewsEvents, isRedFolder } from "@propsim/datasources";
 import { AFTER_MINUTES, BEFORE_MINUTES } from "~/lib/blackout";
 import { formatCountdown, formatDay, formatRelative } from "~/lib/format";
+import { pageMeta } from "~/lib/seo";
 import type { Route } from "./+types/red-folder-events";
 
-export const meta: Route.MetaFunction = () => [
-  { title: "Red folder events, propsim.sh" },
-  {
-    name: "description",
-    content:
+export const meta: Route.MetaFunction = () =>
+  pageMeta({
+    title: "Red folder events, propsim.sh",
+    description:
       "Every high impact US release, and the window either side of it where a daily payout account has to be flat.",
-  },
-];
+    path: "/red-folder-events",
+  });
 
 const CLOCK = new Intl.DateTimeFormat("en-GB", {
   hour: "2-digit",

@@ -2,16 +2,16 @@ import { href, Link } from "react-router";
 import PlanRules from "~/components/plans/plan-rules";
 import { formatDollars } from "~/lib/format";
 import { PLANS, trailStopsAt } from "~/lib/plans";
+import { pageMeta } from "~/lib/seo";
 import type { Route } from "./+types/plans";
 
-export const meta: Route.MetaFunction = () => [
-  { title: "Account plans, propsim.sh" },
-  {
-    name: "description",
-    content:
+export const meta: Route.MetaFunction = () =>
+  pageMeta({
+    title: "Account plans, propsim.sh",
+    description:
       "Four simulated futures accounts, from 25K to 150K, each carrying the profit target, trailing drawdown and daily loss limit a funded account carries. All free.",
-  },
-];
+    path: "/plans",
+  });
 
 const Plans = () => (
   <>

@@ -2,16 +2,16 @@ import { href, Link } from "react-router";
 import { AFTER_MINUTES, BEFORE_MINUTES } from "~/lib/blackout";
 import { formatDollars } from "~/lib/format";
 import { CONSISTENCY_CAP, PLANS, planOr, trailStopsAt } from "~/lib/plans";
+import { pageMeta } from "~/lib/seo";
 import type { Route } from "./+types/rules";
 
-export const meta: Route.MetaFunction = () => [
-  { title: "The rules, propsim.sh" },
-  {
-    name: "description",
-    content:
+export const meta: Route.MetaFunction = () =>
+  pageMeta({
+    title: "The rules, propsim.sh",
+    description:
       "How the daily loss limit and the trailing drawdown are measured, when they are checked, and what a breach costs you.",
-  },
-];
+    path: "/rules",
+  });
 
 const PLAN = planOr("daily-50k");
 

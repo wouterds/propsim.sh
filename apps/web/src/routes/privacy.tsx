@@ -1,15 +1,15 @@
 import LegalPage from "~/components/legal/legal-page";
 import { CONTACT_EMAIL, OPERATOR, OPERATOR_COUNTRY, UPDATED } from "~/lib/legal";
+import { pageMeta } from "~/lib/seo";
 import type { Route } from "./+types/privacy";
 
-export const meta: Route.MetaFunction = () => [
-  { title: "Privacy, propsim.sh" },
-  {
-    name: "description",
-    content:
+export const meta: Route.MetaFunction = () =>
+  pageMeta({
+    title: "Privacy, propsim.sh",
+    description:
       "What propsim.sh keeps, why it keeps it, who else sees it, and how to have it deleted.",
-  },
-];
+    path: "/privacy",
+  });
 
 const SECTIONS = [
   {

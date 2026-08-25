@@ -1,15 +1,15 @@
 import LegalPage from "~/components/legal/legal-page";
 import { CONTACT_EMAIL, OPERATOR, OPERATOR_COUNTRY, UPDATED } from "~/lib/legal";
+import { pageMeta } from "~/lib/seo";
 import type { Route } from "./+types/terms";
 
-export const meta: Route.MetaFunction = () => [
-  { title: "Terms, propsim.sh" },
-  {
-    name: "description",
-    content:
+export const meta: Route.MetaFunction = () =>
+  pageMeta({
+    title: "Terms, propsim.sh",
+    description:
       "What propsim.sh is and is not, what an account may be used for, and what is not promised.",
-  },
-];
+    path: "/terms",
+  });
 
 const SECTIONS = [
   {

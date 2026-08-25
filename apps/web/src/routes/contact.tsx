@@ -3,18 +3,18 @@ import { sendContactMessage } from "@propsim/mail";
 import { Form, useNavigation } from "react-router";
 import { getUserId } from "~/lib/auth.server";
 import { notify } from "~/lib/notify.server";
+import { pageMeta } from "~/lib/seo";
 import { FIELD, passedTurnstile, siteKey, turnstileIsSet } from "~/lib/turnstile.server";
 import { findUserById } from "~/lib/users.server";
 import type { Route } from "./+types/contact";
 
-export const meta: Route.MetaFunction = () => [
-  { title: "Contact, propsim.sh" },
-  {
-    name: "description",
-    content:
+export const meta: Route.MetaFunction = () =>
+  pageMeta({
+    title: "Contact, propsim.sh",
+    description:
       "Ask a question about propsim.sh, report something broken, or say the rules are wrong.",
-  },
-];
+    path: "/contact",
+  });
 
 const LIMITS = { name: 80, subject: 120, message: 4000 };
 

@@ -27,7 +27,8 @@ export const Layout = ({ children }: { children: React.ReactNode }) => (
           constant would be. */}
       <meta property="og:site_name" content="propsim.sh" />
       <meta property="og:type" content="website" />
-      <meta name="twitter:card" content="summary" />
+      <meta property="og:locale" content="en" />
+      <meta name="twitter:card" content="summary_large_image" />
       <Meta />
       <Links />
     </head>
