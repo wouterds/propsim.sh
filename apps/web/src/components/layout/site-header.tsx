@@ -12,7 +12,7 @@ const LINKS = [
 
 const SiteHeader = ({ signedIn }: { signedIn: boolean }) => (
   <header className="sticky top-0 z-30 border-line/70 border-b bg-base/80 backdrop-blur">
-    <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-5 sm:gap-6 sm:px-8">
+    <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-4 sm:gap-6 sm:px-8">
       <Link to={href("/")} className={cn("shrink-0 rounded-sm", FOCUS)}>
         <Brand className="text-[15px] text-ink" />
       </Link>
@@ -44,7 +44,9 @@ const SiteHeader = ({ signedIn }: { signedIn: boolean }) => (
             FOCUS,
           )}
         >
-          {signedIn ? "Dashboard" : "Start trading"}
+          {/* A phone has no room for the long one, and the row is already full. */}
+          <span className="sm:hidden">{signedIn ? "Dashboard" : "Start"}</span>
+          <span className="hidden sm:inline">{signedIn ? "Dashboard" : "Start trading"}</span>
         </Link>
       </div>
     </div>
