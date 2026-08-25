@@ -1,0 +1,110 @@
+name: deploy
+
+permissions:
+  contents: read
+  packages: write
+
+on:
+  push:
+    branches: main
+    paths:
+      - .github/workflows/deploy.yml
+      - apps/**
+      - packages/**
+      - docker-compose.yml
+      - turbo.json
+      - package.json
+      - package-lock.json
+      # Both feed the image build. .dockerignore decides what reaches the COPY
+      # in the turbo stage, and .npmrc carries the engine-strict that makes the
+      # root manifest's npm range a hard gate on `npm ci`.
+      - .dockerignore
+      - .npmrc
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # No checks in front of this. Lint, typecheck and the tests run on every
+  # branch including main in .github/workflows/checks.yml, so repeating them
+  # here would only make the deploy wait for a second copy of an answer it
+  # already had.
+  build:
+    strategy:
+      # One entry today. Every image builds from the same context and differs
+      # only in which app turbo prunes to, so a second one is a word here
+      # rather than a copy of the job.
+      matrix:
+        app: [web]
+    name: "build: ${{ matrix.app }}"
+    runs-on: ubuntu-latest
+    env:
+      REGISTRY: ghcr.io
+      REGISTRY_USER: ${{ github.actor }}
+      REGISTRY_PASS: ${{ github.token }}
+    steps:
+      - run: echo "COMMIT_SHA=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
+      - uses: actions/checkout@v7
+      - uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ env.REGISTRY_USER }}
+          password: ${{ env.REGISTRY_PASS }}
+      - uses: docker/metadata-action@v6
+        id: meta
+        with:
+          images: ${{ env.REGISTRY }}/wouterds/propsim.sh/${{ matrix.app }}
+          # Two raw tags and nothing else: the deploy pulls latest, and the
+          # short sha is the audit trail.
+          tags: |
+            type=raw,value=latest
+            type=raw,value=${{ env.COMMIT_SHA }}
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/build-push-action@v7
+        with:
+          # Scoped per app, or the matrix jobs would evict each other's layers.
+          cache-from: type=gha,scope=docker.${{ matrix.app }}
+          cache-to: type=gha,mode=max,scope=docker.${{ matrix.app }}
+          file: apps/${{ matrix.app }}/Dockerfile
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          # Computed by metadata-action either way. Dropping them costs the ghcr
+          # package its link back to this repository and its revision label.
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            COMMIT_SHA=${{ env.COMMIT_SHA }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://propsim.sh
+    env:
+      HOST: ${{ secrets.CLOUDFLARE_TUNNEL }}
+      USER: code
+      DIRECTORY: /code/sh.propsim
+      # A config directory of its own, logged in as the account that owns the
+      # images. Docker keys credentials by registry host, so scoping them to a
+      # deployment means giving it a separate config rather than another entry.
+      REMOTE_DOCKER_CONFIG: /code/.docker-propsim
+    steps:
+      - uses: actions/checkout@v7
+      - run: |
+          wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+          sudo dpkg -i cloudflared-linux-amd64.deb
+      - uses: webfactory/ssh-agent@v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - run: |
+          echo "Host ${{ env.HOST }}" >> ~/.ssh/config
+          echo "  ProxyCommand $(which cloudflared) access ssh --hostname %h/ssh" >> ~/.ssh/config
+          echo "  StrictHostKeyChecking no" >> ~/.ssh/config
+          chmod 600 ~/.ssh/config
+      - run: |
+          ssh ${{ env.USER }}@${{ env.HOST }} "mkdir -p ${{ env.DIRECTORY }}"
+          scp docker-compose.yml ${{ env.USER }}@${{ env.HOST }}:${{ env.DIRECTORY }}/docker-compose.yml
+          ssh ${{ env.USER }}@${{ env.HOST }} "cd ${{ env.DIRECTORY }} && export DOCKER_CONFIG=${{ env.REMOTE_DOCKER_CONFIG }} && docker compose pull && docker compose up -d --force-recreate --remove-orphans"
