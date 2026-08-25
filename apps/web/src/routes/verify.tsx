@@ -61,7 +61,7 @@ export const action = async ({ request }: Route.ActionArgs) => {
   await markEmailVerified(user.id);
   await sendWelcome({ to: user.email });
 
-  return startSession(user.id, back);
+  return startSession(request, user.id, back);
 };
 
 const Verify = ({ loaderData, actionData }: Route.ComponentProps) => {

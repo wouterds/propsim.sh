@@ -1,10 +1,14 @@
+import type { Session } from "@propsim/database";
 import { createCookieSessionStorage, redirect } from "react-router";
 import { asPage, safeReturn } from "./redirect.server";
+import { findSession, openSession, revokeSession, touchSession } from "./sessions.server";
 
-const WEEK = 60 * 60 * 24 * 7;
+const DAYS = 30;
 
 type SessionData = {
-  userId: string;
+  // The session's own secret, not the user's id. Everything about the session
+  // lives in the row it names, so it can be closed from another device.
+  token: string;
   // Set between signup and the code being confirmed. It opens nothing.
   pendingUserId: string;
 };
@@ -26,7 +30,7 @@ const sessions = () => {
     cookie: {
       name: "__session",
       httpOnly: true,
-      maxAge: WEEK,
+      maxAge: 60 * 60 * 24 * DAYS,
       path: "/",
       sameSite: "lax",
       secrets: [secret],
@@ -39,16 +43,25 @@ const sessions = () => {
 
 const read = (request: Request) => sessions().getSession(request.headers.get("Cookie"));
 
-export const getUserId = async (request: Request) => (await read(request)).get("userId") ?? null;
+export const getSession = async (request: Request) => {
+  const token = (await read(request)).get("token");
+
+  return token ? findSession(token) : null;
+};
+
+export const getUserId = async (request: Request) => (await getSession(request))?.userId ?? null;
 
 export const getPendingUserId = async (request: Request) =>
   (await read(request)).get("pendingUserId") ?? null;
 
-export const requireUserId = async (request: Request) => {
-  const userId = await getUserId(request);
+/** The session behind the request, with its last seen time kept current. */
+export const requireSession = async (request: Request): Promise<Session> => {
+  const session = await getSession(request);
 
-  if (userId) {
-    return userId;
+  if (session) {
+    await touchSession(session, request);
+
+    return session;
   }
 
   const back = encodeURIComponent(asPage(new URL(request.url)));
@@ -56,11 +69,12 @@ export const requireUserId = async (request: Request) => {
   throw redirect(`/auth?r=${back}`);
 };
 
-// A fresh session on every sign in, so a cookie handed out before does not
-// carry over.
-export const startSession = async (userId: string, to: string | null) => {
+export const requireUserId = async (request: Request) => (await requireSession(request)).userId;
+
+// A fresh cookie on every sign in, so one handed out before does not carry over.
+export const startSession = async (request: Request, userId: string, to: string | null) => {
   const session = await sessions().getSession();
-  session.set("userId", userId);
+  session.set("token", await openSession(request, userId));
 
   return redirect(safeReturn(to), {
     headers: { "Set-Cookie": await sessions().commitSession(session) },
@@ -78,10 +92,16 @@ export const startPending = async (userId: string, to: string | null) => {
   });
 };
 
-export const endSession = async (request: Request) => {
-  const session = await read(request);
+// The row is closed as well as the cookie, or the token would still open the
+// account from anywhere it was copied to.
+export const endSession = async (request: Request, to = "/") => {
+  const live = await getSession(request);
 
-  return redirect("/", {
-    headers: { "Set-Cookie": await sessions().destroySession(session) },
+  if (live) {
+    await revokeSession(live.userId, live.id, "logout");
+  }
+
+  return redirect(to, {
+    headers: { "Set-Cookie": await sessions().destroySession(await read(request)) },
   });
 };

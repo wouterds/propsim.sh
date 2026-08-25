@@ -74,7 +74,7 @@ export const action = async ({ request }: Route.ActionArgs) => {
     return startPending(user.id, back);
   }
 
-  return startSession(user.id, back);
+  return startSession(request, user.id, back);
 };
 
 const Auth = ({ actionData }: Route.ComponentProps) => {
