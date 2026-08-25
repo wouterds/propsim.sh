@@ -1,10 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-  <!-- The brand mark from src/components/layout/brand.tsx. A favicon is fetched
-       without the stylesheet, so these are the only hex literals in the app that
-       cannot read the @theme tokens. Keep them in step with tailwind.css. -->
-  <rect width="20" height="20" rx="4" fill="#0a0b0d"/>
-  <rect x="3" y="7" width="4" height="9" rx="1" fill="#00ff88"/>
-  <rect x="4.5" y="3" width="1" height="14" fill="#00ff88"/>
-  <rect x="13" y="4" width="4" height="8" rx="1" fill="#ff4560"/>
-  <rect x="14.5" y="2" width="1" height="15" fill="#ff4560"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="2 2.5 16 16">
+  <!-- The brand mark from src/components/layout/brand.tsx, cropped to fill the
+       tile. A favicon is fetched without the stylesheet, so these are the only hex
+       literals in the app that cannot read the @theme tokens. Keep them in step
+       with tailwind.css. -->
+  <rect x="4.5" y="8" width="1" height="10" fill="#f43f5e"/>
+  <rect x="3" y="10" width="4" height="6" rx="1" fill="#f43f5e"/>
+  <rect x="9.5" y="3" width="1" height="12" fill="#14b8a6"/>
+  <rect x="8" y="5" width="4" height="8" rx="1" fill="#14b8a6"/>
+  <rect x="14.5" y="5" width="1" height="10" fill="#f43f5e"/>
+  <rect x="13" y="7" width="4" height="6" rx="1" fill="#f43f5e"/>
 </svg>
