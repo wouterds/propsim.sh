@@ -39,9 +39,23 @@ services:
     networks:
       - proxy
       - mariadb
+      - cache
+
+  redis:
+    image: redis:8-alpine
+    container_name: sh.propsim--redis
+    mem_limit: 64mb
+    restart: unless-stopped
+    # A cache, not a database: nothing on disk, and the oldest keys go first
+    # once it fills up.
+    command: redis-server --save "" --appendonly no --maxmemory 48mb --maxmemory-policy allkeys-lru
+    networks:
+      - cache
 
 networks:
   proxy:
     external: true
   mariadb:
     external: true
+  # Only the two containers here, so the cache is not reachable from anywhere else.
+  cache:
