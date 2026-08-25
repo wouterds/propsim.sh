@@ -113,7 +113,7 @@ const AccountCard = ({ account }: Props) => {
         {account.status === "live" && (
           <Link
             to={href("/accounts/:id/terminal", { id: account.id })}
-            className="ml-auto inline-flex h-8 items-center rounded bg-accent px-3 font-medium text-sunken text-xs transition-colors hover:bg-accent/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
+            className="ml-auto inline-flex h-8 items-center rounded bg-accent-strong px-3 font-medium text-ink text-xs transition-colors hover:bg-accent-strong/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
           >
             Terminal
           </Link>

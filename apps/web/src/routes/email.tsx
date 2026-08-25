@@ -39,7 +39,7 @@ const Email = ({ loaderData, actionData }: Route.ComponentProps) => {
         </p>
         <Link
           to={href("/auth")}
-          className="mt-6 inline-flex h-10 items-center rounded bg-accent px-4 font-medium text-sm text-sunken transition-colors hover:bg-accent/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
+          className="mt-6 inline-flex h-10 items-center rounded bg-accent-strong px-4 font-medium text-sm text-ink transition-colors hover:bg-accent-strong/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
         >
           Log in
         </Link>
@@ -67,7 +67,7 @@ const Email = ({ loaderData, actionData }: Route.ComponentProps) => {
         <button
           type="submit"
           disabled={busy || !loaderData.token}
-          className="inline-flex h-10 w-full items-center justify-center rounded bg-accent font-medium text-sm text-sunken transition-colors hover:bg-accent/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent disabled:opacity-60"
+          className="inline-flex h-10 w-full items-center justify-center rounded bg-accent-strong font-medium text-sm text-ink transition-colors hover:bg-accent-strong/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent disabled:opacity-60"
         >
           {busy ? "One moment" : "Confirm this address"}
         </button>

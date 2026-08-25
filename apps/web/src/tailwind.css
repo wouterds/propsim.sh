@@ -34,6 +34,10 @@
   --color-up: #14b8a6;
   --color-down: #f43f5e;
   --color-accent: #3b82f6;
+  /* blue-600, the fill a primary button carries. Deeper than the accent, so a
+     button reads as the one thing to press rather than as another tinted row,
+     and it takes `ink` on top: black on it is under 4:1. */
+  --color-accent-strong: #2563eb;
   --color-warn: #ffb020;
 
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;

@@ -224,7 +224,7 @@ const Rules = () => (
           </p>
           <Link
             to={href("/plans")}
-            className="mt-4 inline-flex h-9 items-center rounded bg-accent px-4 font-medium text-sm text-sunken transition-colors hover:bg-accent/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
+            className="mt-4 inline-flex h-9 items-center rounded bg-accent-strong px-4 font-medium text-sm text-ink transition-colors hover:bg-accent-strong/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
           >
             See the plans
           </Link>

@@ -46,7 +46,7 @@ const SiteHeader = () => (
         <Link
           to={href("/terminal")}
           className={cn(
-            "hidden h-8 items-center rounded bg-accent px-3 font-medium text-sunken text-sm transition-colors hover:bg-accent/85 sm:inline-flex",
+            "hidden h-8 items-center rounded bg-accent-strong px-3 font-medium text-ink text-sm transition-colors hover:bg-accent-strong/85 sm:inline-flex",
             FOCUS,
           )}
         >

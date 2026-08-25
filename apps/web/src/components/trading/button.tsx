@@ -5,7 +5,7 @@ import { FOCUS_RING } from "./styles";
 type Variant = "primary" | "buy" | "sell" | "ghost" | "danger";
 
 const VARIANTS: Record<Variant, string> = {
-  primary: "bg-accent text-sunken hover:bg-accent/85",
+  primary: "bg-accent-strong text-ink hover:bg-accent-strong/85",
   buy: "bg-up text-sunken hover:bg-up/85",
   sell: "bg-down text-sunken hover:bg-down/85",
   ghost: "border border-line text-muted hover:border-line-strong hover:text-ink",
