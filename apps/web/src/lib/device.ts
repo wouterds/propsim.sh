@@ -61,7 +61,7 @@ export const readDevice = (userAgent: string | null): Device => {
   return { browser: first(agent, BROWSERS), os, kind: kindOf(agent, os) };
 };
 
-export const describeDevice = ({ browser, os }: Device) => {
+export const describeDevice = ({ browser, os }: Pick<Device, "browser" | "os">) => {
   if (browser && os) return `${browser} on ${os}`;
 
   return browser ?? os ?? "Unknown device";

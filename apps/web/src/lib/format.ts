@@ -63,3 +63,55 @@ const MONTH = new Intl.DateTimeFormat("en-GB", {
 });
 
 export const formatDate = (iso: string) => MONTH.format(new Date(`${iso}T00:00:00Z`));
+
+const RELATIVE = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+
+const STEPS: [Intl.RelativeTimeFormatUnit, number][] = [
+  ["minute", 60_000],
+  ["hour", 3_600_000],
+  ["day", 86_400_000],
+  ["month", 2_592_000_000],
+];
+
+/**
+ * Formatted where the data is read, not where it is drawn. A clock difference
+ * between the server and the browser would otherwise change the text on
+ * hydration.
+ */
+export const formatRelative = (at: Date, now: Date) => {
+  const since = now.getTime() - at.getTime();
+
+  if (since < 120_000) {
+    return "Active now";
+  }
+
+  let unit: Intl.RelativeTimeFormatUnit = "minute";
+  let size = 60_000;
+
+  for (const [next, span] of STEPS) {
+    if (since >= span) {
+      unit = next;
+      size = span;
+    }
+  }
+
+  return RELATIVE.format(-Math.floor(since / size), unit);
+};
+
+const REGIONS = new Intl.DisplayNames(["en"], { type: "region" });
+
+/** A flag is two regional indicators, which are the letters offset into their own block. */
+export const flagOf = (code: string) =>
+  String.fromCodePoint(...[...code.toUpperCase()].map((letter) => 0x1_f1a5 + letter.charCodeAt(0)));
+
+export const countryOf = (code: string | null) => {
+  if (!code) {
+    return null;
+  }
+
+  try {
+    return { name: REGIONS.of(code) ?? code, flag: flagOf(code) };
+  } catch {
+    return { name: code, flag: "" };
+  }
+};

@@ -47,8 +47,8 @@ describe("readDevice", () => {
 describe("describeDevice", () => {
   it("should fall back rather than print a half sentence", () => {
     // then
-    expect(describeDevice({ browser: null, os: null, kind: "unknown" })).toBe("Unknown device");
-    expect(describeDevice({ browser: "Chrome", os: null, kind: "desktop" })).toBe("Chrome");
+    expect(describeDevice({ browser: null, os: null })).toBe("Unknown device");
+    expect(describeDevice({ browser: "Chrome", os: null })).toBe("Chrome");
     expect(describeDevice(readDevice(CHROME_MAC))).toBe("Chrome on macOS");
   });
 });
