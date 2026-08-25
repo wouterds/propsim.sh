@@ -63,9 +63,6 @@ jobs:
       HOST: ${{ secrets.CLOUDFLARE_TUNNEL }}
       USER: code
       DIRECTORY: /code/sh.propsim
-      # Docker keys credentials by registry host, so a separate deployment needs
-      # a separate config directory.
-      REMOTE_DOCKER_CONFIG: /code/.docker-propsim
     steps:
       - uses: actions/checkout@v7
       - run: |
@@ -82,4 +79,4 @@ jobs:
       - run: |
           ssh ${{ env.USER }}@${{ env.HOST }} "mkdir -p ${{ env.DIRECTORY }}"
           scp docker-compose.yml ${{ env.USER }}@${{ env.HOST }}:${{ env.DIRECTORY }}/docker-compose.yml
-          ssh ${{ env.USER }}@${{ env.HOST }} "cd ${{ env.DIRECTORY }} && export DOCKER_CONFIG=${{ env.REMOTE_DOCKER_CONFIG }} && docker compose pull && docker compose up -d --force-recreate --remove-orphans"
+          ssh ${{ env.USER }}@${{ env.HOST }} "cd ${{ env.DIRECTORY }} && docker compose pull && docker compose up -d --force-recreate --remove-orphans"
