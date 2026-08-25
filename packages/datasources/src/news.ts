@@ -50,4 +50,32 @@ export const toEvents = (rows: CalendarRow[]): NewsEvent[] => {
   return events.sort((a, b) => a.time - b.time);
 };
 
-export const getNewsEvents = async () => toEvents(await fetchCalendar());
+// The calendar changes weekly and the feed throttles hard, so it is read at
+// most this often however many people open the terminal.
+const TTL = 15 * 60 * 1000;
+
+let events: NewsEvent[] = [];
+let readAt = 0;
+
+/**
+ * Never throws. A feed that is down leaves the last calendar in place, and an
+ * empty one is a chart without bands rather than a screen without a chart.
+ */
+export const getNewsEvents = async () => {
+  const now = Date.now();
+
+  if (now - readAt < TTL) {
+    return events;
+  }
+
+  // Stamped before the call, so a failing feed is not retried on every request.
+  readAt = now;
+
+  try {
+    events = toEvents(await fetchCalendar());
+  } catch (cause) {
+    console.error("Economic calendar unavailable", cause);
+  }
+
+  return events;
+};

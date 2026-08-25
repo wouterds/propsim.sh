@@ -30,11 +30,7 @@ export const loader = async ({ url, params }: Route.LoaderArgs) => {
     throw new Response("No such account", { status: 404 });
   }
 
-  // The calendar is not worth failing the screen over, so a feed that is down
-  // leaves the bands off rather than taking the chart with it.
-  const news = await getNewsEvents()
-    .then((events) => events.filter(isRedFolder))
-    .catch(() => []);
+  const news = (await getNewsEvents()).filter(isRedFolder);
   const windows = windowsOf(news.map((event) => ({ time: event.time, title: event.title })));
 
   try {
