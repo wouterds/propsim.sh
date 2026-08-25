@@ -20,7 +20,11 @@ export const FLOOR_BAR: Record<FloorTone, string> = {
   down: "bg-down",
 };
 
+// Currency, not a bare number: every figure on the page is dollars, and one
+// without the sign reads as a quantity.
 const AMOUNT = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 });
@@ -40,7 +44,7 @@ export const formatSigned = (value: number) => {
   // A value that rounds to nothing still carries its sign through Intl, so a row
   // that lost nothing would print "-0.00" and read as a loss.
   const rounded = Math.round(value * 100) / 100;
-  if (rounded === 0) return "0.00";
+  if (rounded === 0) return AMOUNT.format(0);
 
   const sign = rounded > 0 ? "+" : "-";
   return `${sign}${AMOUNT.format(Math.abs(rounded))}`;

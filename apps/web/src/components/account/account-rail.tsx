@@ -1,7 +1,7 @@
 import { href, Link } from "react-router";
 import Badge from "~/components/ui/badge";
 import { type Account, netPnlOf, STATUS_LABEL, STATUS_TONE } from "~/lib/accounts";
-import { formatMoney, formatSigned, TONE_TEXT, toneOf } from "~/lib/format";
+import { formatDollars, formatSigned, TONE_TEXT, toneOf } from "~/lib/format";
 import { cn } from "~/lib/utils";
 
 type Props = {
@@ -26,7 +26,9 @@ const AccountRail = ({ accounts }: Props) => (
             >
               <div className="min-w-0">
                 <p className="truncate text-ink text-sm">{account.name}</p>
-                <p className="mt-0.5 text-faint text-xs tabular">{formatMoney(account.balance)}</p>
+                <p className="mt-0.5 text-faint text-xs tabular">
+                  {formatDollars(account.balance)}
+                </p>
               </div>
 
               <div className="flex shrink-0 flex-col items-end gap-1">

@@ -10,12 +10,12 @@ describe("formatSigned", () => {
     const formatted = formatSigned(scratched);
 
     // then
-    expect(formatted).toBe("0.00");
+    expect(formatted).toBe("$0.00");
   });
 
   it("should mark a gain and a loss of the same size differently", () => {
     // given, when, then
-    expect(formatSigned(252.5)).toBe("+252.50");
-    expect(formatSigned(-252.5)).toBe("-252.50");
+    expect(formatSigned(252.5)).toBe("+$252.50");
+    expect(formatSigned(-252.5)).toBe("-$252.50");
   });
 });

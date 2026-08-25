@@ -3,7 +3,7 @@ import { Form, href, Link, NavLink } from "react-router";
 import NavIcon, { type NavIconName } from "~/components/app/nav-icon";
 import Brand from "~/components/layout/brand";
 import { type Account, netPnlOf, STATUS_LABEL, STATUS_TONE } from "~/lib/accounts";
-import { formatMoney, formatSigned, TONE_TEXT, toneOf } from "~/lib/format";
+import { formatDollars, formatSigned, TONE_TEXT, toneOf } from "~/lib/format";
 import { cn } from "~/lib/utils";
 
 type Props = {
@@ -88,8 +88,8 @@ const SidebarNav = ({ accounts, email, onNavigate }: Props) => (
                   <span className="block truncate text-ink text-sm">{account.name}</span>
                   <span className="block text-[11px] text-faint tabular">
                     {account.status === "live"
-                      ? formatMoney(account.balance)
-                      : `${STATUS_LABEL[account.status]} · ${formatMoney(account.balance)}`}
+                      ? formatDollars(account.balance)
+                      : `${STATUS_LABEL[account.status]} · ${formatDollars(account.balance)}`}
                   </span>
                 </span>
 
