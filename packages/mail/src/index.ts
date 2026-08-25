@@ -1,6 +1,7 @@
 import { render, toPlainText } from "@react-email/components";
 import { createElement, type ReactElement } from "react";
 
+import { AccountDeleted } from "./emails/account-deleted";
 import { ConfirmCode } from "./emails/confirm-code";
 import { ConfirmNewEmail } from "./emails/confirm-new-email";
 import { ContactMessage } from "./emails/contact-message";
@@ -55,6 +56,9 @@ export const sendResetPassword = ({
 
 export const sendPasswordChanged = ({ to }: { to: string }) =>
   deliver(to, "Your password was changed", createElement(PasswordChanged, { to }));
+
+export const sendAccountDeleted = ({ to }: { to: string }) =>
+  deliver(to, "Your account was deleted", createElement(AccountDeleted, { to }));
 
 export const sendConfirmNewEmail = ({
   to,
