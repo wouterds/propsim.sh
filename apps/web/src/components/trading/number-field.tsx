@@ -60,7 +60,7 @@ const NumberField = ({
         )}
         <BaseNumberField.Input
           placeholder={placeholder}
-          className={cn(FIELD, FOCUS_RING, steppers && "text-center")}
+          className={cn(FIELD, steppers && "text-center")}
         />
         {steppers && (
           <BaseNumberField.Increment className={STEPPER} aria-label={`increase ${label}`}>

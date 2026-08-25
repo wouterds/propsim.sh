@@ -20,7 +20,7 @@ const Field = ({ name, label, type = "text", autoComplete, minLength, defaultVal
       minLength={minLength}
       defaultValue={defaultValue}
       required
-      className="h-10 w-full rounded border border-line bg-sunken px-3 text-ink text-sm outline-hidden transition-colors focus-visible:border-accent focus-visible:ring-1 focus-visible:ring-accent"
+      className="h-10 w-full rounded border border-line bg-sunken px-3 text-ink text-sm outline-hidden transition-colors focus-visible:border-accent focus-visible:ring-[0.5px] focus-visible:ring-accent"
     />
   </div>
 );

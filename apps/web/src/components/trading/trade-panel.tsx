@@ -8,7 +8,7 @@ import { formatPrice } from "./format";
 import NumberField from "./number-field";
 import RiskReadout from "./risk-readout";
 import SideToggle from "./side-toggle";
-import { FIELD, FOCUS_RING, LABEL } from "./styles";
+import { FIELD, LABEL } from "./styles";
 import { fillPriceFor, type OrderDraft, type OrderType, type Side } from "./trading-state";
 
 const EMPTY_DRAFT: OrderDraft = {
@@ -131,9 +131,7 @@ const TradePanel = ({ last, tick, point, onSubmit }: Props) => {
         >
           <div className="flex flex-col gap-1">
             <Select.Label className={LABEL}>Order type</Select.Label>
-            <Select.Trigger
-              className={cn(FIELD, FOCUS_RING, "flex items-center justify-between text-left")}
-            >
+            <Select.Trigger className={cn(FIELD, "flex items-center justify-between text-left")}>
               <Select.Value />
               <Select.Icon className="text-faint">
                 <ChevronDown aria-hidden="true" className="size-3.5" strokeWidth={1.5} />

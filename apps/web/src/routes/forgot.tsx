@@ -42,7 +42,7 @@ export const action = async ({ request }: Route.ActionArgs) => {
 };
 
 const FIELD =
-  "h-10 w-full rounded border border-line bg-sunken px-3 text-ink text-sm outline-hidden transition-colors focus-visible:border-accent focus-visible:ring-1 focus-visible:ring-accent";
+  "h-10 w-full rounded border border-line bg-sunken px-3 text-ink text-sm outline-hidden transition-colors focus-visible:border-accent focus-visible:ring-[0.5px] focus-visible:ring-accent";
 
 const Forgot = ({ actionData }: Route.ComponentProps) => {
   const navigation = useNavigation();
@@ -59,12 +59,10 @@ const Forgot = ({ actionData }: Route.ComponentProps) => {
       <h1 className="font-semibold text-ink text-lg tracking-tight">Reset your password</h1>
 
       {actionData && "sent" in actionData ? (
-        <>
-          <p className="mt-2 text-muted text-sm leading-relaxed">
-            If that address has an account, a link is on its way. It works once and expires in{" "}
-            {RESET_TTL_MINUTES} minutes.
-          </p>
-        </>
+        <p className="mt-2 text-muted text-sm leading-relaxed">
+          If that address has an account, a link is on its way. It works once and expires in{" "}
+          {RESET_TTL_MINUTES} minutes.
+        </p>
       ) : (
         <>
           <p className="mt-1 mb-6 text-muted text-sm leading-relaxed">

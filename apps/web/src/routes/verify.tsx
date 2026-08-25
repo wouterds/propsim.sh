@@ -124,7 +124,7 @@ const Verify = ({ loaderData, actionData }: Route.ComponentProps) => {
               {SLOTS.map((slot) => (
                 <OTPField.Input
                   key={slot}
-                  className="h-12 w-full rounded border border-line bg-sunken text-center text-ink text-lg tabular outline-hidden transition-colors focus-visible:border-accent focus-visible:ring-1 focus-visible:ring-accent"
+                  className="h-12 w-full rounded border border-line bg-sunken text-center text-ink text-lg tabular outline-hidden transition-colors focus-visible:border-accent focus-visible:ring-[0.5px] focus-visible:ring-accent"
                 />
               ))}
             </OTPField.Root>

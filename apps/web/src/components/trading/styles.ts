@@ -6,7 +6,10 @@ export const FOCUS_RING = "outline-hidden focus-visible:ring-1 focus-visible:rin
 
 export const FIELD = cn(
   "h-8 w-full rounded border border-line bg-sunken px-2 text-ink text-sm tabular",
+  // The ring lives here rather than in FOCUS_RING: a field also lights its
+  // border, and a whole pixel of ring on top of that reads as two.
   "placeholder:text-faint focus-visible:border-accent",
+  "outline-hidden focus-visible:ring-[0.5px] focus-visible:ring-accent",
   "disabled:cursor-not-allowed disabled:border-line/50 disabled:bg-base disabled:text-muted",
 );
 

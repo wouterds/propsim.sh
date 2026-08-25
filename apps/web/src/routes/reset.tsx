@@ -57,7 +57,7 @@ export const action = async ({ request }: Route.ActionArgs) => {
 };
 
 const FIELD =
-  "h-10 w-full rounded border border-line bg-sunken px-3 text-ink text-sm outline-hidden transition-colors focus-visible:border-accent focus-visible:ring-1 focus-visible:ring-accent";
+  "h-10 w-full rounded border border-line bg-sunken px-3 text-ink text-sm outline-hidden transition-colors focus-visible:border-accent focus-visible:ring-[0.5px] focus-visible:ring-accent";
 
 const Reset = ({ loaderData, actionData }: Route.ComponentProps) => {
   const navigation = useNavigation();
