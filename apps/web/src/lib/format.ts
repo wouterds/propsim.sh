@@ -79,12 +79,27 @@ export const formatDate = (iso: string) => MONTH.format(new Date(`${iso}T00:00:0
 
 const RELATIVE = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
 
-const STEPS: [Intl.RelativeTimeFormatUnit, number][] = [
+type Step = [Intl.RelativeTimeFormatUnit, number];
+
+const STEPS: Step[] = [
   ["minute", 60_000],
   ["hour", 3_600_000],
   ["day", 86_400_000],
   ["month", 2_592_000_000],
 ];
+
+/** The largest unit the span has filled, so an hour is not sixty minutes. */
+const stepFor = (span: number) => {
+  let step: Step = STEPS[0];
+
+  for (const next of STEPS) {
+    if (span >= next[1]) {
+      step = next;
+    }
+  }
+
+  return step;
+};
 
 /** Formatted in the loader, or the text changes on hydration. */
 export const formatRelative = (at: Date, now: Date) => {
@@ -94,15 +109,7 @@ export const formatRelative = (at: Date, now: Date) => {
     return "Active now";
   }
 
-  let unit: Intl.RelativeTimeFormatUnit = "minute";
-  let size = 60_000;
-
-  for (const [next, span] of STEPS) {
-    if (since >= span) {
-      unit = next;
-      size = span;
-    }
-  }
+  const [unit, size] = stepFor(since);
 
   return RELATIVE.format(-Math.floor(since / size), unit);
 };
@@ -115,15 +122,7 @@ export const formatCountdown = (at: Date, now: Date) => {
     return formatRelative(at, now);
   }
 
-  let unit: Intl.RelativeTimeFormatUnit = "minute";
-  let size = 60_000;
-
-  for (const [next, span] of STEPS) {
-    if (until >= span) {
-      unit = next;
-      size = span;
-    }
-  }
+  const [unit, size] = stepFor(until);
 
   return RELATIVE.format(Math.max(1, Math.floor(until / size)), unit);
 };
