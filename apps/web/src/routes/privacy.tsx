@@ -52,13 +52,14 @@ const SECTIONS = [
     title: "How long",
     body: [
       "A session expires thirty days after it was opened, or after fourteen days of not being used, whichever comes first. Ending a session or changing your password removes them sooner.",
-      "The rest is kept for as long as the account exists. Ask for the account to be deleted and it goes, along with its sessions.",
+      "The rest is kept for as long as the account exists. Delete it from the settings page and it goes at once: the device records are removed, the address is freed for a new signup, and what is left is an empty row carrying nothing but the date it was emptied.",
     ],
   },
   {
     title: "What you can ask for",
     body: [
-      `A copy of what is held, a correction, a deletion, or an objection to any of it. Email ${CONTACT_EMAIL} and it is done by hand, without a form to fill in. If the answer is unsatisfactory you can complain to the data protection authority where you live.`,
+      "Deletion needs nobody: the settings page has a button for it, and it takes effect the moment you confirm.",
+      `For a copy of what is held, a correction, or an objection to any of it, email ${CONTACT_EMAIL} and it is done by hand, without a form to fill in. If the answer is unsatisfactory you can complain to the data protection authority where you live.`,
     ],
   },
 ];
