@@ -76,6 +76,14 @@ export const requireSession = async (request: Request): Promise<Session> => {
 export const requireUserId = async (request: Request) => (await requireSession(request)).userId;
 
 export const startSession = async (request: Request, userId: string, to: string | null) => {
+  // Signing in again on a device that is already signed in replaces its row
+  // rather than adding one, or the list reads as the same device three times.
+  const previous = await getSession(request);
+
+  if (previous?.userId === userId) {
+    await revokeSession(previous.userId, previous.id, "logout");
+  }
+
   const session = await sessions().getSession();
   session.set("token", await openSession(request, userId));
 

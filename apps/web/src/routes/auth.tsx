@@ -1,17 +1,18 @@
 import { sendConfirmCode } from "@propsim/mail";
 import { useState } from "react";
-import { href, Link } from "react-router";
+import { href, Link, redirect } from "react-router";
 import AuthForm from "~/components/auth/auth-form";
 import GoogleButton from "~/components/auth/google-button";
 import { type AuthMode, COPY } from "~/components/auth/mode";
 import ModeTabs from "~/components/auth/mode-tabs";
 import Brand from "~/components/layout/brand";
 import GridBackdrop from "~/components/layout/grid-backdrop";
-import { startPending } from "~/lib/auth.server";
+import { getUserId, startPending } from "~/lib/auth.server";
 import { googleIsSet } from "~/lib/google.server";
 import { notify } from "~/lib/notify.server";
 import { hashPassword, verifyPassword } from "~/lib/password.server";
 import { CODE_TTL_MINUTES, MIN_PASSWORD } from "~/lib/policy";
+import { safeReturn } from "~/lib/redirect.server";
 import { signIn } from "~/lib/sign-in.server";
 import { createUser, findUserByEmail } from "~/lib/users.server";
 import { issueCode } from "~/lib/verifications.server";
@@ -26,9 +27,15 @@ const REFUSED_GOOGLE: Record<string, string> = {
   unverified: "Google has not confirmed that address, so it cannot open an account here.",
 };
 
-export const loader = ({ request }: Route.LoaderArgs) => {
+export const loader = async ({ request }: Route.LoaderArgs) => {
   const params = new URL(request.url).searchParams;
   const back = params.get("r");
+
+  // Already signed in, so there is nothing to do here. Reaching this page in
+  // that state is how a device collects a second session for itself.
+  if (await getUserId(request)) {
+    throw redirect(safeReturn(back));
+  }
 
   return {
     reset: params.has("reset"),
