@@ -16,7 +16,7 @@ jobs:
   build:
     strategy:
       matrix:
-        app: [web]
+        app: [web, cron]
     name: "build: ${{ matrix.app }}"
     runs-on: ubuntu-latest
     env:
