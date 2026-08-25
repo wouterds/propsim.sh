@@ -132,11 +132,11 @@ type CandleProps = {
 };
 
 const Candle = ({ color, top, wick, body }: CandleProps) => (
-  <td style={{ padding: "0 1.5px", verticalAlign: "top" }}>
+  <td style={{ padding: "0 0.5px", verticalAlign: "top" }}>
     <div style={{ height: `${top}px`, lineHeight: "1px", fontSize: "1px" }}>&nbsp;</div>
     <div style={{ width: "1px", height: `${wick}px`, backgroundColor: color, margin: "0 auto" }} />
     <div
-      style={{ width: "5px", height: `${body}px`, backgroundColor: color, borderRadius: "1px" }}
+      style={{ width: "4px", height: `${body}px`, backgroundColor: color, borderRadius: "1px" }}
     />
     <div style={{ width: "1px", height: `${wick}px`, backgroundColor: color, margin: "0 auto" }} />
   </td>
@@ -146,9 +146,9 @@ const Mark = () => (
   <table cellPadding={0} cellSpacing={0} role="presentation" style={{ borderCollapse: "collapse" }}>
     <tbody>
       <tr>
-        <Candle color={DOWN} top={5} wick={2} body={6} />
-        <Candle color={UP} top={0} wick={2} body={9} />
-        <Candle color={DOWN} top={2} wick={2} body={6} />
+        <Candle color={DOWN} top={7} wick={2} body={5} />
+        <Candle color={UP} top={3} wick={2} body={7} />
+        <Candle color={DOWN} top={4} wick={2} body={5} />
       </tr>
     </tbody>
   </table>
