@@ -1,18 +1,18 @@
 services:
-  web:
-    image: ghcr.io/wouterds/propsim.sh/web
-    container_name: sh.propsim--web
-    mem_limit: 128mb
+  # The only container traefik knows about. It holds the routing that used to
+  # sit on the single web container, and spreads what arrives over the two
+  # behind it, so one can be replaced while the other keeps answering.
+  nginx:
+    image: nginx:1.29-alpine
+    container_name: sh.propsim--nginx
+    mem_limit: 64mb
     restart: unless-stopped
-    # Written by hand on the server, beside this file. Optional, so a missing one
-    # does not stop the container from starting.
-    env_file:
-      - path: .env
-        required: false
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
-      - "traefik.http.services.propsimsh.loadbalancer.server.port=3000"
+      - "traefik.http.services.propsimsh.loadbalancer.server.port=80"
       - "traefik.http.middlewares.propsimsh.redirectscheme.scheme=https"
       - "traefik.http.routers.propsimsh-http.rule=Host(`propsim.sh`) || Host(`www.propsim.sh`)"
       - "traefik.http.routers.propsimsh-http.entrypoints=web"
@@ -36,10 +36,42 @@ services:
       - "traefik.http.routers.propsimsh-www-http.entrypoints=web"
       - "traefik.http.routers.propsimsh-www-http.middlewares=propsimsh-apex"
       - "traefik.http.routers.propsimsh-www-http.priority=1000"
+    # Names only, not health. nginx resolves its upstreams when the config
+    # loads and refuses to start on one it cannot find, so both have to exist
+    # before it does.
+    depends_on:
+      - web-1
+      - web-2
     networks:
       - proxy
+      - internal
+
+  web-1: &web
+    image: ghcr.io/wouterds/propsim.sh/web
+    container_name: sh.propsim--web-1
+    mem_limit: 128mb
+    restart: unless-stopped
+    # Written by hand on the server, beside this file. Optional, so a missing one
+    # does not stop the container from starting.
+    env_file:
+      - path: .env
+        required: false
+    # What makes the container go green, and what the rollout waits on before it
+    # touches the other one. wget is busybox's, already in the alpine image.
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/health >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 20s
+    networks:
+      - internal
       - mariadb
       - cache
+
+  web-2:
+    <<: *web
+    container_name: sh.propsim--web-2
 
   cron:
     image: ghcr.io/wouterds/propsim.sh/cron
@@ -72,5 +104,7 @@ networks:
     external: true
   mariadb:
     external: true
-  # Only the two containers here, so the cache is not reachable from anywhere else.
+  # nginx to the web containers, and nothing else on it.
+  internal:
+  # Only the containers here, so the cache is not reachable from anywhere else.
   cache:
