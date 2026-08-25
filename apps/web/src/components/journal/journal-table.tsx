@@ -88,7 +88,7 @@ const JournalTable = ({ days, title, accountId }: Props) => {
                     <span className="flex h-full flex-1 justify-end">
                       {day.pnl < 0 && (
                         <span
-                          className="h-full rounded-l-full bg-down"
+                          className="h-full rounded-full bg-down"
                           style={{ width: `${(Math.abs(day.pnl) / widest) * 100}%` }}
                         />
                       )}
@@ -96,7 +96,7 @@ const JournalTable = ({ days, title, accountId }: Props) => {
                     <span className="flex h-full flex-1">
                       {day.pnl > 0 && (
                         <span
-                          className="h-full rounded-r-full bg-up"
+                          className="h-full rounded-full bg-up"
                           style={{ width: `${(day.pnl / widest) * 100}%` }}
                         />
                       )}
