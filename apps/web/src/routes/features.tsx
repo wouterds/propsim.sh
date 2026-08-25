@@ -34,6 +34,10 @@ export const action = async ({ request }: Route.ActionArgs) => {
   return null;
 };
 
+// The title covers the whole row with a pseudo element. Without this the row
+// swallows the arrow, because a positioned overlay paints over a static button.
+const ABOVE_OVERLAY = "relative z-10";
+
 const Features = ({ loaderData }: Route.ComponentProps) => {
   const { features, signedIn } = loaderData;
   const board = href("/feature-requests");
@@ -80,8 +84,7 @@ const Features = ({ loaderData }: Route.ComponentProps) => {
                     key={feature.id}
                     className="relative flex items-center gap-4 bg-raised/40 px-4 py-3.5 transition-colors hover:bg-overlay/60"
                   >
-                    {/* Above the title's overlay, or the row swallows the arrow. */}
-                    <div className="relative z-10">
+                    <div className={ABOVE_OVERLAY}>
                       <VoteButton
                         votes={feature.votes}
                         voted={feature.voted}

@@ -132,6 +132,10 @@ const Feature = ({ loaderData, actionData }: Route.ComponentProps) => {
   const replyTo = params.get("reply");
   const total = comments.reduce((sum, comment) => sum + 1 + comment.replies.length, 0);
 
+  // Remounts the box once the comment it sent is on the page, which is what
+  // clears the text. A navigation leaves an uncontrolled textarea as it was.
+  const emptyOnPost = `comments-${total}`;
+
   return (
     <section className="border-line/70 border-b">
       <div className="mx-auto max-w-6xl px-5 py-20 sm:px-8">
@@ -175,10 +179,8 @@ const Feature = ({ loaderData, actionData }: Route.ComponentProps) => {
 
             {signedIn ? (
               <div className="mt-6">
-                {/* Keyed on the count, so the box a comment came from empties
-                    once that comment is on the page. */}
                 <CommentForm
-                  key={total}
+                  key={emptyOnPost}
                   label="Your comment"
                   placeholder="Say what you would use it for, or why this is the wrong shape."
                   submit="Comment"
