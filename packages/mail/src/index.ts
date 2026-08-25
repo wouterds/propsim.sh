@@ -12,7 +12,7 @@ const deliver = async (to: string, subject: string, email: ReactElement) => {
 };
 
 export const sendWelcome = ({ to }: { to: string }) =>
-  deliver(to, "Welcome to propsim", createElement(Welcome));
+  deliver(to, "Welcome to propsim.sh", createElement(Welcome, { to }));
 
 export const sendConfirmCode = ({
   to,
@@ -25,4 +25,8 @@ export const sendConfirmCode = ({
 }) =>
   // The code stays out of the subject. Mailjet keeps subjects in message history, and
   // every relay on the path logs them.
-  deliver(to, "Confirm your propsim email", createElement(ConfirmCode, { code, expiresInMinutes }));
+  deliver(
+    to,
+    "Confirm your email address",
+    createElement(ConfirmCode, { to, code, expiresInMinutes }),
+  );

@@ -95,8 +95,15 @@ export const digits: CSSProperties = {
   fontWeight: 700,
   letterSpacing: "10px",
   margin: "0 0 20px",
-  padding: "16px 0",
+  padding: "16px 0 16px 10px",
   textAlign: "center",
+};
+
+export const warning: CSSProperties = {
+  color: FAINT,
+  fontSize: "13px",
+  lineHeight: "20px",
+  margin: "0 0 16px",
 };
 
 export const button: CSSProperties = {
@@ -113,12 +120,17 @@ export const button: CSSProperties = {
 type LayoutProps = {
   preview: string;
   footnote: string;
+  to: string;
   children: ReactNode;
 };
 
-export const Layout = ({ preview, footnote, children }: LayoutProps) => (
+export const Layout = ({ preview, footnote, to, children }: LayoutProps) => (
   <Html lang="en">
-    <Head />
+    <Head>
+      {/* Without these a client treats the dark palette as light and inverts it. */}
+      <meta name="color-scheme" content="dark" />
+      <meta name="supported-color-schemes" content="dark" />
+    </Head>
     <Preview>{preview}</Preview>
     <Body style={body}>
       <Container style={container}>
@@ -133,10 +145,11 @@ export const Layout = ({ preview, footnote, children }: LayoutProps) => (
           <Text style={footer}>
             {footnote}
             <br />
-            propsim is a trading simulator. Nothing is ordered and no money is at stake.{" "}
+            Sent to {to} by{" "}
             <Link href={SITE} style={footerLink}>
               propsim.sh
             </Link>
+            , a trading simulator. Nothing is ordered and no money is at stake.
           </Text>
         </Section>
       </Container>
