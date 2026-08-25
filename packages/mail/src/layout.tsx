@@ -27,10 +27,14 @@ const body: CSSProperties = {
   padding: "32px 12px",
 };
 
+// The card's corner. The footer under it is indented by the same amount, so
+// keep the two together.
+const RADIUS = 12;
+
 const container: CSSProperties = {
   backgroundColor: RAISED,
   border: `1px solid ${LINE}`,
-  borderRadius: "12px",
+  borderRadius: `${RADIUS}px`,
   margin: "0 auto",
   maxWidth: "480px",
   padding: "32px 32px 16px",
@@ -60,9 +64,9 @@ const footer: CSSProperties = {
   boxSizing: "border-box",
   margin: "16px auto 0",
   maxWidth: "480px",
-  // The card's own padding plus its border, so the two blocks of text share a
-  // left edge rather than the footer starting at the card's outer corner.
-  padding: "0 33px",
+  // The corner radius, so the text starts where the card's rounded corner stops
+  // curving and its edge runs straight.
+  padding: `0 ${RADIUS}px`,
 };
 
 // No underline and the same colour as the line it sits in: the address only
