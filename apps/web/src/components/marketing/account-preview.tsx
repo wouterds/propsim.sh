@@ -33,8 +33,11 @@ const AccountPreview = () => (
   <div className="overflow-hidden rounded-xl border border-line bg-raised shadow-[0_24px_80px_-40px_rgb(0_0_0)]">
     <div className="flex h-9 items-center justify-between border-line border-b px-3 text-[11px] uppercase tracking-wider">
       <span className="text-muted">{ACCOUNT.name}</span>
-      <span className="flex items-center gap-1.5 text-faint">
-        <span className="size-1.5 rounded-full bg-accent" />
+      <span className="flex items-center gap-2 text-faint">
+        <span className="relative flex size-1.5" aria-hidden="true">
+          <span className="absolute inline-flex size-full animate-ping rounded-full bg-accent opacity-75" />
+          <span className="relative inline-flex size-full rounded-full bg-accent" />
+        </span>
         Live, delayed
       </span>
     </div>
