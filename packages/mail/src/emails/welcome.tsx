@@ -1,5 +1,5 @@
-import { Button, Heading, Text } from "@react-email/components";
-import { button, heading, Layout, paragraph, SITE } from "../layout";
+import { Heading, Text } from "@react-email/components";
+import { ButtonLink, heading, Layout, paragraph, SITE } from "../layout";
 
 export type WelcomeProps = {
   to: string;
@@ -21,9 +21,7 @@ export const Welcome = ({ to }: WelcomeProps) => (
       You trade live market data on a short delay. The dashboard shows both limits and how much room
       is left against them.
     </Text>
-    <Button style={button} href={`${SITE}/dash`}>
-      Open your dashboard
-    </Button>
+    <ButtonLink href={`${SITE}/dash`}>Open your dashboard</ButtonLink>
   </Layout>
 );
 

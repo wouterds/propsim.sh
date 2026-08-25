@@ -103,16 +103,12 @@ export const digits: CSSProperties = {
   textAlign: "center",
 };
 
-export const warning: CSSProperties = {
-  color: FAINT,
-  fontSize: "13px",
-  lineHeight: "20px",
-  margin: "0 0 16px",
-};
-
-export const button: CSSProperties = {
+const buttonCell: CSSProperties = {
   backgroundColor: ACCENT,
   borderRadius: "6px",
+};
+
+const buttonLabel: CSSProperties = {
   color: BASE,
   display: "inline-block",
   fontSize: "15px",
@@ -120,6 +116,29 @@ export const button: CSSProperties = {
   padding: "12px 20px",
   textDecoration: "none",
 };
+
+type ButtonLinkProps = {
+  href: string;
+  children: ReactNode;
+};
+
+/**
+ * The fill sits on the cell, not on the link. Apple Mail in dark mode drops a
+ * background set on an anchor and leaves the dark label, so the button goes
+ */
+export const ButtonLink = ({ href, children }: ButtonLinkProps) => (
+  <table cellPadding={0} cellSpacing={0} role="presentation" style={{ borderCollapse: "separate" }}>
+    <tbody>
+      <tr>
+        <td style={buttonCell}>
+          <Link href={href} style={buttonLabel}>
+            <span style={{ color: BASE }}>{children}</span>
+          </Link>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+);
 
 const UP = "#14b8a6";
 const DOWN = "#f43f5e";
