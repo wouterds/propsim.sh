@@ -17,11 +17,32 @@ updates:
       prefix: "chore"
       include: "scope"
 
+  # Compose pins the image the server actually runs.
+  - package-ecosystem: "docker-compose"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+
+  # Every app builds from its own base image, so every one has to be watched or
+  # its node stays on whatever it was pinned to the day it was written.
+  - package-ecosystem: "docker"
+    directories:
+      - "/apps/web"
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+
   # The root manifest holds the toolchain only. Every workspace that ships a
   # runtime dependency has to be listed here or it is never watched.
   - package-ecosystem: "npm"
     directories:
       - "/"
+      - "/apps/web"
     schedule:
       interval: "monthly"
     commit-message:
