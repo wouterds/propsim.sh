@@ -35,20 +35,31 @@
 
 Default to none. Names and small functions are the documentation.
 
+- **The bar is misreading.** Comment only where leaving it out lets someone break or misuse the
+  thing. Being non-obvious is not enough, and neither is being hard-won
 - Explain **why**, never **what**. Delete anything that restates the code
-- The bar is consequence: comment when leaving it out would let someone break or misuse the thing.
-  A constraint that is invisible in the code is worth a line, a description of the line above it is
-  not
-- Keep it to a line or two. Longer means the code should be clearer, or the reasoning belongs in the
-  commit message
+- **One or two lines. Never a paragraph.** Reasoning that needs more belongs in the commit message,
+  where it is attached to the change rather than to the file forever
+- Write them in **ASD-STE100 Simplified Technical English**: short sentences, one idea each, active
+  voice, plain words, no idiom and no metaphor
+- **Omit every word that can go while it still reads.** A comment is read far more often than it was
+  written
+- Do not narrate the alternatives you rejected, or what an upstream "silently" does, or how a bug
+  once felt. State the fact that prevents the mistake and stop
 
 Worth a comment:
+
+```ts
+// The floor only rises. An assignment here gives back room the account already lost.
+floor = Math.max(floor, peakEquity - limit);
+```
+
+Too long, same fact:
 
 ```ts
 // The floor only ever rises, so this is a max against the previous value rather
 // than an assignment. Assigning here would let a drawdown hand back room that
 // the account has already given up for good.
-floor = Math.max(floor, peakEquity - limit);
 ```
 
 Not worth one:
