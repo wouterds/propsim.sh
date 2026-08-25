@@ -7,8 +7,8 @@ export type WelcomeProps = {
 
 export const Welcome = ({ to }: WelcomeProps) => (
   <Layout
-    preview="Your propsim account is ready."
-    footnote="You are receiving this because you created a propsim account."
+    preview="Your propsim.sh account is ready."
+    footnote="You are receiving this because you created a propsim.sh account."
     to={to}
   >
     <Heading style={heading}>Your account is ready</Heading>
