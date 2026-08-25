@@ -15,6 +15,8 @@ export const FIELD = cn(
 
 // Block with a fixed line box: the number field wraps its label in a scrub
 // area and the select does not, and without one they sit on different lines.
+// Put this on the label itself, never merged onto a row that lays one out. The
+// `block` beats `flex` through tailwind-merge and takes the centring with it.
 export const LABEL = "block text-[11px] text-faint uppercase leading-4 tracking-wider";
 
 export const TH =

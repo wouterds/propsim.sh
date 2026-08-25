@@ -18,10 +18,9 @@ const Panel = ({ title, actions, className, bodyClassName, children }: Props) =>
           "flex h-9 shrink-0 items-center gap-3 border-line border-b px-3",
           // Untitled panels put their actions where the title would sit.
           title && "justify-between",
-          LABEL,
         )}
       >
-        {title && <span>{title}</span>}
+        {title && <span className={LABEL}>{title}</span>}
         {actions}
       </header>
     )}
