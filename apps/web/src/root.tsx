@@ -87,12 +87,6 @@ export const ErrorBoundary = ({ error }: Route.ErrorBoundaryProps) => {
             Tell us
           </Link>
         </div>
-
-        {import.meta.env.DEV && error instanceof Error && error.stack && (
-          <pre className="mt-10 overflow-x-auto rounded-lg border border-line bg-raised p-4 text-left text-faint text-xs">
-            {error.stack}
-          </pre>
-        )}
       </div>
 
       <Scripts />
