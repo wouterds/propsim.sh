@@ -144,14 +144,12 @@ const Auth = ({ loaderData, actionData }: Route.ComponentProps) => {
             </>
           )}
 
-          {mode === "login" && (
-            <Link
-              to={href("/forgot")}
-              className="mt-4 block rounded-sm text-center text-faint text-xs transition-colors hover:text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
-            >
-              Forgot your password?
-            </Link>
-          )}
+          <Link
+            to={href("/forgot")}
+            className="mt-4 block rounded-sm text-center text-faint text-xs transition-colors hover:text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
+          >
+            Forgot your password?
+          </Link>
         </div>
       </div>
     </main>
