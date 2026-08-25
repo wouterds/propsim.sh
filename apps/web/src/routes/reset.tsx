@@ -6,6 +6,7 @@ import { hashPassword } from "~/lib/password.server";
 import { consumeReset, resetIsLive } from "~/lib/password-resets.server";
 import { MIN_PASSWORD } from "~/lib/policy";
 import { revokeAllSessions } from "~/lib/sessions.server";
+import { signIn } from "~/lib/sign-in.server";
 import { findUserById, updatePassword } from "~/lib/users.server";
 import type { Route } from "./+types/reset";
 
@@ -35,16 +36,20 @@ export const action = async ({ request }: Route.ActionArgs) => {
 
   await updatePassword(userId, await hashPassword(password));
 
-  // Somebody else may hold the old password. Signing in again is deliberate.
+  // Every session, including any this browser holds: somebody else may know the
+  // old password. The one opened below is the only one left.
   await revokeAllSessions(userId, "password_reset");
 
   const user = await findUserById(userId);
 
-  if (user) {
-    await notify(() => sendPasswordChanged({ to: user.email }));
+  if (!user) {
+    return redirect(`${href("/auth")}?reset=1`);
   }
 
-  return redirect(`${href("/auth")}?reset=1`);
+  await notify(() => sendPasswordChanged({ to: user.email }));
+
+  // The link proved the address, so there is nothing left to ask for.
+  return signIn(request, user, null);
 };
 
 const FIELD =
