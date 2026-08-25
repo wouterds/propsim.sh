@@ -94,6 +94,27 @@ export const formatRelative = (at: Date, now: Date) => {
   return RELATIVE.format(-Math.floor(since / size), unit);
 };
 
+/** The mirror of the above, for a moment that has not happened yet. */
+export const formatCountdown = (at: Date, now: Date) => {
+  const until = at.getTime() - now.getTime();
+
+  if (until <= 0) {
+    return formatRelative(at, now);
+  }
+
+  let unit: Intl.RelativeTimeFormatUnit = "minute";
+  let size = 60_000;
+
+  for (const [next, span] of STEPS) {
+    if (until >= span) {
+      unit = next;
+      size = span;
+    }
+  }
+
+  return RELATIVE.format(Math.max(1, Math.floor(until / size)), unit);
+};
+
 const REGIONS = new Intl.DisplayNames(["en"], { type: "region" });
 
 const flagOf = (code: string) =>

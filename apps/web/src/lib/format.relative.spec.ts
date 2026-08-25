@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { countryOf, formatRelative } from "./format";
+import { countryOf, formatCountdown, formatRelative } from "./format";
 
 const at = (iso: string) => new Date(iso);
 const NOW = at("2026-08-25T12:00:00Z");
@@ -34,5 +34,24 @@ describe("countryOf", () => {
   it("should name the country and build its flag", () => {
     // then
     expect(countryOf("BE")).toEqual({ name: "Belgium", flag: "🇧🇪" });
+  });
+});
+
+describe("formatCountdown", () => {
+  it("should count towards a moment rather than away from it", () => {
+    // then
+    expect(formatCountdown(at("2026-08-27T12:00:00Z"), NOW)).toBe("in 2 days");
+    expect(formatCountdown(at("2026-08-25T15:00:00Z"), NOW)).toBe("in 3 hours");
+  });
+
+  it("should never round a moment still ahead down to nothing", () => {
+    // given thirty seconds out, which floors to zero minutes
+    // then
+    expect(formatCountdown(at("2026-08-25T12:00:30Z"), NOW)).toBe("in 1 minute");
+  });
+
+  it("should hand a moment already gone back to the other one", () => {
+    // then
+    expect(formatCountdown(at("2026-08-25T09:00:00Z"), NOW)).toBe("3 hours ago");
   });
 });

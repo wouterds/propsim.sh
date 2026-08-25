@@ -1,7 +1,7 @@
 import { getNewsEvents, isRedFolder } from "@propsim/datasources";
 import Badge from "~/components/ui/badge";
 import { AFTER_MINUTES, BEFORE_MINUTES } from "~/lib/blackout";
-import { formatDay, formatRelative } from "~/lib/format";
+import { formatCountdown, formatDay, formatRelative } from "~/lib/format";
 import type { Route } from "./+types/calendar";
 
 export const meta: Route.MetaFunction = () => [
@@ -26,14 +26,24 @@ export const loader = async () => {
 
   const rows = events.map((event) => {
     const at = new Date(event.time);
+    // A release is still ahead of you until the window either side of it closes,
+    // and inside that window it is the one thing on the page that matters.
+    const opens = event.time - BEFORE_MINUTES * 60_000;
+    const closes = event.time + AFTER_MINUTES * 60_000;
+    const active = now.getTime() >= opens && now.getTime() <= closes;
 
     return {
       id: event.id,
       title: event.title,
       day: formatDay(at.toISOString().slice(0, 10)),
       time: `${CLOCK.format(at)} UTC`,
-      when: formatRelative(at, now),
-      past: event.time < now.getTime(),
+      when: active
+        ? "Active now"
+        : now.getTime() > closes
+          ? formatRelative(at, now)
+          : formatCountdown(at, now),
+      active,
+      past: now.getTime() > closes,
     };
   });
 
@@ -60,7 +70,11 @@ const Table = ({ rows, title, empty }: { rows: Row[]; title: string; empty: stri
             <span className="w-28 shrink-0 text-ink text-xs tabular">{row.day}</span>
             <span className="w-20 shrink-0 text-muted text-xs tabular">{row.time}</span>
             <span className="min-w-0 flex-1 text-ink text-sm">{row.title}</span>
-            <span className="shrink-0 text-faint text-xs">{row.when}</span>
+            <span
+              className={row.active ? "shrink-0 text-down text-xs" : "shrink-0 text-faint text-xs"}
+            >
+              {row.when}
+            </span>
           </li>
         ))}
       </ul>
