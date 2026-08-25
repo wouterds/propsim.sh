@@ -1,38 +1,46 @@
 import Redis from "ioredis";
 
-// Redis when it is configured, memory when it is not, so a local run needs no
-// server and a second container does not fetch what the first already has.
-let client: Redis | null | undefined;
+// Redis runs beside the app in compose, so there is nothing to configure. Every
+// path below falls back to memory when it is not there, which is what a local
+// run and a restarting container both look like.
+const URL = process.env.NODE_ENV === "production" ? "redis://redis:6379" : "redis://127.0.0.1:6379";
 
-const redis = () => {
-  if (client !== undefined) {
-    return client;
+let complained = false;
+
+// Opened at boot rather than on the first read, or the first request would
+// always find the connection still coming up and answer from memory.
+const client = new Redis(URL, {
+  enableOfflineQueue: false,
+  maxRetriesPerRequest: 1,
+  retryStrategy: (attempt) => Math.min(attempt * 500, 30_000),
+});
+
+// Without a listener a dropped connection takes the process down, and a server
+// that is simply not there would print on every retry.
+client.on("error", (error) => {
+  if (complained) {
+    return;
   }
 
-  const url = process.env.REDIS_URL;
+  complained = true;
+  console.error("Redis unavailable, caching in memory", error.message);
+});
 
-  if (!url) {
-    client = null;
+client.on("ready", () => {
+  complained = false;
+});
 
-    return client;
-  }
-
-  client = new Redis(url, { lazyConnect: true, maxRetriesPerRequest: 1 });
-  // Without a listener a dropped connection takes the process down.
-  client.on("error", (error) => console.error("Redis unavailable", error.message));
-
-  return client;
-};
+const redis = () => (client.status === "ready" ? client : null);
 
 const memory = new Map<string, { value: unknown; until: number }>();
 
 export const readCache = async <T>(key: string): Promise<T | null> => {
-  const store = redis();
+  const raw = await redis()
+    ?.get(key)
+    .catch(() => null);
 
-  if (store) {
-    const raw = await store.get(key).catch(() => null);
-
-    return raw ? (JSON.parse(raw) as T) : null;
+  if (raw) {
+    return JSON.parse(raw) as T;
   }
 
   const held = memory.get(key);
