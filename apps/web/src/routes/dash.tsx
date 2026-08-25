@@ -6,7 +6,7 @@ import SessionsTable from "~/components/dashboard/sessions-table";
 import StatCard from "~/components/dashboard/stat-card";
 import { ACCOUNT, dailyFloorOf, trailingFloorOf } from "~/lib/account";
 import { formatMoney, formatSigned, toneOf } from "~/lib/format";
-import type { Route } from "./+types/dashboard";
+import type { Route } from "./+types/dash";
 
 export const meta: Route.MetaFunction = () => [{ title: "Dashboard, propsim.sh" }];
 

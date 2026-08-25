@@ -24,7 +24,7 @@ const CtaBand = () => (
               Open the simulator
             </Link>
             <Link
-              to={href("/dashboard")}
+              to={href("/dash")}
               className="inline-flex h-10 items-center rounded border border-line px-5 text-muted transition-colors hover:border-line-strong hover:text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
             >
               See an account

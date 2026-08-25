@@ -5,7 +5,7 @@ export default [
   route("auth", "routes/auth.tsx"),
 
   layout("routes/app.tsx", [
-    route("dashboard", "routes/dashboard.tsx"),
+    route("dash", "routes/dash.tsx"),
     route("trading", "routes/trading.tsx"),
   ]),
 ] satisfies RouteConfig;

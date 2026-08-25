@@ -5,7 +5,7 @@ import { formatMoney } from "~/lib/format";
 import { cn } from "~/lib/utils";
 
 const LINKS = [
-  { to: href("/dashboard"), label: "Dashboard" },
+  { to: href("/dash"), label: "Dashboard" },
   { to: href("/trading"), label: "Trading" },
 ];
 
