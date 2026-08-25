@@ -19,6 +19,7 @@
     "@propsim/accounts": "*",
     "@propsim/database": "*",
     "@propsim/datasources": "*",
+    "@propsim/identity": "*",
     "@propsim/mail": "*",
     "@propsim/plans": "*",
     "@react-router/node": "^8.3.0",
