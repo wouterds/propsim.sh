@@ -1,7 +1,7 @@
 import { accounts, fills, getDb, users } from "@propsim/database";
 import { type Fill, ledgerOf, toDollars } from "@propsim/engine";
-import { personaOf } from "@propsim/identity";
 import { asc, eq, inArray, isNull } from "drizzle-orm";
+import { personaOf } from "~/components/identity/persona";
 import {
   bankedSince,
   cutoffOf,

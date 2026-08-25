@@ -1,4 +1,4 @@
-import { Avatar } from "@propsim/identity";
+import { Avatar } from "~/components/identity/avatar";
 import { formatPercent, formatSigned, TONE_TEXT, toneOf } from "~/lib/format";
 import type { Row } from "~/lib/leaderboard.server";
 import { cn } from "~/lib/utils";

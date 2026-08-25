@@ -1,4 +1,5 @@
-import { Avatar, type Persona } from "@propsim/identity";
+import { Avatar } from "~/components/identity/avatar";
+import type { Persona } from "~/components/identity/persona";
 
 type Props = {
   author: Persona;

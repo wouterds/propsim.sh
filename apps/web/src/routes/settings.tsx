@@ -1,4 +1,3 @@
-import { personaOf } from "@propsim/identity";
 import {
   sendAccountDeleted,
   sendConfirmNewEmail,
@@ -8,6 +7,7 @@ import {
 import { scrubUser } from "@propsim/users";
 import { useEffect, useRef } from "react";
 import { data, Form, href, Link, useNavigation } from "react-router";
+import { personaOf } from "~/components/identity/persona";
 import DeleteAccount from "~/components/settings/delete-account";
 import Field from "~/components/settings/field";
 import Notice from "~/components/settings/notice";

@@ -1,8 +1,8 @@
 import type { VoteSubject } from "@propsim/database";
 import { featureComments, featureRequests, featureVotes, getDb, users } from "@propsim/database";
-import { personaOf } from "@propsim/identity";
 import { and, asc, desc, eq } from "drizzle-orm";
 import type { MySqlColumn } from "drizzle-orm/mysql-core";
+import { personaOf } from "~/components/identity/persona";
 import { formatAgo } from "./format";
 
 const votesOn = (subject: VoteSubject, subjectId: MySqlColumn) =>
