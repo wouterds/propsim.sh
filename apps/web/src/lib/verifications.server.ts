@@ -1,12 +1,7 @@
 import { db, emailVerifications } from "@propsim/database";
 import { eq } from "drizzle-orm";
-import {
-  codeMatches,
-  expiresAt,
-  generateCode,
-  hashCode,
-  MAX_ATTEMPTS,
-} from "./verification.server";
+import { MAX_ATTEMPTS } from "./verification";
+import { codeMatches, expiresAt, generateCode, hashCode } from "./verification.server";
 
 export type CheckResult = "ok" | "wrong" | "expired" | "locked" | "missing";
 

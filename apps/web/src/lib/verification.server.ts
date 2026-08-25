@@ -1,11 +1,8 @@
 import { createHmac, randomInt, timingSafeEqual } from "node:crypto";
+import { CODE_DIGITS, CODE_TTL_MINUTES } from "./verification";
 
-export const CODE_TTL_MINUTES = 10;
-export const MAX_ATTEMPTS = 5;
-
-const DIGITS = 6;
-
-export const generateCode = () => String(randomInt(0, 10 ** DIGITS)).padStart(DIGITS, "0");
+export const generateCode = () =>
+  String(randomInt(0, 10 ** CODE_DIGITS)).padStart(CODE_DIGITS, "0");
 
 // Keyed rather than plain. A six digit code has a million values, so a database
 // dump with a bare hash in it is enumerable in seconds.
