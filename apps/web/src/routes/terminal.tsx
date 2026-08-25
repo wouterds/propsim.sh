@@ -1,6 +1,7 @@
 import { type Candle, getCandles } from "@propsim/datasources";
+import { findInstrument, instrumentOr, isWorking, priceUnits, tradeDateOf } from "@propsim/engine";
 import { useEffect, useMemo, useState } from "react";
-import { data, useNavigate, useSearchParams } from "react-router";
+import { data, useFetcher, useNavigate, useSearchParams } from "react-router";
 import NewsStrip from "~/components/app/news-strip";
 import type { ChartBar, ChartPriceLine } from "~/components/chart/candle-chart";
 import CandleChart from "~/components/chart/candle-chart";
@@ -8,16 +9,24 @@ import ChartHeader from "~/components/chart/chart-header";
 import TimeframeSwitcher from "~/components/chart/timeframe-switcher";
 import AccountStrip from "~/components/trading/account-strip";
 import Blotter from "~/components/trading/blotter";
-import { instrumentOr } from "~/components/trading/instruments";
 import NewsBanner from "~/components/trading/news-banner";
 import Panel from "~/components/trading/panel";
 import { barsPerDay, parseTimeframe, rangeFor } from "~/components/trading/timeframes";
 import TradePanel from "~/components/trading/trade-panel";
-import { usePaperTrading } from "~/components/trading/use-paper-trading";
-import { findAccount } from "~/lib/accounts";
+import { fillPriceFor, type OrderDraft } from "~/components/trading/trading-state";
+import { listFills, loadAccount } from "~/lib/accounts.server";
+import { requireUserId } from "~/lib/auth.server";
 import { activeWindow, nextWindow } from "~/lib/blackout";
+import { ordersOf, positionsIn } from "~/lib/blotter.server";
 import { chartPrefs, readChartPrefs } from "~/lib/chart-prefs.server";
 import { redFolderWindows } from "~/lib/news.server";
+import {
+  cancelOrder,
+  closePosition,
+  listOrders,
+  modifyOrder,
+  placeOrder,
+} from "~/lib/orders.server";
 import { PRIVATE } from "~/lib/seo";
 import type { Route } from "./+types/terminal";
 
@@ -30,16 +39,36 @@ export const meta: Route.MetaFunction = ({ loaderData }) => [
   ...PRIVATE,
 ];
 
+const lastTraded = async (symbol: string) => {
+  const candles = await getCandles({ symbol, interval: "1m", range: "1d" });
+
+  return candles.at(-1)?.close ?? null;
+};
+
+const number = (form: FormData, key: string) => {
+  const raw = form.get(key);
+
+  if (raw === null || raw === "") {
+    return null;
+  }
+
+  const value = Number(raw);
+
+  return Number.isFinite(value) ? value : null;
+};
+
 /** `url`, not `request.url`: the latter carries a `.data` suffix on client navigation. */
 export const loader = async ({ url, params, request }: Route.LoaderArgs) => {
+  const userId = await requireUserId(request);
+
   // The address wins, so a shared link opens on what it names. The cookie is
   // what an address with nothing in it falls back to.
   const kept = await readChartPrefs(request);
   const timeframe = parseTimeframe(url.searchParams.get("tf") ?? kept.tf ?? null);
   const instrument = instrumentOr(url.searchParams.get("s") ?? kept.s);
-  const account = findAccount(params.id);
+  const loaded = await loadAccount(userId, params.id);
 
-  if (!account) {
+  if (!loaded) {
     throw new Response("No such account", { status: 404 });
   }
 
@@ -47,11 +76,25 @@ export const loader = async ({ url, params, request }: Route.LoaderArgs) => {
     "Set-Cookie": await chartPrefs.serialize({ s: instrument.code, tf: timeframe }),
   };
 
-  const windows = await redFolderWindows();
+  const [windows, orderRows, fillRows] = await Promise.all([
+    redFolderWindows(),
+    listOrders(loaded.row.id),
+    listFills(loaded.row.id),
+  ]);
+
+  const today = tradeDateOf(new Date());
+  // `ordersOf` maps one row to one order, so the index is the row it came from.
+  const placed = ordersOf(orderRows, fillRows);
+  const orders = placed.filter(
+    (order, index) => orderRows[index].tradeDate === today || isWorking(order.status),
+  );
+  const positions = positionsIn(loaded.ledger, orderRows, fillRows);
 
   // Only once it is inside a day. Further out it is the calendar's job.
   const next = nextWindow(windows, Date.now());
   const upcoming = next && next.at - Date.now() < DAY ? { at: next.at, titles: next.titles } : null;
+
+  const book = { orders, positions, realised: loaded.account.balance - loaded.account.plan.size };
 
   try {
     const candles = await getCandles({
@@ -61,7 +104,16 @@ export const loader = async ({ url, params, request }: Route.LoaderArgs) => {
     });
 
     return data(
-      { account, instrument, timeframe, candles, windows, upcoming, error: null },
+      {
+        account: loaded.account,
+        book,
+        instrument,
+        timeframe,
+        candles,
+        windows,
+        upcoming,
+        error: null,
+      },
       { headers },
     );
   } catch (cause) {
@@ -70,15 +122,106 @@ export const loader = async ({ url, params, request }: Route.LoaderArgs) => {
     const error = cause instanceof Error ? cause.message : "the price feed did not answer";
 
     return data(
-      { account, instrument, timeframe, candles: [] as Candle[], windows, upcoming, error },
+      {
+        account: loaded.account,
+        book,
+        instrument,
+        timeframe,
+        candles: [] as Candle[],
+        windows,
+        upcoming,
+        error,
+      },
       { headers },
     );
   }
 };
 
+/**
+ * The fill price is the tape this server just read, never a number the form
+ * carried. A refused write says why rather than marking to a stand in.
+ */
+export const action = async ({ params, request }: Route.ActionArgs) => {
+  const userId = await requireUserId(request);
+  const loaded = await loadAccount(userId, params.id);
+
+  if (!loaded) {
+    throw new Response("No such account", { status: 404 });
+  }
+
+  const form = await request.formData();
+  const intent = String(form.get("intent") ?? "");
+  const at = new Date();
+
+  if (intent === "cancel") {
+    await cancelOrder(loaded.row.id, String(form.get("id") ?? ""), at);
+
+    return { error: null };
+  }
+
+  if (intent === "modify") {
+    const price = number(form, "price");
+    const quantity = number(form, "quantity");
+
+    if (price === null || quantity === null) {
+      return { error: "A modify needs a price and a size." };
+    }
+
+    return {
+      error: await modifyOrder(
+        loaded.row.id,
+        String(form.get("id") ?? ""),
+        priceUnits(price),
+        quantity,
+        at,
+      ),
+    };
+  }
+
+  // Named, never guessed. A fallback here would fill the wrong contract.
+  const instrument = findInstrument(String(form.get("instrument") ?? ""));
+
+  if (!instrument || (intent !== "submit" && intent !== "close")) {
+    return { error: "That is not something this terminal can do." };
+  }
+
+  const mark = await lastTraded(instrument.symbol);
+
+  if (mark === null) {
+    return { error: "No price to fill against. The feed is not answering." };
+  }
+
+  if (intent === "close") {
+    return { error: await closePosition(loaded.row, instrument.code, priceUnits(mark), at) };
+  }
+
+  const type = String(form.get("type") ?? "market");
+  const price = number(form, "price");
+  const stopLoss = number(form, "stopLoss");
+  const takeProfit = number(form, "takeProfit");
+
+  return {
+    error: await placeOrder(
+      loaded.row,
+      {
+        instrument: instrument.code,
+        side: form.get("side") === "sell" ? "sell" : "buy",
+        type: type === "limit" || type === "stop" ? type : "market",
+        quantity: number(form, "quantity") ?? 0,
+        price: price === null ? null : priceUnits(price),
+        stopLoss: stopLoss === null ? null : priceUnits(stopLoss),
+        takeProfit: takeProfit === null ? null : priceUnits(takeProfit),
+      },
+      priceUnits(mark),
+      at,
+    ),
+  };
+};
+
 const Trading = ({ loaderData }: Route.ComponentProps) => {
-  const { account, instrument, timeframe, candles, windows, upcoming, error } = loaderData;
+  const { account, book, instrument, timeframe, candles, windows, upcoming, error } = loaderData;
   const navigate = useNavigate();
+  const fetcher = useFetcher<typeof action>();
   const [params] = useSearchParams();
   const [hovered, setHovered] = useState<ChartBar | null>(null);
 
@@ -97,7 +240,33 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
 
   // Null, not a stand-in. Closing marks to this price and banks it for good.
   const last = candles.at(-1)?.close ?? null;
-  const book = usePaperTrading(last, account.balance, instrument.point);
+
+  const openPnl = useMemo(() => {
+    if (last === null) return null;
+
+    return book.positions.reduce((total, position) => {
+      const direction = position.side === "buy" ? 1 : -1;
+
+      return total + (last - position.entry) * direction * position.quantity * instrument.point;
+    }, 0);
+  }, [book.positions, last, instrument.point]);
+
+  const send = (fields: Record<string, string>) =>
+    fetcher.submit({ instrument: instrument.code, ...fields }, { method: "post" });
+
+  const submit = (draft: OrderDraft) => {
+    if (last === null) return;
+
+    send({
+      intent: "submit",
+      side: draft.side,
+      type: draft.type,
+      quantity: String(draft.quantity),
+      price: draft.type === "market" ? "" : String(fillPriceFor(draft, last)),
+      stopLoss: draft.stopLoss === null ? "" : String(draft.stopLoss),
+      takeProfit: draft.takeProfit === null ? "" : String(draft.takeProfit),
+    });
+  };
 
   // The chart redraws its price lines whenever this array changes identity.
   const priceLines = useMemo<ChartPriceLine[]>(() => {
@@ -128,7 +297,7 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
     });
 
     const restingLines = book.orders
-      .filter((order) => order.status === "working")
+      .filter((order) => isWorking(order.status))
       .map<ChartPriceLine>((order) => ({
         id: order.id,
         price: order.price,
@@ -156,12 +325,21 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
         upcoming && <NewsStrip at={upcoming.at} titles={upcoming.titles} />
       )}
       <AccountStrip
-        balance={book.balance}
-        equity={book.equity}
+        balance={account.balance}
+        equity={openPnl === null ? null : account.balance + openPnl}
         realised={book.realised}
-        openPnl={book.openPnl}
+        openPnl={openPnl}
         positions={book.positions.length}
       />
+
+      {fetcher.data?.error && (
+        <p
+          role="alert"
+          className="rounded border border-down/40 bg-down/10 px-3 py-2 text-down text-xs"
+        >
+          {fetcher.data.error}
+        </p>
+      )}
 
       <div className="grid min-h-0 flex-1 gap-2 lg:grid-cols-[minmax(0,1fr)_18rem] lg:grid-rows-[minmax(0,1fr)_16rem] 2xl:grid-cols-[minmax(0,1fr)_22rem] 2xl:grid-rows-[minmax(0,1fr)_18rem]">
         <section className="flex h-[46dvh] flex-col overflow-hidden rounded-lg border border-line bg-raised md:h-[54dvh] lg:col-start-1 lg:row-start-1 lg:h-auto lg:min-h-0">
@@ -208,7 +386,7 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
             last={last}
             tick={instrument.tick}
             point={instrument.point}
-            onSubmit={book.submit}
+            onSubmit={submit}
           />
         </Panel>
 
@@ -218,8 +396,8 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
           last={last}
           point={instrument.point}
           className="lg:col-start-1 lg:row-start-2 lg:min-h-0"
-          onClose={book.close}
-          onCancel={book.cancel}
+          onClose={(id) => send({ intent: "close", instrument: id })}
+          onCancel={(id) => send({ intent: "cancel", id })}
         />
       </div>
     </main>

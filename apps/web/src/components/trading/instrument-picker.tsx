@@ -1,6 +1,6 @@
 import { Select } from "@base-ui/react/select";
+import { GROUPS, INSTRUMENTS, type Instrument } from "@propsim/engine";
 import { ChevronDown } from "lucide-react";
-import { GROUPS, INSTRUMENTS, type Instrument } from "./instruments";
 
 type Props = {
   value: string;

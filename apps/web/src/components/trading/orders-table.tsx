@@ -1,14 +1,18 @@
+import { isWorking, type OrderStatus } from "@propsim/engine";
 import { cn } from "~/lib/utils";
 import Badge from "./badge";
 import Button from "./button";
 import { formatClock, formatPrice } from "./format";
 import { ROW, TD, TH } from "./styles";
-import type { Order, OrderStatus } from "./trading-state";
+import type { Order } from "./trading-state";
 
 const STATUS_TONE: Record<OrderStatus, "up" | "warn" | "muted"> = {
   filled: "up",
+  partial: "warn",
   working: "warn",
   cancelled: "muted",
+  replaced: "muted",
+  expired: "muted",
 };
 
 type Props = { orders: Order[]; onCancel: (id: string) => void };
@@ -47,7 +51,7 @@ const OrdersTable = ({ orders, onCancel }: Props) => {
               <Badge tone={STATUS_TONE[order.status]}>{order.status}</Badge>
             </td>
             <td className={cn(TD, "text-right")}>
-              {order.status === "working" && (
+              {isWorking(order.status) && (
                 <Button className="h-6 px-2" onClick={() => onCancel(order.id)}>
                   Cancel
                 </Button>

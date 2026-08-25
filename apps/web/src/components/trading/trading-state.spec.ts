@@ -1,13 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  INITIAL_STATE,
-  type OrderDraft,
-  type Position,
-  reduceTrading,
-  riskOf,
-  rrRatio,
-  unrealisedPnl,
-} from "./trading-state";
+import { type OrderDraft, type Position, riskOf, rrRatio, unrealisedPnl } from "./trading-state";
 
 // The numbers below were written against the micro Nasdaq.
 const POINT = 2;
@@ -23,7 +15,7 @@ const draft = (overrides: Partial<OrderDraft> = {}): OrderDraft => ({
 });
 
 const position = (overrides: Partial<Position> = {}): Position => ({
-  id: "p1",
+  id: "MNQ",
   openedAt: 0,
   side: "buy",
   quantity: 1,
@@ -77,50 +69,5 @@ describe("unrealisedPnl", () => {
 
     // then the position is up, not down
     expect(pnl).toBe(120);
-  });
-});
-
-describe("reduceTrading", () => {
-  it("should leave a limit order resting rather than opening a position", () => {
-    // given a limit order away from the tape
-    const action = {
-      kind: "submit",
-      id: "o1",
-      at: 1,
-      last: 20_000,
-      draft: draft({ type: "limit", limitPrice: 19_900 }),
-    } as const;
-
-    // when it is submitted
-    const state = reduceTrading(INITIAL_STATE, action);
-
-    // then nothing is open and the order is still working
-    expect(state.positions).toHaveLength(0);
-    expect(state.orders[0].status).toBe("working");
-    expect(state.orders[0].price).toBe(19_900);
-  });
-
-  it("should bank the loss when a long is closed below its entry", () => {
-    // given one long open at 20,000
-    const open = reduceTrading(INITIAL_STATE, {
-      kind: "submit",
-      id: "o1",
-      at: 1,
-      last: 20_000,
-      draft: draft({ quantity: 2 }),
-    });
-
-    // when it is closed five points lower
-    const closed = reduceTrading(open, {
-      kind: "close",
-      id: "o1",
-      at: 2,
-      last: 19_995,
-      point: POINT,
-    });
-
-    // then the realised total carries the sign, and nothing is left open
-    expect(closed.realised).toBe(-20);
-    expect(closed.positions).toHaveLength(0);
   });
 });

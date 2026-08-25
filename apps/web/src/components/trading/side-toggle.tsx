@@ -1,8 +1,8 @@
 import { Toggle } from "@base-ui/react/toggle";
 import { ToggleGroup } from "@base-ui/react/toggle-group";
+import type { Side } from "@propsim/engine";
 import { cn } from "~/lib/utils";
 import { FOCUS_RING } from "./styles";
-import type { Side } from "./trading-state";
 
 const ACTIVE: Record<Side, string> = {
   buy: "data-[pressed]:bg-up data-[pressed]:text-white",

@@ -1,4 +1,5 @@
 import { Select } from "@base-ui/react/select";
+import type { Side } from "@propsim/engine";
 import { ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import { recall, remember } from "~/lib/remember";
@@ -9,7 +10,7 @@ import NumberField from "./number-field";
 import RiskReadout from "./risk-readout";
 import SideToggle from "./side-toggle";
 import { FIELD, LABEL } from "./styles";
-import { fillPriceFor, type OrderDraft, type OrderType, type Side } from "./trading-state";
+import { fillPriceFor, type OrderDraft, type OrderType } from "./trading-state";
 
 const EMPTY_DRAFT: OrderDraft = {
   side: "buy",

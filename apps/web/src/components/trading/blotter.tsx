@@ -1,4 +1,5 @@
 import { Tabs } from "@base-ui/react/tabs";
+import { isWorking } from "@propsim/engine";
 import { useState } from "react";
 import { cn } from "~/lib/utils";
 import OrdersTable from "./orders-table";
@@ -22,7 +23,7 @@ type Props = {
 const Blotter = ({ positions, orders, last, point, className, onClose, onCancel }: Props) => {
   const [tab, setTab] = useState<Tab>("positions");
 
-  const working = orders.filter((order) => order.status === "working").length;
+  const working = orders.filter((order) => isWorking(order.status)).length;
   const counts: Record<Tab, number> = { positions: positions.length, orders: working };
 
   const tabs = (

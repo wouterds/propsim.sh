@@ -1,0 +1,356 @@
+import {
+  fills as fillsTable,
+  getDb,
+  type Order as OrderRow,
+  orders as ordersTable,
+  UUIDv7,
+} from "@propsim/database";
+import {
+  breachOf,
+  equityOf,
+  type Fill,
+  ledgerOf,
+  peakOf,
+  positionsOf,
+  type Side,
+  targetOf,
+  tradeDateOf,
+} from "@propsim/engine";
+import { and, asc, eq, isNull, ne } from "drizzle-orm";
+import { type AccountRow, endAccount, listFills, raisePeak, rulesOfRow } from "./accounts.server";
+import { findTradingDay, touchTradingDay } from "./trading-days.server";
+
+export type OrderType = OrderRow["type"];
+
+export type Ticket = {
+  instrument: string;
+  side: Side;
+  type: OrderType;
+  quantity: number;
+  /** Price units. Required on a resting order, unused on a market one. */
+  price: number | null;
+  stopLoss: number | null;
+  takeProfit: number | null;
+};
+
+/** The message a refused write hands back, or null when it went through. */
+export type Refusal = string | null;
+
+const MAX_QUANTITY = 100;
+
+const opposite = (side: Side): Side => (side === "buy" ? "sell" : "buy");
+
+export const listOrders = (accountId: string) =>
+  getDb()
+    .select()
+    .from(ordersTable)
+    .where(eq(ordersTable.accountId, accountId))
+    .orderBy(asc(ordersTable.placedAt), asc(ordersTable.id));
+
+const netOf = (fills: Fill[], instrument: string) => {
+  const position = positionsOf(ledgerOf(fills)).find((open) => open.instrument === instrument);
+
+  if (!position) {
+    return 0;
+  }
+
+  return position.side === "buy" ? position.quantity : -position.quantity;
+};
+
+/**
+ * Reads the stream back after the write, so the marks and the breach are judged
+ * on what was stored rather than on what the caller expected to store.
+ */
+const settle = async (row: AccountRow, at: Date) => {
+  const ledger = ledgerOf(await listFills(row.id), row.startingBalanceCents);
+  const equityCents = equityOf(ledger);
+  const tradeDate = tradeDateOf(at);
+
+  await touchTradingDay(row.id, tradeDate, at, equityCents);
+
+  const peakEquityCents = Math.max(row.peakEquityCents, peakOf(ledger));
+  const day = await findTradingDay(row.id, tradeDate);
+
+  await raisePeak(row.id, peakEquityCents);
+
+  const rules = rulesOfRow(row);
+  const breach = breachOf(rules, {
+    lowEquityCents: Math.min(day?.lowEquityCents ?? equityCents, equityCents),
+    peakEquityCents,
+    sessionOpenCents: day?.openEquityCents ?? equityCents,
+  });
+
+  if (breach) {
+    await endAccount(row.id, breach);
+
+    return;
+  }
+
+  if (equityCents >= targetOf(rules)) {
+    await endAccount(row.id, "target_met");
+  }
+};
+
+const refuseTicket = (row: AccountRow, ticket: Ticket, held: number): Refusal => {
+  if (row.endedAt) {
+    return "This account is closed. Open a new one to keep trading.";
+  }
+
+  if (!Number.isInteger(ticket.quantity) || ticket.quantity < 1) {
+    return "A ticket needs at least one contract.";
+  }
+
+  if (ticket.quantity > MAX_QUANTITY) {
+    return `One ticket is capped at ${MAX_QUANTITY} contracts.`;
+  }
+
+  if (ticket.type !== "market" && ticket.price === null) {
+    return "A resting order needs a price to rest at.";
+  }
+
+  const signed = ticket.side === "buy" ? ticket.quantity : -ticket.quantity;
+
+  if (Math.abs(held + signed) > row.maxMicros) {
+    return `This plan holds at most ${row.maxMicros} micros at once.`;
+  }
+
+  return null;
+};
+
+/**
+ * A market order fills at the mark the server read, never at a price the form
+ * carried. A resting one is written and left alone: nothing here watches the
+ * tape. The stop and the target are written as working orders either way, so a
+ * bracket outlives the ticket that asked for it.
+ */
+export const placeOrder = async (
+  row: AccountRow,
+  ticket: Ticket,
+  mark: number,
+  at: Date,
+): Promise<Refusal> => {
+  const fills = await listFills(row.id);
+  const refusal = refuseTicket(row, ticket, netOf(fills, ticket.instrument));
+
+  if (refusal) {
+    return refusal;
+  }
+
+  const tradeDate = tradeDateOf(at);
+  const ledger = ledgerOf(fills, row.startingBalanceCents);
+  const opening = equityOf(ledger, new Map([[ticket.instrument, mark]]));
+
+  await touchTradingDay(row.id, tradeDate, at, opening);
+
+  const id = UUIDv7();
+  const shared = {
+    accountId: row.id,
+    tradeDate,
+    instrument: ticket.instrument,
+    quantity: ticket.quantity,
+    placedAt: at,
+    parentOrderId: id,
+  };
+
+  const brackets = [
+    ticket.stopLoss === null
+      ? null
+      : {
+          ...shared,
+          side: opposite(ticket.side),
+          type: "stop" as const,
+          intent: "stop_loss" as const,
+          price: ticket.stopLoss,
+        },
+    ticket.takeProfit === null
+      ? null
+      : {
+          ...shared,
+          side: opposite(ticket.side),
+          type: "limit" as const,
+          intent: "take_profit" as const,
+          price: ticket.takeProfit,
+        },
+  ].filter((bracket) => bracket !== null);
+
+  await getDb().transaction(async (tx) => {
+    await tx.insert(ordersTable).values({
+      ...shared,
+      id,
+      parentOrderId: null,
+      side: ticket.side,
+      type: ticket.type,
+      intent: "trade",
+      price: ticket.type === "market" ? null : ticket.price,
+    });
+
+    if (ticket.type === "market") {
+      await tx.insert(fillsTable).values({
+        accountId: row.id,
+        orderId: id,
+        tradeDate,
+        instrument: ticket.instrument,
+        side: ticket.side,
+        quantity: ticket.quantity,
+        price: mark,
+        at,
+      });
+    }
+
+    if (brackets.length > 0) {
+      await tx.insert(ordersTable).values(brackets);
+    }
+  });
+
+  await settle(row, at);
+
+  return null;
+};
+
+const stillWorking = (accountId: string, id: string) =>
+  and(eq(ordersTable.id, id), eq(ordersTable.accountId, accountId), isNull(ordersTable.endedAt));
+
+/** Children go with it, or a stop is left resting for a position nobody has. */
+export const cancelOrder = async (accountId: string, id: string, at: Date) => {
+  const ended = { endedAt: at, endedReason: "cancelled" as const };
+
+  await getDb().transaction(async (tx) => {
+    await tx.update(ordersTable).set(ended).where(stillWorking(accountId, id));
+
+    await tx
+      .update(ordersTable)
+      .set(ended)
+      .where(
+        and(
+          eq(ordersTable.accountId, accountId),
+          eq(ordersTable.parentOrderId, id),
+          isNull(ordersTable.endedAt),
+        ),
+      );
+  });
+};
+
+/**
+ * A new row supersedes the old one rather than editing it, so the order that
+ * was replaced is still drawable at the price it carried, and every fill still
+ * points at a row whose price it was taken at.
+ */
+export const modifyOrder = async (
+  accountId: string,
+  id: string,
+  price: number,
+  quantity: number,
+  at: Date,
+): Promise<Refusal> => {
+  const [order] = await getDb()
+    .select()
+    .from(ordersTable)
+    .where(stillWorking(accountId, id))
+    .limit(1);
+
+  if (!order) {
+    return "That order is no longer working.";
+  }
+
+  if (!Number.isInteger(quantity) || quantity < 1 || quantity > MAX_QUANTITY) {
+    return "A ticket needs between one and a hundred contracts.";
+  }
+
+  const replacementId = UUIDv7();
+
+  await getDb().transaction(async (tx) => {
+    await tx.insert(ordersTable).values({
+      id: replacementId,
+      accountId: order.accountId,
+      tradeDate: order.tradeDate,
+      instrument: order.instrument,
+      side: order.side,
+      type: order.type,
+      intent: order.intent,
+      quantity,
+      price,
+      parentOrderId: order.parentOrderId,
+      replacesOrderId: order.id,
+      placedAt: at,
+    });
+
+    await tx
+      .update(ordersTable)
+      .set({ endedAt: at, endedReason: "replaced" })
+      .where(eq(ordersTable.id, order.id));
+
+    await tx
+      .update(ordersTable)
+      .set({ parentOrderId: replacementId })
+      .where(and(eq(ordersTable.parentOrderId, order.id), isNull(ordersTable.endedAt)));
+  });
+
+  return null;
+};
+
+/** One fill against the net position, and the bracket that guarded it goes too. */
+export const closePosition = async (
+  row: AccountRow,
+  instrument: string,
+  mark: number,
+  at: Date,
+): Promise<Refusal> => {
+  const fills = await listFills(row.id);
+  const held = netOf(fills, instrument);
+
+  if (held === 0) {
+    return "Nothing open on that contract.";
+  }
+
+  const tradeDate = tradeDateOf(at);
+  const ledger = ledgerOf(fills, row.startingBalanceCents);
+
+  // Before the fill. A session opened after it anchors on equity that already
+  // carries this close, and the daily floor hangs off that anchor all day.
+  await touchTradingDay(row.id, tradeDate, at, equityOf(ledger, new Map([[instrument, mark]])));
+
+  const side = held > 0 ? "sell" : "buy";
+  const id = UUIDv7();
+
+  await getDb().transaction(async (tx) => {
+    await tx.insert(ordersTable).values({
+      id,
+      accountId: row.id,
+      tradeDate,
+      instrument,
+      side,
+      type: "market",
+      intent: "trade",
+      quantity: Math.abs(held),
+      placedAt: at,
+    });
+
+    await tx.insert(fillsTable).values({
+      accountId: row.id,
+      orderId: id,
+      tradeDate,
+      instrument,
+      side,
+      quantity: Math.abs(held),
+      price: mark,
+      at,
+    });
+
+    // Only the brackets. A resting entry the trader left is still theirs.
+    await tx
+      .update(ordersTable)
+      .set({ endedAt: at, endedReason: "cancelled" })
+      .where(
+        and(
+          eq(ordersTable.accountId, row.id),
+          eq(ordersTable.instrument, instrument),
+          ne(ordersTable.intent, "trade"),
+          isNull(ordersTable.endedAt),
+        ),
+      );
+  });
+
+  await settle(row, at);
+
+  return null;
+};
