@@ -23,7 +23,7 @@ const PlanTable = () => (
               <th className={`${HEAD} text-right`}>Daily loss limit</th>
               <th className={`${HEAD} text-right`}>Position limit</th>
               <th className={HEAD}>
-                <span className="sr-only">Open an account</span>
+                <span className="sr-only">Get a free account</span>
               </th>
             </tr>
           </thead>
@@ -53,7 +53,7 @@ const PlanTable = () => (
                     to={`${href("/accounts/new")}?plan=${plan.id}`}
                     className="inline-flex h-8 items-center rounded border border-line px-3 text-sm text-muted transition-colors hover:border-line-strong hover:text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
                   >
-                    Open
+                    Get free account
                   </Link>
                 </td>
               </tr>
