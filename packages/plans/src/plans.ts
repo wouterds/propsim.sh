@@ -7,7 +7,12 @@ export type Plan = {
   dailyLossLimit: number;
   maxMinis: number;
   maxMicros: number;
+  /** How far above the starting balance the trailing floor stops climbing. */
+  lockAboveStart: number;
 };
+
+/** The trailing floor stops climbing here, and from then on it never moves. */
+const LOCK_ABOVE_START = 100;
 
 /**
  * Modelled on the daily payout accounts the funded firms sell. One family for
@@ -24,6 +29,7 @@ export const PLANS: Plan[] = [
     dailyLossLimit: 600,
     maxMinis: 2,
     maxMicros: 20,
+    lockAboveStart: LOCK_ABOVE_START,
   },
   {
     id: "daily-50k",
@@ -34,6 +40,7 @@ export const PLANS: Plan[] = [
     dailyLossLimit: 1_200,
     maxMinis: 4,
     maxMicros: 40,
+    lockAboveStart: LOCK_ABOVE_START,
   },
   {
     id: "daily-100k",
@@ -44,6 +51,7 @@ export const PLANS: Plan[] = [
     dailyLossLimit: 1_800,
     maxMinis: 6,
     maxMicros: 60,
+    lockAboveStart: LOCK_ABOVE_START,
   },
   {
     id: "daily-150k",
@@ -54,13 +62,11 @@ export const PLANS: Plan[] = [
     dailyLossLimit: 2_700,
     maxMinis: 10,
     maxMicros: 100,
+    lockAboveStart: LOCK_ABOVE_START,
   },
 ];
 
-/** The trailing floor stops climbing here, and from then on it never moves. */
-export const LOCK_ABOVE_START = 100;
-
-export const lockedFloorOf = (plan: Plan) => plan.size + LOCK_ABOVE_START;
+export const lockedFloorOf = (plan: Plan) => plan.size + plan.lockAboveStart;
 
 /** Where the trailing floor stops following a new peak. */
 export const trailStopsAt = (plan: Plan) => lockedFloorOf(plan) + plan.trailingDrawdown;
