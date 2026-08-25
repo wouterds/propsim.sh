@@ -1,8 +1,10 @@
 import { Turnstile } from "@marsidev/react-turnstile";
 import { sendContactMessage } from "@propsim/mail";
 import { Form, useNavigation } from "react-router";
+import { getUserId } from "~/lib/auth.server";
 import { notify } from "~/lib/notify.server";
 import { FIELD, passedTurnstile, siteKey, turnstileIsSet } from "~/lib/turnstile.server";
+import { findUserById } from "~/lib/users.server";
 import type { Route } from "./+types/contact";
 
 export const meta: Route.MetaFunction = () => [
@@ -18,14 +20,28 @@ const LIMITS = { name: 80, subject: 120, message: 4000 };
 
 const CONTACT_TO = "hello@propsim.sh";
 
-export const loader = () => ({ siteKey: siteKey(), guarded: turnstileIsSet() });
+const addressOf = async (request: Request) => {
+  const userId = await getUserId(request);
+
+  return userId ? ((await findUserById(userId))?.email ?? null) : null;
+};
+
+export const loader = async ({ request }: Route.LoaderArgs) => ({
+  siteKey: siteKey(),
+  guarded: turnstileIsSet(),
+  email: await addressOf(request),
+});
 
 export const action = async ({ request }: Route.ActionArgs) => {
   const form = await request.formData();
   const name = String(form.get("name") ?? "").trim();
-  const email = String(form.get("email") ?? "")
-    .trim()
-    .toLowerCase();
+  // Signed in, the account's address is the one that answers. The field is read
+  // only in the browser and read only here too.
+  const email =
+    (await addressOf(request)) ??
+    String(form.get("email") ?? "")
+      .trim()
+      .toLowerCase();
   const subject = String(form.get("subject") ?? "").trim();
   const message = String(form.get("message") ?? "").trim();
 
@@ -102,7 +118,9 @@ const Contact = ({ loaderData, actionData }: Route.ComponentProps) => {
                   required
                   autoComplete="email"
                   placeholder="you@example.com"
-                  className={`h-10 ${CONTROL}`}
+                  defaultValue={loaderData.email ?? undefined}
+                  readOnly={loaderData.email !== null}
+                  className={`h-10 ${CONTROL} read-only:cursor-default read-only:text-muted`}
                 />
               </div>
             </div>
