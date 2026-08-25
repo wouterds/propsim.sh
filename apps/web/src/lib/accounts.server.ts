@@ -56,7 +56,7 @@ export const listFills = (accountId: string) =>
     // UUIDv7 breaks the tie, so two fills in the same millisecond keep their order.
     .orderBy(asc(fillsTable.at), asc(fillsTable.id));
 
-export const listTradingDays = (accountId: string) =>
+const listTradingDays = (accountId: string) =>
   getDb()
     .select()
     .from(tradingDays)

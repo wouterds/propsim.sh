@@ -20,7 +20,7 @@ import { and, asc, eq, isNull, ne } from "drizzle-orm";
 import { type AccountRow, endAccount, listFills, raisePeak, rulesOfRow } from "./accounts.server";
 import { findTradingDay, touchTradingDay } from "./trading-days.server";
 
-export type OrderType = OrderRow["type"];
+type OrderType = OrderRow["type"];
 
 export type Ticket = {
   instrument: string;
