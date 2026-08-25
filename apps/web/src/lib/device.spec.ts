@@ -30,6 +30,15 @@ describe("readDevice", () => {
     expect(readDevice(SAFARI_IPAD).kind).toBe("tablet");
   });
 
+  it("should not fall through to Safari when the chrome token is prefixed", () => {
+    // given the headless build, whose token has no word boundary before Chrome
+    const headless =
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/140.0.0.0 Safari/537.36";
+
+    // then
+    expect(readDevice(headless).browser).toBe("Chrome");
+  });
+
   it("should mark a crawler rather than calling it a desktop", () => {
     // then
     expect(readDevice("Mozilla/5.0 (compatible; Googlebot/2.1)").kind).toBe("bot");
