@@ -1,18 +1,22 @@
 import { type Candle, getCandles, getNewsEvents, isRedFolder } from "@propsim/datasources";
 import { useEffect, useMemo, useState } from "react";
+import { data, useNavigate, useSearchParams } from "react-router";
 import type { ChartBar, ChartPriceLine } from "~/components/chart/candle-chart";
 import CandleChart from "~/components/chart/candle-chart";
 import ChartHeader from "~/components/chart/chart-header";
 import TimeframeSwitcher from "~/components/chart/timeframe-switcher";
 import AccountStrip from "~/components/trading/account-strip";
 import Blotter from "~/components/trading/blotter";
-import { barsPerDay, parseTimeframe, rangeFor, SYMBOL } from "~/components/trading/mnq";
+import InstrumentPicker from "~/components/trading/instrument-picker";
+import { instrumentOr } from "~/components/trading/instruments";
 import NewsBanner from "~/components/trading/news-banner";
 import Panel from "~/components/trading/panel";
+import { barsPerDay, parseTimeframe, rangeFor } from "~/components/trading/timeframes";
 import TradePanel from "~/components/trading/trade-panel";
 import { usePaperTrading } from "~/components/trading/use-paper-trading";
 import { findAccount } from "~/lib/accounts";
 import { activeWindow, windowsOf } from "~/lib/blackout";
+import { chartPrefs, readChartPrefs } from "~/lib/chart-prefs.server";
 import type { Route } from "./+types/terminal";
 
 export const meta: Route.MetaFunction = ({ loaderData }) => [
@@ -22,36 +26,49 @@ export const meta: Route.MetaFunction = ({ loaderData }) => [
 ];
 
 /** `url`, not `request.url`: the latter carries a `.data` suffix on client navigation. */
-export const loader = async ({ url, params }: Route.LoaderArgs) => {
-  const timeframe = parseTimeframe(url.searchParams.get("tf"));
+export const loader = async ({ url, params, request }: Route.LoaderArgs) => {
+  // The address wins, so a shared link opens on what it names. The cookie is
+  // what an address with nothing in it falls back to.
+  const kept = await readChartPrefs(request);
+  const timeframe = parseTimeframe(url.searchParams.get("tf") ?? kept.tf ?? null);
+  const instrument = instrumentOr(url.searchParams.get("s") ?? kept.s);
   const account = findAccount(params.id);
 
   if (!account) {
     throw new Response("No such account", { status: 404 });
   }
 
+  const headers = {
+    "Set-Cookie": await chartPrefs.serialize({ s: instrument.code, tf: timeframe }),
+  };
+
   const news = (await getNewsEvents()).filter(isRedFolder);
   const windows = windowsOf(news.map((event) => ({ time: event.time, title: event.title })));
 
   try {
     const candles = await getCandles({
-      symbol: SYMBOL,
+      symbol: instrument.symbol,
       interval: timeframe,
       range: rangeFor(timeframe),
     });
 
-    return { account, symbol: SYMBOL, timeframe, candles, windows, error: null };
+    return data({ account, instrument, timeframe, candles, windows, error: null }, { headers });
   } catch (cause) {
     // Caught, not rethrown. An error boundary would take the ticket and the
     // blotter down with the chart.
     const error = cause instanceof Error ? cause.message : "the price feed did not answer";
 
-    return { account, symbol: SYMBOL, timeframe, candles: [] as Candle[], windows, error };
+    return data(
+      { account, instrument, timeframe, candles: [] as Candle[], windows, error },
+      { headers },
+    );
   }
 };
 
 const Trading = ({ loaderData }: Route.ComponentProps) => {
-  const { account, symbol, timeframe, candles, windows, error } = loaderData;
+  const { account, instrument, timeframe, candles, windows, error } = loaderData;
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
   const [hovered, setHovered] = useState<ChartBar | null>(null);
 
   // Null until the browser has it. Reading the clock while rendering on the
@@ -69,7 +86,7 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
 
   // Null, not a stand-in. Closing marks to this price and banks it for good.
   const last = candles.at(-1)?.close ?? null;
-  const book = usePaperTrading(last, account.balance);
+  const book = usePaperTrading(last, account.balance, instrument.point);
 
   // The chart redraws its price lines whenever this array changes identity.
   const priceLines = useMemo<ChartPriceLine[]>(() => {
@@ -131,7 +148,7 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
         <section className="flex h-[46dvh] flex-col overflow-hidden rounded-lg border border-line bg-raised md:h-[54dvh] lg:col-start-1 lg:row-start-1 lg:h-auto lg:min-h-0">
           <div className="shrink-0 border-line border-b">
             <ChartHeader
-              symbol={symbol}
+              symbol={instrument.code}
               period={rangeFor(timeframe)}
               first={candles.at(0)}
               last={candles.at(-1)}
@@ -150,13 +167,25 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
                 candles={candles}
                 priceLines={priceLines}
                 bands={windows}
+                tick={instrument.tick}
                 visibleBars={barsPerDay(timeframe)}
                 onHover={setHovered}
               />
             )}
 
             <div className="absolute top-2 right-2 z-10">
-              <TimeframeSwitcher value={timeframe} />
+              <div className="flex items-center gap-2">
+                <InstrumentPicker
+                  value={instrument.code}
+                  onChange={(code) =>
+                    navigate(
+                      `?${new URLSearchParams({ ...Object.fromEntries(params), s: code })}`,
+                      { preventScrollReset: true },
+                    )
+                  }
+                />
+                <TimeframeSwitcher value={timeframe} />
+              </div>
             </div>
           </div>
         </section>
@@ -166,13 +195,19 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
           className="lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:min-h-0"
           bodyClassName="min-h-0 flex-1 overflow-y-auto"
         >
-          <TradePanel last={last} onSubmit={book.submit} />
+          <TradePanel
+            last={last}
+            tick={instrument.tick}
+            point={instrument.point}
+            onSubmit={book.submit}
+          />
         </Panel>
 
         <Blotter
           positions={book.positions}
           orders={book.orders}
           last={last}
+          point={instrument.point}
           className="lg:col-start-1 lg:row-start-2 lg:min-h-0"
           onClose={book.close}
           onCancel={book.cancel}
