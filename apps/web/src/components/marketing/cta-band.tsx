@@ -18,7 +18,7 @@ const CtaBand = () => (
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link
-              to={href("/login")}
+              to={href("/trading")}
               className="inline-flex h-10 items-center rounded bg-accent px-5 font-medium text-sunken transition-colors hover:bg-accent/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
             >
               Open the simulator

@@ -37,7 +37,7 @@ const SiteHeader = () => (
           Log in
         </Link>
         <Link
-          to={href("/login")}
+          to={href("/trading")}
           className="inline-flex h-8 items-center rounded bg-accent px-3 font-medium text-sunken text-sm transition-colors hover:bg-accent/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
         >
           Open the simulator
