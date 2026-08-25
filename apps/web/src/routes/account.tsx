@@ -85,7 +85,11 @@ const Account = ({ loaderData }: Route.ComponentProps) => {
             />
           </div>
 
-          <JournalTable days={account.journal.slice(0, 5)} title="Recent sessions" />
+          <JournalTable
+            days={account.journal.slice(0, 5)}
+            title="Recent sessions"
+            accountId={account.id}
+          />
 
           <Link
             to={href("/accounts/:id/journal", { id: account.id })}

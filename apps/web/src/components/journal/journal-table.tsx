@@ -1,3 +1,4 @@
+import { href, Link } from "react-router";
 import Badge from "~/components/ui/badge";
 import { formatDay, formatMoney, formatSigned, TONE_TEXT, toneOf } from "~/lib/format";
 import { type JournalDay, VERDICT_LABEL, VERDICT_TONE } from "~/lib/journal";
@@ -6,11 +7,13 @@ import { cn } from "~/lib/utils";
 type Props = {
   days: JournalDay[];
   title: string;
+  /** When given, each row opens that account's session. */
+  accountId?: string;
 };
 
 const HEAD = "h-8 px-4 text-left font-normal";
 
-const JournalTable = ({ days, title }: Props) => {
+const JournalTable = ({ days, title, accountId }: Props) => {
   const widest = Math.max(...days.map((day) => Math.abs(day.pnl)), 1);
 
   if (days.length === 0) {
@@ -53,7 +56,18 @@ const JournalTable = ({ days, title }: Props) => {
                 key={day.date}
                 className="border-line/60 border-b last:border-b-0 hover:bg-overlay"
               >
-                <td className="h-11 px-4 text-ink text-xs tabular">{formatDay(day.date)}</td>
+                <td className="h-11 px-4 text-xs tabular">
+                  {accountId ? (
+                    <Link
+                      to={href("/accounts/:id/journal/:date", { id: accountId, date: day.date })}
+                      className="rounded-sm text-ink transition-colors hover:text-accent focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
+                    >
+                      {formatDay(day.date)}
+                    </Link>
+                  ) : (
+                    <span className="text-ink">{formatDay(day.date)}</span>
+                  )}
+                </td>
                 <td className="h-11 px-4 text-right text-ink text-xs tabular">{day.trades}</td>
                 <td className="hidden h-11 px-4 text-right text-muted text-xs tabular sm:table-cell">
                   {day.wins}

@@ -65,7 +65,7 @@ const Journal = ({ loaderData }: Route.ComponentProps) => {
       </div>
 
       <div className="mt-3">
-        <JournalTable days={days} title="Every session" />
+        <JournalTable days={days} title="Every session" accountId={account.id} />
       </div>
     </main>
   );
