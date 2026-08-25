@@ -9,8 +9,10 @@ type Props = {
 
 // Sits in the chart bar in place of the symbol, so it reads as the label it
 // replaced until it is hovered.
+// The negative margin has to match the padding, or the fill grows the chart bar
+// instead of sitting inside it.
 const TRIGGER =
-  "-my-1.5 -mx-1.5 flex items-center gap-1.5 rounded px-1.5 py-1.5 font-medium text-ink text-sm tracking-wide outline-hidden transition-colors hover:bg-line/60 focus-visible:ring-1 focus-visible:ring-accent";
+  "-my-1 -mx-1.5 flex items-center gap-1.5 rounded px-1.5 py-1 font-medium text-ink text-sm tracking-wide outline-hidden transition-colors hover:bg-line/60 focus-visible:ring-1 focus-visible:ring-accent";
 
 const byGroup = (group: Instrument["group"]) =>
   INSTRUMENTS.filter((instrument) => instrument.group === group);
