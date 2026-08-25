@@ -1,4 +1,4 @@
-FROM node:24-alpine AS base
+FROM node:25-alpine AS base
 WORKDIR /code
 
 # Prunes to this app, so an unrelated workspace does not invalidate this layer.
