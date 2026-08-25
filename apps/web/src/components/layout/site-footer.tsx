@@ -22,7 +22,7 @@ const COLUMNS = [
     title: "Help",
     links: [
       { to: href("/faq"), label: "FAQ" },
-      { to: href("/features"), label: "Feature requests" },
+      { to: href("/feature-requests"), label: "Feature requests" },
       { to: href("/contact"), label: "Contact" },
     ],
   },
@@ -30,7 +30,10 @@ const COLUMNS = [
 
 const SiteFooter = () => (
   <footer className="border-line/70 border-t">
-    <div className="mx-auto grid max-w-6xl gap-10 px-5 py-12 sm:grid-cols-2 sm:px-8 lg:grid-cols-[1.5fr_repeat(3,1fr)]">
+    {/* The link columns take the width of their own links and sit against the
+        right edge. Equal fractions gave each one more room than it used, which
+        left the last column stranded short of the edge. */}
+    <div className="mx-auto grid max-w-6xl gap-10 px-5 py-12 sm:grid-cols-2 sm:px-8 lg:grid-cols-[1fr_auto_auto_auto] lg:gap-x-16">
       <div>
         <Brand className="text-[15px] text-ink" />
         <p className="mt-3 max-w-sm text-faint text-sm leading-relaxed">
