@@ -18,8 +18,6 @@ const pool = mysql.createPool({
   keepAliveInitialDelay: 10000,
 });
 
-// `decimalNumbers` and a DECIMAL `typeCast` are missing on purpose, and the
-// absence is the whole point: either one turns every amount into a JS float
-// before drizzle sees it, and drizzle then faithfully stringifies a number whose
-// precision is already gone, on a column that still types as `string`.
+// Never add `decimalNumbers` or a DECIMAL `typeCast`. Either one makes every
+// amount a JS float before drizzle sees it, on a column that still types as string.
 export const db = drizzle(pool, { schema, mode: "default" });

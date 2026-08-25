@@ -3,15 +3,12 @@ import { defineConfig } from "drizzle-kit";
 
 import { required } from "./src/env";
 
-// Resolved against this file rather than the cwd, so the scripts work whether
-// they are run from the package or through a workspace filter at the root.
-// drizzle-kit loads no .env by itself.
+// drizzle-kit loads no .env. Resolved against this file so the cwd does not matter.
 config({ path: new URL(".env", import.meta.url) });
 
 export default defineConfig({
   dialect: "mysql",
-  // The index rather than a glob: `./src/schema/**.ts` degrades to a single
-  // segment match, sweeping co-located specs into a bundle drizzle-kit executes.
+  // The index, not a glob. A glob sweeps the co-located specs in.
   schema: "./src/schema/index.ts",
   out: "./src/__migrations",
   dbCredentials: {

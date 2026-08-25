@@ -4,9 +4,8 @@ import { customType } from "drizzle-orm/mysql-core";
 const HEX_32 = /^[0-9a-f]{32}$/i;
 
 /**
- * RFC 9562 UUIDv7. The ordering is the point: a BINARY(16) primary key that is
- * not time-ordered splits an InnoDB page on nearly every insert. It holds only
- * to the millisecond, which is why `orders` carries an explicit sequence.
+ * RFC 9562 UUIDv7. Time-ordered, because a random BINARY(16) key splits an InnoDB
+ * page on nearly every insert. It orders only to the millisecond.
  */
 export const UUIDv7 = (): string => {
   const bytes = randomBytes(16);
@@ -37,8 +36,7 @@ export const uuid = customType<{ data: string; driverData: Buffer }>({
     return "BINARY(16)";
   },
 
-  // Bound, never interpolated. Every id in this package is this type, so a raw
-  // literal makes each `eq(table.id, x)` an injection point for an id off a URL.
+  // Bound, never interpolated. Ids arrive from URLs.
   toDriver(value) {
     const hex = value.replace(/-/g, "");
 
