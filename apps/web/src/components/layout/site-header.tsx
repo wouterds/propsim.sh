@@ -10,7 +10,7 @@ const LINKS = [
   { to: href("/faq"), label: "FAQ" },
 ];
 
-const SiteHeader = () => (
+const SiteHeader = ({ signedIn }: { signedIn: boolean }) => (
   <header className="sticky top-0 z-30 border-line/70 border-b bg-base/80 backdrop-blur">
     <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-5 sm:gap-6 sm:px-8">
       <Link to={href("/")} className={cn("shrink-0 rounded-sm", FOCUS)}>
@@ -36,21 +36,26 @@ const SiteHeader = () => (
       </nav>
 
       <div className="ml-auto flex shrink-0 items-center gap-3">
-        <Link
-          to={href("/auth")}
-          className={cn("rounded-sm text-muted text-sm transition-colors hover:text-ink", FOCUS)}
-        >
-          Log in
-        </Link>
+        {!signedIn && (
+          <Link
+            to={href("/auth")}
+            className={cn("rounded-sm text-muted text-sm transition-colors hover:text-ink", FOCUS)}
+          >
+            Log in
+          </Link>
+        )}
 
         <Link
-          to={href("/terminal")}
+          to={signedIn ? href("/dash") : href("/terminal")}
           className={cn(
-            "hidden h-8 items-center rounded bg-accent-strong px-3 font-medium text-ink text-sm transition-colors hover:bg-accent-strong/85 sm:inline-flex",
+            "h-8 items-center rounded bg-accent-strong px-3 font-medium text-ink text-sm transition-colors hover:bg-accent-strong/85",
+            // Signed out it shares the row with the login link, which is enough
+            // on a narrow screen. Signed in it is the only thing there.
+            signedIn ? "inline-flex" : "hidden sm:inline-flex",
             FOCUS,
           )}
         >
-          Start trading
+          {signedIn ? "Dashboard" : "Start trading"}
         </Link>
       </div>
     </div>
