@@ -33,7 +33,7 @@ const Blotter = ({ positions, orders, last, point, className, onClose, onCancel 
           value={name}
           className={cn(
             "rounded px-2 py-1 text-[11px] text-muted uppercase tracking-wider transition-colors hover:text-ink",
-            "data-[active]:bg-line data-[active]:text-ink",
+            "data-[active]:bg-overlay data-[active]:text-ink",
             FOCUS_RING,
           )}
         >
