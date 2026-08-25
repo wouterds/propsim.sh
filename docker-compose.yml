@@ -38,7 +38,10 @@ services:
       - "traefik.http.routers.propsimsh-www-http.priority=1000"
     networks:
       - proxy
+      - mariadb
 
 networks:
   proxy:
+    external: true
+  mariadb:
     external: true
