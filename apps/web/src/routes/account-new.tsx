@@ -3,6 +3,7 @@ import { RadioGroup } from "@base-ui/react/radio-group";
 import { useState } from "react";
 import { Form, href, Link, redirect, useNavigation } from "react-router";
 import PlanRules from "~/components/plans/plan-rules";
+import { PRIMARY, SECONDARY } from "~/components/ui/button";
 import { createAccount } from "~/lib/accounts";
 import { formatMoney } from "~/lib/format";
 import { DEFAULT_PLAN_ID, findPlan, PLANS, planOr } from "~/lib/plans";
@@ -95,18 +96,11 @@ const NewAccount = ({ loaderData, actionData }: Route.ComponentProps) => {
         )}
 
         <div className="mt-6 flex items-center gap-3">
-          <button
-            type="submit"
-            disabled={busy}
-            className="inline-flex h-10 items-center rounded bg-accent px-5 font-medium text-sm text-sunken transition-colors hover:bg-accent/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent disabled:opacity-60"
-          >
+          <button type="submit" disabled={busy} className={PRIMARY}>
             {busy ? "One moment" : `Create the ${plan.label} account`}
           </button>
 
-          <Link
-            to={href("/accounts")}
-            className="rounded-sm text-muted text-sm transition-colors hover:text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
-          >
+          <Link to={href("/accounts")} className={SECONDARY}>
             Cancel
           </Link>
         </div>

@@ -4,6 +4,7 @@ import Field from "~/components/settings/field";
 import Notice from "~/components/settings/notice";
 import Section from "~/components/settings/section";
 import SessionList, { type SessionRow } from "~/components/settings/session-list";
+import { PRIMARY_SM, SECONDARY_SM } from "~/components/ui/button";
 import { endSession, requireSession, rotateSession } from "~/lib/auth.server";
 import { describeDevice } from "~/lib/device";
 import { issueEmailChange } from "~/lib/email-changes.server";
@@ -16,12 +17,6 @@ import { findUserByEmail, findUserById, updatePassword } from "~/lib/users.serve
 import type { Route } from "./+types/settings";
 
 export const meta: Route.MetaFunction = () => [{ title: "Settings, propsim.sh" }];
-
-const BUTTON =
-  "inline-flex h-9 items-center rounded bg-accent px-4 font-medium text-sm text-sunken transition-colors hover:bg-accent/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent disabled:opacity-60";
-
-const QUIET =
-  "inline-flex h-9 items-center rounded border border-line px-4 text-muted text-sm transition-colors hover:border-line-strong hover:text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent disabled:opacity-60";
 
 const asRow = (
   row: Awaited<ReturnType<typeof listSessions>>[number],
@@ -180,7 +175,7 @@ const Settings = ({ loaderData, actionData }: Route.ComponentProps) => {
             />
             <div className="hidden sm:block" />
             <div className="sm:col-span-2">
-              <button type="submit" disabled={busy} className={BUTTON}>
+              <button type="submit" disabled={busy} className={PRIMARY_SM}>
                 {busy ? "One moment" : "Send the confirmation"}
               </button>
             </div>
@@ -215,7 +210,7 @@ const Settings = ({ loaderData, actionData }: Route.ComponentProps) => {
             />
             <div className="hidden sm:block" />
             <div className="sm:col-span-2">
-              <button type="submit" disabled={busy} className={BUTTON}>
+              <button type="submit" disabled={busy} className={PRIMARY_SM}>
                 {busy ? "One moment" : "Change the password"}
               </button>
             </div>
@@ -231,7 +226,7 @@ const Settings = ({ loaderData, actionData }: Route.ComponentProps) => {
           {others > 0 && (
             <Form method="post" className="mt-4 border-line/60 border-t pt-4">
               <input type="hidden" name="intent" value="revoke-others" />
-              <button type="submit" disabled={busy} className={QUIET}>
+              <button type="submit" disabled={busy} className={SECONDARY_SM}>
                 {busy ? "One moment" : `Sign out everywhere else (${others})`}
               </button>
             </Form>
