@@ -17,6 +17,7 @@ const COLUMNS = [
     links: [
       { to: href("/red-folder-events"), label: "Red folder" },
       { to: href("/faq"), label: "FAQ" },
+      { to: href("/features"), label: "Feature requests" },
       { to: href("/contact"), label: "Contact" },
     ],
   },
