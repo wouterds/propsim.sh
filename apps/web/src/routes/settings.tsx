@@ -1,3 +1,4 @@
+import { personaOf } from "@propsim/identity";
 import {
   sendAccountDeleted,
   sendConfirmNewEmail,
@@ -19,10 +20,16 @@ import { issueEmailChange } from "~/lib/email-changes.server";
 import { countryOf, formatDate, formatRelative } from "~/lib/format";
 import { notify } from "~/lib/notify.server";
 import { hashPassword, verifyPassword } from "~/lib/password.server";
-import { EMAIL_CHANGE_TTL_MINUTES, MIN_PASSWORD } from "~/lib/policy";
+import { EMAIL_CHANGE_TTL_MINUTES, MAX_USERNAME, MIN_PASSWORD, usernameError } from "~/lib/policy";
 import { PRIVATE } from "~/lib/seo";
 import { listSessions, revokeOtherSessions, revokeSession } from "~/lib/sessions.server";
-import { findUserByEmail, findUserById, updatePassword } from "~/lib/users.server";
+import {
+  findUserByEmail,
+  findUserById,
+  findUserByUsername,
+  updatePassword,
+  updateUsername,
+} from "~/lib/users.server";
 import type { Route } from "./+types/settings";
 
 export const meta: Route.MetaFunction = () => [{ title: "Settings, propsim.sh" }, ...PRIVATE];
@@ -58,6 +65,8 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
 
   return {
     email: user.email,
+    username: user.username,
+    pseudonym: personaOf(user.id).name,
     hasPassword: user.password !== null,
     sessions: rows.map((row) => asRow(row, session.id, now)),
   };
@@ -73,6 +82,32 @@ export const action = async ({ request }: Route.ActionArgs) => {
 
   const form = await request.formData();
   const intent = form.get("intent");
+
+  if (intent === "username") {
+    const username = String(form.get("username") ?? "").trim();
+
+    if (username === "") {
+      await updateUsername(user.id, null);
+
+      return { done: `You are back to ${personaOf(user.id).name}.`, error: null };
+    }
+
+    const wrong = usernameError(username);
+
+    if (wrong) {
+      return { done: null, error: wrong };
+    }
+
+    const holder = await findUserByUsername(username);
+
+    if (holder && holder.id !== user.id) {
+      return { done: null, error: "Somebody already goes by that name." };
+    }
+
+    await updateUsername(user.id, username);
+
+    return { done: `You now show up as ${username}.`, error: null };
+  }
 
   if (intent === "password") {
     const current = String(form.get("current") ?? "");
@@ -206,7 +241,7 @@ const Settings = ({ loaderData, actionData }: Route.ComponentProps) => {
     passwordForm.current?.reset();
   }, [actionData]);
 
-  const { email, hasPassword, sessions } = loaderData;
+  const { email, username, pseudonym, hasPassword, sessions } = loaderData;
   const others = sessions.filter((session) => !session.current).length;
 
   return (
@@ -216,6 +251,35 @@ const Settings = ({ loaderData, actionData }: Route.ComponentProps) => {
 
       <div className="mt-6 grid gap-3">
         <Notice done={actionData?.done} error={actionData?.error} />
+
+        <Section
+          title="Public name"
+          description="What the board and the leaderboards call you. Everything else stays private."
+        >
+          <Form method="post" className="grid gap-4 sm:grid-cols-2">
+            <input type="hidden" name="intent" value="username" />
+            <Field
+              name="username"
+              label="Username"
+              autoComplete="off"
+              required={false}
+              maxLength={MAX_USERNAME}
+              defaultValue={username ?? ""}
+              placeholder={pseudonym}
+            />
+            <div className="hidden sm:block" />
+            <div className="sm:col-span-2 flex flex-wrap items-center gap-3">
+              <button type="submit" disabled={busy("username")} className={PRIMARY_SM}>
+                {busy("username") ? "One moment" : "Save name"}
+              </button>
+              <p className="text-faint text-xs">
+                {username
+                  ? "Clear the field to go back to a generated name."
+                  : `You currently show up as ${pseudonym}.`}
+              </p>
+            </div>
+          </Form>
+        </Section>
 
         <Section
           title="Email address"
