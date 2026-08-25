@@ -1,5 +1,5 @@
 import { Dialog } from "@base-ui/react/dialog";
-import { Menu } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { href, Link } from "react-router";
 import SidebarNav from "~/components/app/sidebar-nav";
@@ -39,9 +39,18 @@ const AppShell = ({ accounts, email, children }: Props) => {
               </Dialog.Trigger>
 
               <Dialog.Portal>
-                <Dialog.Backdrop className="fixed inset-0 z-40 bg-sunken/70 backdrop-blur-sm" />
-                <Dialog.Popup className="fixed inset-y-0 left-0 z-50 w-64 border-line border-r bg-raised outline-hidden">
+                {/* The whole screen, not a drawer. A phone has no room to spare
+                    for a page it cannot reach behind the menu. */}
+                <Dialog.Popup className="fixed inset-0 z-50 flex flex-col bg-raised outline-hidden">
                   <Dialog.Title className="sr-only">Navigation</Dialog.Title>
+
+                  <Dialog.Close
+                    aria-label="Close the menu"
+                    className={`absolute top-3 right-3 z-10 inline-flex size-8 items-center justify-center rounded border border-line text-muted transition-colors hover:text-ink ${FOCUS}`}
+                  >
+                    <X aria-hidden="true" className="size-4" strokeWidth={1.5} />
+                  </Dialog.Close>
+
                   <SidebarNav accounts={accounts} email={email} onNavigate={() => setOpen(false)} />
                 </Dialog.Popup>
               </Dialog.Portal>
