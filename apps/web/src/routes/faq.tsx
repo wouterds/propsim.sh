@@ -3,13 +3,27 @@ import { FAQ } from "~/lib/faq";
 import { pageMeta } from "~/lib/seo";
 import type { Route } from "./+types/faq";
 
-export const meta: Route.MetaFunction = () =>
-  pageMeta({
+const SCHEMA = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: FAQ.flatMap((group) =>
+    group.questions.map((question) => ({
+      "@type": "Question",
+      name: question.q,
+      acceptedAnswer: { "@type": "Answer", text: question.a },
+    })),
+  ),
+};
+
+export const meta: Route.MetaFunction = () => [
+  ...pageMeta({
     title: "FAQ, propsim.sh",
     description:
       "What propsim.sh is, where the prices come from, how the loss limits work, and what happens when you breach an account.",
     path: "/faq",
-  });
+  }),
+  { "script:ld+json": SCHEMA },
+];
 
 const Faq = () => (
   <>
