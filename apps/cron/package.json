@@ -1,0 +1,24 @@
+{
+  "name": "@propsim/cron",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "rolldown -c rolldown.config.ts",
+    "dev": "tsx --watch ./src/index.ts",
+    "start": "node ./build/index.js",
+    "lint": "biome check --error-on-warnings src",
+    "lint:fix": "biome check --write src",
+    "typecheck": "tsc",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "croner": "^10.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "rolldown": "^1.2.5",
+    "tsx": "^4.23.12",
+    "typescript": "^7.0.2"
+  }
+}
