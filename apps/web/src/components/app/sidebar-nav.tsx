@@ -42,7 +42,7 @@ const SidebarNav = ({ accounts, email, onNavigate }: Props) => (
       </Link>
     </div>
 
-    <nav className="shrink-0 px-3">
+    <nav className="shrink-0 space-y-1 px-3">
       {LINKS.map((link) => (
         <NavLink
           key={link.to}
@@ -61,7 +61,7 @@ const SidebarNav = ({ accounts, email, onNavigate }: Props) => (
     </p>
 
     <div className="mt-1 min-h-0 flex-1 overflow-y-auto px-3">
-      <ul>
+      <ul className="space-y-1">
         {accounts.map((account) => {
           const netPnl = netPnlOf(account);
 
@@ -72,9 +72,9 @@ const SidebarNav = ({ accounts, email, onNavigate }: Props) => (
                 onClick={onNavigate}
                 className={({ isActive }) =>
                   cn(
-                    "flex items-center gap-2 rounded border-l-2 px-2.5 py-2 transition-colors",
+                    "flex items-center gap-2 rounded px-2.5 py-2 transition-colors",
                     FOCUS,
-                    isActive ? "border-line-strong bg-line" : cn("border-transparent", HOVER),
+                    isActive ? "bg-line" : HOVER,
                   )
                 }
               >
