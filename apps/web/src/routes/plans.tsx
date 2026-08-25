@@ -1,6 +1,6 @@
 import { href, Link } from "react-router";
 import PlanRules from "~/components/plans/plan-rules";
-import { formatMoney } from "~/lib/format";
+import { formatDollars } from "~/lib/format";
 import { PLANS, trailStopsAt } from "~/lib/plans";
 import type { Route } from "./+types/plans";
 
@@ -71,7 +71,7 @@ const Plans = () => (
             <dd className="mt-2 text-muted text-sm leading-relaxed">
               The floor that ends the account. It follows your highest equity up and never comes
               back down, then stops for good once it reaches a hundred above your starting balance.
-              On a {PLANS[1].label} that is {formatMoney(trailStopsAt(PLANS[1]))} of equity.
+              On a {PLANS[1].label} that is {formatDollars(trailStopsAt(PLANS[1]))} of equity.
             </dd>
           </div>
           <div>

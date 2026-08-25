@@ -27,6 +27,15 @@ const AMOUNT = new Intl.NumberFormat("en-US", {
 
 export const formatMoney = (value: number) => AMOUNT.format(value);
 
+const DOLLARS = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 0,
+});
+
+/** A plan is written in round dollars. Balances, which carry cents, are not. */
+export const formatDollars = (value: number) => DOLLARS.format(value);
+
 export const formatSigned = (value: number) => {
   // A value that rounds to nothing still carries its sign through Intl, so a row
   // that lost nothing would print "-0.00" and read as a loss.

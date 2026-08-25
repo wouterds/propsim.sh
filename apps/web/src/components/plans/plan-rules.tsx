@@ -1,4 +1,4 @@
-import { formatMoney } from "~/lib/format";
+import { formatDollars } from "~/lib/format";
 import type { Plan } from "~/lib/plans";
 
 type Props = {
@@ -7,10 +7,10 @@ type Props = {
 };
 
 const rowsOf = (plan: Plan) => [
-  { label: "Starting balance", value: formatMoney(plan.size) },
-  { label: "Profit target", value: formatMoney(plan.profitTarget) },
-  { label: "Trailing drawdown", value: formatMoney(plan.trailingDrawdown) },
-  { label: "Daily loss limit", value: formatMoney(plan.dailyLossLimit) },
+  { label: "Starting balance", value: formatDollars(plan.size) },
+  { label: "Profit target", value: formatDollars(plan.profitTarget) },
+  { label: "Trailing drawdown", value: formatDollars(plan.trailingDrawdown) },
+  { label: "Daily loss limit", value: formatDollars(plan.dailyLossLimit) },
   { label: "Position limit", value: `${plan.maxMinis} minis, ${plan.maxMicros} micros` },
 ];
 

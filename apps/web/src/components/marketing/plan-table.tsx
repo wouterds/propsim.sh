@@ -1,5 +1,5 @@
 import { href, Link } from "react-router";
-import { formatMoney } from "~/lib/format";
+import { formatDollars } from "~/lib/format";
 import { PLANS } from "~/lib/plans";
 
 const HEAD = "h-9 px-4 text-left font-normal text-[11px] text-faint uppercase tracking-wider";
@@ -33,17 +33,17 @@ const PlanTable = () => (
                 <td className="h-14 px-4">
                   <span className="font-medium text-ink">{plan.label} Daily</span>
                   <span className="block text-[11px] text-faint tabular">
-                    {formatMoney(plan.size)} to start
+                    {formatDollars(plan.size)} to start
                   </span>
                 </td>
                 <td className="h-14 px-4 text-right text-ink text-sm tabular">
-                  {formatMoney(plan.profitTarget)}
+                  {formatDollars(plan.profitTarget)}
                 </td>
                 <td className="h-14 px-4 text-right text-ink text-sm tabular">
-                  {formatMoney(plan.trailingDrawdown)}
+                  {formatDollars(plan.trailingDrawdown)}
                 </td>
                 <td className="h-14 px-4 text-right text-ink text-sm tabular">
-                  {formatMoney(plan.dailyLossLimit)}
+                  {formatDollars(plan.dailyLossLimit)}
                 </td>
                 <td className="h-14 px-4 text-right text-muted text-sm tabular">
                   {plan.maxMinis} minis, {plan.maxMicros} micros

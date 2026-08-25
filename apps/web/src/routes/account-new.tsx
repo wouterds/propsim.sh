@@ -5,7 +5,7 @@ import { Form, href, Link, redirect, useNavigation } from "react-router";
 import PlanRules from "~/components/plans/plan-rules";
 import { PRIMARY, SECONDARY } from "~/components/ui/button";
 import { createAccount } from "~/lib/accounts";
-import { formatMoney } from "~/lib/format";
+import { formatDollars } from "~/lib/format";
 import { DEFAULT_PLAN_ID, findPlan, PLANS, planOr } from "~/lib/plans";
 import type { Route } from "./+types/account-new";
 
@@ -68,11 +68,12 @@ const NewAccount = ({ loaderData, actionData }: Route.ComponentProps) => {
               <span className="min-w-0 flex-1">
                 <span className="flex items-baseline justify-between gap-2">
                   <span className="font-medium text-ink">{option.label} Daily</span>
-                  <span className="text-faint text-xs tabular">{formatMoney(option.size)}</span>
+                  <span className="text-faint text-xs tabular">{formatDollars(option.size)}</span>
                 </span>
                 <span className="mt-1 block text-muted text-xs leading-relaxed">
-                  {formatMoney(option.profitTarget)} to pass, {formatMoney(option.trailingDrawdown)}{" "}
-                  of trailing room, {option.maxMicros} micros.
+                  {formatDollars(option.profitTarget)} to pass,{" "}
+                  {formatDollars(option.trailingDrawdown)} of trailing room, {option.maxMicros}{" "}
+                  micros.
                 </span>
               </span>
             </Radio.Root>

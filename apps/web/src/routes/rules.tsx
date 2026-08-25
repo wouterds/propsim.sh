@@ -1,6 +1,6 @@
 import { href, Link } from "react-router";
 import { AFTER_MINUTES, BEFORE_MINUTES } from "~/lib/blackout";
-import { formatMoney } from "~/lib/format";
+import { formatDollars } from "~/lib/format";
 import { CONSISTENCY_CAP, PLANS, planOr, trailStopsAt } from "~/lib/plans";
 import type { Route } from "./+types/rules";
 
@@ -38,8 +38,8 @@ const GROUPS: Group[] = [
         id: "two-floors",
         title: "There are two floors, and they behave differently",
         body: [
-          `The daily loss limit is measured from the balance you opened the session with, and it resets with the next session. On a ${PLAN.label} it is ${formatMoney(PLAN.dailyLossLimit)}. Hitting it stops you trading until the next session. The account survives.`,
-          `The trailing drawdown is measured from the highest equity the account has ever reached, and it never resets. On a ${PLAN.label} it is ${formatMoney(PLAN.trailingDrawdown)}. Hitting it ends the account.`,
+          `The daily loss limit is measured from the balance you opened the session with, and it resets with the next session. On a ${PLAN.label} it is ${formatDollars(PLAN.dailyLossLimit)}. Hitting it stops you trading until the next session. The account survives.`,
+          `The trailing drawdown is measured from the highest equity the account has ever reached, and it never resets. On a ${PLAN.label} it is ${formatDollars(PLAN.trailingDrawdown)}. Hitting it ends the account.`,
           "The daily limit is fixed. It does not climb with the trailing floor, so once the trailing floor has risen past it the trailing floor is the one that will get you first.",
         ],
       },
@@ -48,7 +48,7 @@ const GROUPS: Group[] = [
         title: "The trailing floor only moves up",
         body: [
           "Every new equity high drags the floor up behind it. Nothing drags it back down. Go up four hundred and give it all back, and the floor keeps the four hundred: you are now four hundred closer to being cut than you were before the winning trade.",
-          `It stops climbing once it reaches a hundred above your starting balance. On a ${PLAN.label} that happens at ${formatMoney(trailStopsAt(PLAN))} of equity, and from that point the floor is fixed at ${formatMoney(PLAN.size + 100)} forever. Getting there is the whole game.`,
+          `It stops climbing once it reaches a hundred above your starting balance. On a ${PLAN.label} that happens at ${formatDollars(trailStopsAt(PLAN))} of equity, and from that point the floor is fixed at ${formatDollars(PLAN.size + 100)} forever. Getting there is the whole game.`,
         ],
       },
       {
