@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { asCode, CODE_DIGITS } from "./policy";
+import { asCode, CODE_DIGITS, MAX_USERNAME, MIN_USERNAME, usernameError } from "./policy";
 
 describe("asCode", () => {
   it("should give nothing back when the link carries no code", () => {
@@ -19,5 +19,39 @@ describe("asCode", () => {
     // then
     expect(asCode("418924")).toHaveLength(CODE_DIGITS);
     expect(asCode("4189249999")).toBe("418924");
+  });
+});
+
+describe("usernameError", () => {
+  it("should refuse a name that leads with a hyphen or an underscore", () => {
+    // then
+    expect(usernameError("-wouter")).not.toBeNull();
+    expect(usernameError("_wouter")).not.toBeNull();
+  });
+
+  it("should refuse anything outside letters, numbers, hyphens and underscores", () => {
+    // then
+    expect(usernameError("wouter ds")).not.toBeNull();
+    expect(usernameError("wouter.ds")).not.toBeNull();
+    expect(usernameError("wouter@ds")).not.toBeNull();
+  });
+
+  it("should hold both ends of the length", () => {
+    // given names one either side of each limit
+    const short = "a".repeat(MIN_USERNAME - 1);
+    const shortest = "a".repeat(MIN_USERNAME);
+    const longest = "a".repeat(MAX_USERNAME);
+    const long = "a".repeat(MAX_USERNAME + 1);
+
+    // then
+    expect(usernameError(short)).not.toBeNull();
+    expect(usernameError(shortest)).toBeNull();
+    expect(usernameError(longest)).toBeNull();
+    expect(usernameError(long)).not.toBeNull();
+  });
+
+  it("should allow a name that starts with a number and carries both separators", () => {
+    // then
+    expect(usernameError("0x_trader-9")).toBeNull();
   });
 });

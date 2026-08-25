@@ -25,6 +25,20 @@ export const findUserById = async (id: string) => {
   return user ?? null;
 };
 
+/** The column collation decides this, so two spellings of one name are one name. */
+export const findUserByUsername = async (username: string) => {
+  const [user] = await getDb()
+    .select()
+    .from(users)
+    .where(and(eq(users.username, username), live))
+    .limit(1);
+
+  return user ?? null;
+};
+
+export const updateUsername = (id: string, username: string | null) =>
+  getDb().update(users).set({ username }).where(eq(users.id, id));
+
 export const createUser = async (email: string, password: string | null) => {
   const [created] = await getDb().insert(users).values({ email, password }).$returningId();
 
