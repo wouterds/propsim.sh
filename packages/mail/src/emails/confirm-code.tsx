@@ -1,5 +1,5 @@
 import { Heading, Text } from "@react-email/components";
-import { digits, heading, Layout, paragraph } from "../layout";
+import { ButtonLink, digits, heading, Layout, paragraph, SITE } from "../layout";
 
 export type ConfirmCodeProps = {
   to: string;
@@ -16,10 +16,12 @@ export const ConfirmCode = ({ to, code, expiresInMinutes }: ConfirmCodeProps) =>
     to={to}
   >
     <Heading style={heading}>Confirm your email address</Heading>
-    <Text style={paragraph}>Enter this code to finish creating your account.</Text>
+    <Text style={paragraph}>Confirm with the button, or enter the code yourself.</Text>
     <Text style={digits}>{code}</Text>
-    <Text style={paragraph}>
-      The code expires in {expiresInMinutes} minutes and can be used once.
+    <ButtonLink href={`${SITE}/verify?code=${code}`}>Confirm my email</ButtonLink>
+    <Text style={{ ...paragraph, margin: "16px 0 0" }}>
+      The code expires in {expiresInMinutes} minutes and can be used once. The button only works in
+      the browser you signed up with.
     </Text>
   </Layout>
 );
