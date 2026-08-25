@@ -36,6 +36,13 @@
       "when": 1787689713867,
       "tag": "0004_wooden_pestilence",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1787690504687,
+      "tag": "0005_quick_meltdown",
+      "breakpoints": true
     }
   ]
 }

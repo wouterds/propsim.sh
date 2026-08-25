@@ -43,5 +43,10 @@ export const sessions = mysqlTable(
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
   },
-  (table) => [unique("hash_unique").on(table.hash), index("user_id_idx").on(table.userId)],
+  (table) => [
+    unique("hash_unique").on(table.hash),
+    // The dormancy sweep asks for the newest last_seen_at per user, which this
+    // answers without reading the rows.
+    index("user_id_last_seen_idx").on(table.userId, table.lastSeenAt),
+  ],
 );
