@@ -21,6 +21,10 @@ export const countdown = (ms: number) => {
   return `${clock}.${pad(hundredths)}`;
 };
 
+/** Local time, and only ever read on the client: the server sits in another one. */
+const releaseTime = (at: number) =>
+  new Date(at).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+
 /** Counts down to the next red folder release, once it is inside a day. */
 const NewsStrip = ({ at, titles }: Props) => {
   // Null until the browser has the clock, or the server renders a different one.
@@ -47,9 +51,9 @@ const NewsStrip = ({ at, titles }: Props) => {
     >
       <span className="size-1.5 shrink-0 rounded-full bg-down" aria-hidden="true" />
       <span className="shrink-0 font-medium text-down">Red folder news</span>
-      <span className="truncate text-muted">{titles.join(", ")}</span>
-      <span className="ml-auto shrink-0 text-ink tabular">
-        {now === null ? "" : countdown(at - now)}
+      <span className="truncate text-down/70">{titles.join(", ")}</span>
+      <span className="ml-auto shrink-0 text-down/90 tabular">
+        {now === null ? "" : `${releaseTime(at)} · ${countdown(at - now)}`}
       </span>
     </Link>
   );
