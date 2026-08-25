@@ -1,3 +1,4 @@
+import { scrubUser } from "@propsim/accounts";
 import {
   sendAccountDeleted,
   sendConfirmNewEmail,
@@ -21,7 +22,7 @@ import { hashPassword, verifyPassword } from "~/lib/password.server";
 import { EMAIL_CHANGE_TTL_MINUTES, MIN_PASSWORD } from "~/lib/policy";
 import { PRIVATE } from "~/lib/seo";
 import { listSessions, revokeOtherSessions, revokeSession } from "~/lib/sessions.server";
-import { deleteUser, findUserByEmail, findUserById, updatePassword } from "~/lib/users.server";
+import { findUserByEmail, findUserById, updatePassword } from "~/lib/users.server";
 import type { Route } from "./+types/settings";
 
 export const meta: Route.MetaFunction = () => [{ title: "Settings, propsim.sh" }, ...PRIVATE];
@@ -160,7 +161,7 @@ export const action = async ({ request }: Route.ActionArgs) => {
     // Sent while there is still somewhere to send it, and through notify: a
     // provider outage must not leave the account half deleted.
     await notify(() => sendAccountDeleted({ to: user.email }));
-    await deleteUser(user.id);
+    await scrubUser(user.id);
 
     throw await endSession(request);
   }
