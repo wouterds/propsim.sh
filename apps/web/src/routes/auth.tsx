@@ -77,6 +77,10 @@ export const action = async ({ request }: Route.ActionArgs) => {
       return { error: `Use at least ${MIN_PASSWORD} characters.` };
     }
 
+    if (password !== String(form.get("confirm") ?? "")) {
+      return { error: "The two passwords do not match." };
+    }
+
     if (await findUserByEmail(email)) {
       return { error: "That email already has an account." };
     }
@@ -151,7 +155,7 @@ const Auth = ({ loaderData, actionData }: Route.ComponentProps) => {
             </p>
           )}
 
-          <AuthForm mode={mode} error={actionData?.error} />
+          <AuthForm key={mode} mode={mode} error={actionData?.error} />
 
           {loaderData.withGoogle && (
             <>

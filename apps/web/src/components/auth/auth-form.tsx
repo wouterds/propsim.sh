@@ -1,4 +1,5 @@
 import { Field } from "@base-ui/react/field";
+import { useState } from "react";
 import { Form, useNavigation } from "react-router";
 import { type AuthMode, COPY } from "./mode";
 
@@ -15,6 +16,10 @@ type Props = {
 const AuthForm = ({ mode, error }: Props) => {
   const navigation = useNavigation();
   const busy = navigation.state !== "idle";
+  const [password, setPassword] = useState("");
+
+  // Signing up asks for it twice, but only once there is something to confirm.
+  const confirming = mode === "signup" && password.length > 0;
 
   return (
     <Form method="post" className="space-y-3">
@@ -36,7 +41,6 @@ const AuthForm = ({ mode, error }: Props) => {
       <Field.Root className="block">
         <Field.Label className={LABEL}>Password</Field.Label>
         <Field.Control
-          key={mode}
           name="password"
           type="password"
           required
@@ -44,9 +48,26 @@ const AuthForm = ({ mode, error }: Props) => {
           autoComplete={mode === "signup" ? "new-password" : "current-password"}
           placeholder={mode === "signup" ? "at least 8 characters" : "your password"}
           className={CONTROL}
+          onChange={(event) => setPassword(event.target.value)}
         />
         <Field.Error className="mt-1.5 block text-down text-xs" />
       </Field.Root>
+
+      {confirming && (
+        <Field.Root className="block animate-fade-in">
+          <Field.Label className={LABEL}>Confirm password</Field.Label>
+          <Field.Control
+            name="confirm"
+            type="password"
+            required
+            minLength={8}
+            autoComplete="new-password"
+            placeholder="the same one again"
+            className={CONTROL}
+          />
+          <Field.Error className="mt-1.5 block text-down text-xs" />
+        </Field.Root>
+      )}
 
       {error && (
         <p
