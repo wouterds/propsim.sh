@@ -28,12 +28,20 @@ const COLUMNS = [
   },
 ];
 
-const SiteFooter = () => (
-  <footer className="border-line/70 border-t">
-    {/* The link columns take the width of their own links and sit against the
-        right edge. Equal fractions gave each one more room than it used, which
-        left the last column stranded short of the edge. */}
-    <div className="mx-auto grid max-w-6xl gap-10 px-5 py-12 sm:grid-cols-2 sm:px-8 lg:grid-cols-[1fr_auto_auto_auto] lg:gap-x-16">
+// The link columns take the width of their own links and sit against the right
+// edge. Equal fractions gave each one more room than it used, which left the
+// last column stranded short of the edge.
+const COLUMNS_GRID =
+  "mx-auto grid max-w-6xl gap-10 px-5 py-12 sm:grid-cols-2 sm:px-8 lg:grid-cols-[1fr_auto_auto_auto] lg:gap-x-16";
+
+/** Boxed, it is a panel in the app's own content column rather than a band under it. */
+const SiteFooter = ({ boxed = false }: { boxed?: boolean }) => (
+  <footer
+    className={
+      boxed ? "overflow-hidden rounded-lg border border-line bg-raised" : "border-line/70 border-t"
+    }
+  >
+    <div className={COLUMNS_GRID}>
       <div>
         <Brand className="text-[15px] text-ink" />
         <p className="mt-3 max-w-sm text-faint text-sm leading-relaxed">
