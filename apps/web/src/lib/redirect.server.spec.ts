@@ -27,7 +27,7 @@ describe("safeReturn", () => {
   });
 
   it("should refuse a single fetch data path", () => {
-    expect(safeReturn("/trading.data")).toBe("/dash");
+    expect(safeReturn("/terminal.data")).toBe("/dash");
   });
 
   it("should refuse nothing at all", () => {
@@ -35,24 +35,24 @@ describe("safeReturn", () => {
   });
 
   it("should keep a local path and its query", () => {
-    expect(safeReturn("/trading?tf=15m")).toBe("/trading?tf=15m");
+    expect(safeReturn("/terminal?tf=15m")).toBe("/terminal?tf=15m");
   });
 });
 
 describe("asPage", () => {
   it("should strip the single fetch suffix and its routing params", () => {
     // given
-    const url = new URL("https://propsim.sh/trading.data?_routes=routes%2Ftrading&tf=15m");
+    const url = new URL("https://propsim.sh/terminal.data?_routes=routes%2Ftrading&tf=15m");
 
     // then
-    expect(asPage(url)).toBe("/trading?tf=15m");
+    expect(asPage(url)).toBe("/terminal?tf=15m");
   });
 
   it("should leave a plain document request alone", () => {
     // given
-    const url = new URL("https://propsim.sh/trading?tf=15m");
+    const url = new URL("https://propsim.sh/terminal?tf=15m");
 
     // then
-    expect(asPage(url)).toBe("/trading?tf=15m");
+    expect(asPage(url)).toBe("/terminal?tf=15m");
   });
 });

@@ -10,9 +10,9 @@ import { barsPerDay, parseTimeframe, rangeFor, SYMBOL } from "~/components/tradi
 import Panel from "~/components/trading/panel";
 import TradePanel from "~/components/trading/trade-panel";
 import { usePaperTrading } from "~/components/trading/use-paper-trading";
-import type { Route } from "./+types/trading";
+import type { Route } from "./+types/terminal";
 
-export const meta = () => [{ title: "Trading, propsim.sh" }];
+export const meta = () => [{ title: "Terminal, propsim.sh" }];
 
 /** `url`, not `request.url`: the latter carries a `.data` suffix on client navigation. */
 export const loader = async ({ url }: Route.LoaderArgs) => {

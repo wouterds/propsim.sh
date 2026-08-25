@@ -6,7 +6,7 @@ import { cn } from "~/lib/utils";
 
 const LINKS = [
   { to: href("/dash"), label: "Dashboard" },
-  { to: href("/trading"), label: "Trading" },
+  { to: href("/terminal"), label: "Terminal" },
 ];
 
 const FOCUS = "focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent";

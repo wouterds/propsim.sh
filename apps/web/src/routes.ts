@@ -8,6 +8,6 @@ export default [
 
   layout("routes/app.tsx", [
     route("dash", "routes/dash.tsx"),
-    route("trading", "routes/trading.tsx"),
+    route("terminal", "routes/terminal.tsx"),
   ]),
 ] satisfies RouteConfig;

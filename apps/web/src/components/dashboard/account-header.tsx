@@ -19,7 +19,7 @@ const AccountHeader = ({ account }: Props) => (
     </div>
 
     <Link
-      to={href("/trading")}
+      to={href("/terminal")}
       className="inline-flex h-9 items-center rounded bg-accent px-4 font-medium text-sm text-sunken transition-colors hover:bg-accent/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
     >
       Start trading

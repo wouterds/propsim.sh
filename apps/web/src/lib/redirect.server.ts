@@ -31,7 +31,7 @@ export const safeReturn = (value: string | null) => {
 /**
  * The page a request was for.
  *
- * A client side navigation asks for `/trading.data` with its own routing
+ * A client side navigation asks for `/terminal.data` with its own routing
  * params, so `request.url` names a path no route matches.
  */
 export const asPage = (url: URL) => {

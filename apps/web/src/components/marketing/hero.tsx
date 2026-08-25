@@ -19,7 +19,7 @@ const Hero = () => (
         </p>
 
         <Link
-          to={href("/trading")}
+          to={href("/terminal")}
           className="mt-8 inline-flex h-10 items-center rounded bg-accent px-5 font-medium text-sunken transition-colors hover:bg-accent/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
         >
           Start trading
