@@ -3,6 +3,7 @@ import { createElement, type ReactElement } from "react";
 
 import { ConfirmCode } from "./emails/confirm-code";
 import { ConfirmNewEmail } from "./emails/confirm-new-email";
+import { ContactMessage } from "./emails/contact-message";
 import { EmailChanging } from "./emails/email-changing";
 import { NewDevice } from "./emails/new-device";
 import { PasswordChanged } from "./emails/password-changed";
@@ -10,10 +11,15 @@ import { ResetPassword } from "./emails/reset-password";
 import { Welcome } from "./emails/welcome";
 import { send } from "./mailjet";
 
-const deliver = async (to: string, subject: string, email: ReactElement) => {
+const deliver = async (
+  to: string,
+  subject: string,
+  email: ReactElement,
+  replyTo?: { email: string; name: string },
+) => {
   const html = await render(email);
 
-  await send({ to, subject, html, text: toPlainText(html) });
+  await send({ to, subject, html, text: toPlainText(html), replyTo });
 };
 
 export const sendWelcome = ({ to }: { to: string }) =>
@@ -79,3 +85,23 @@ export const sendNewDevice = ({
   place: string | null;
   at: string;
 }) => deliver(to, "A new device signed in", createElement(NewDevice, { to, device, place, at }));
+
+export const sendContactMessage = ({
+  to,
+  name,
+  email,
+  subject,
+  message,
+}: {
+  to: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}) =>
+  deliver(
+    to,
+    `Contact: ${subject}`,
+    createElement(ContactMessage, { to, name, email, subject, message }),
+    { email, name },
+  );
