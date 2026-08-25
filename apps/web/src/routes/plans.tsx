@@ -1,7 +1,7 @@
+import { PLANS, trailStopsAt } from "@propsim/plans";
 import { href, Link } from "react-router";
 import PlanRules from "~/components/plans/plan-rules";
 import { formatDollars } from "~/lib/format";
-import { PLANS, trailStopsAt } from "~/lib/plans";
 import { pageMeta } from "~/lib/seo";
 import type { Route } from "./+types/plans";
 

@@ -1,6 +1,6 @@
+import { PLANS } from "@propsim/plans";
 import { href, Link } from "react-router";
 import { formatDollars } from "~/lib/format";
-import { PLANS } from "~/lib/plans";
 
 const HEAD = "h-9 px-4 text-left font-normal text-[11px] text-faint uppercase tracking-wider";
 

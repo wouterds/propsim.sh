@@ -1,5 +1,5 @@
+import type { Plan } from "@propsim/plans";
 import { formatDollars } from "~/lib/format";
-import type { Plan } from "~/lib/plans";
 
 type Props = {
   plan: Plan;

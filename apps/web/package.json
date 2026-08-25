@@ -19,6 +19,7 @@
     "@propsim/database": "*",
     "@propsim/datasources": "*",
     "@propsim/mail": "*",
+    "@propsim/plans": "*",
     "@react-router/node": "^8.3.0",
     "@react-router/serve": "^8.3.0",
     "clsx": "^2.1.1",

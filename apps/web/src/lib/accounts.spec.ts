@@ -1,6 +1,6 @@
+import { planOr } from "@propsim/plans";
 import { describe, expect, it } from "vitest";
 import { type Account, trailingFloorOf } from "./accounts";
-import { planOr } from "./plans";
 
 const plan = planOr("daily-50k");
 

@@ -1,3 +1,4 @@
+import { CONSISTENCY_CAP, lockedFloorOf } from "@propsim/plans";
 import {
   type Account,
   dailyFloorOf,
@@ -8,7 +9,6 @@ import {
 } from "./accounts";
 import { formatMoney } from "./format";
 import { concentrationOf, greenDaysOf, type Verdict } from "./journal";
-import { CONSISTENCY_CAP, lockedFloorOf } from "./plans";
 
 export type Rule = {
   id: string;

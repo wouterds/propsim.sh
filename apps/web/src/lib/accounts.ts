@@ -1,6 +1,6 @@
+import { lockedFloorOf, type Plan, planOr } from "@propsim/plans";
 import type { FloorTone } from "./format";
 import type { JournalDay, Verdict } from "./journal";
-import { lockedFloorOf, type Plan, planOr } from "./plans";
 
 export type AccountStatus = "live" | "passed" | "breached";
 
