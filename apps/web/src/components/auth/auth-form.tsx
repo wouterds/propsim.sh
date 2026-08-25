@@ -1,7 +1,8 @@
+import { Field } from "@base-ui/react/field";
 import { Form, useNavigation } from "react-router";
 import { type AuthMode, COPY } from "./mode";
 
-const FIELD =
+const CONTROL =
   "h-10 w-full rounded border border-line bg-sunken px-3 text-ink text-sm outline-hidden transition-colors placeholder:text-faint focus-visible:border-accent focus-visible:ring-1 focus-visible:ring-accent";
 
 const LABEL = "mb-1.5 block text-[11px] text-faint uppercase tracking-wider";
@@ -19,36 +20,33 @@ const AuthForm = ({ mode, error }: Props) => {
     <Form method="post" className="space-y-4">
       <input type="hidden" name="mode" value={mode} />
 
-      <div>
-        <label htmlFor="email" className={LABEL}>
-          Email
-        </label>
-        <input
-          id="email"
+      <Field.Root className="block">
+        <Field.Label className={LABEL}>Email</Field.Label>
+        <Field.Control
           name="email"
           type="email"
           required
           autoComplete="email"
           placeholder="you@example.com"
-          className={FIELD}
+          className={CONTROL}
         />
-      </div>
+        <Field.Error className="mt-1.5 block text-down text-xs" />
+      </Field.Root>
 
-      <div>
-        <label htmlFor="password" className={LABEL}>
-          Password
-        </label>
-        <input
+      <Field.Root className="block">
+        <Field.Label className={LABEL}>Password</Field.Label>
+        <Field.Control
           key={mode}
-          id="password"
           name="password"
           type="password"
           required
+          minLength={mode === "signup" ? 8 : undefined}
           autoComplete={mode === "signup" ? "new-password" : "current-password"}
           placeholder={mode === "signup" ? "at least 8 characters" : "your password"}
-          className={FIELD}
+          className={CONTROL}
         />
-      </div>
+        <Field.Error className="mt-1.5 block text-down text-xs" />
+      </Field.Root>
 
       {error && (
         <p

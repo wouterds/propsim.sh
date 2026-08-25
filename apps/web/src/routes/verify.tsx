@@ -1,14 +1,18 @@
+import { OTPField } from "@base-ui/react/otp-field";
 import { sendConfirmCode, sendWelcome } from "@propsim/mail";
+import { useState } from "react";
 import { Form, href, Link, redirect, useNavigation } from "react-router";
 import Brand from "~/components/layout/brand";
 import GridBackdrop from "~/components/layout/grid-backdrop";
 import { getPendingUserId, startSession } from "~/lib/auth.server";
 import { findUserById, markEmailVerified } from "~/lib/users.server";
-import { CODE_TTL_MINUTES } from "~/lib/verification";
+import { CODE_DIGITS, CODE_TTL_MINUTES } from "~/lib/verification";
 import { checkCode, issueCode } from "~/lib/verifications.server";
 import type { Route } from "./+types/verify";
 
 export const meta: Route.MetaFunction = () => [{ title: "Confirm your email, propsim.sh" }];
+
+const SLOTS = Array.from({ length: CODE_DIGITS }, (_, index) => `digit-${index + 1}`);
 
 const REFUSED: Record<string, string> = {
   wrong: "That code is not right.",
@@ -62,6 +66,7 @@ export const action = async ({ request }: Route.ActionArgs) => {
 const Verify = ({ loaderData, actionData }: Route.ComponentProps) => {
   const navigation = useNavigation();
   const busy = navigation.state !== "idle";
+  const [code, setCode] = useState("");
 
   return (
     <main className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden px-5 py-16">
@@ -83,25 +88,23 @@ const Verify = ({ loaderData, actionData }: Route.ComponentProps) => {
           </p>
 
           <Form method="post" className="space-y-4">
-            <div>
-              <label
-                htmlFor="code"
-                className="mb-1.5 block text-[11px] text-faint uppercase tracking-wider"
-              >
-                Code
-              </label>
-              <input
-                id="code"
-                name="code"
-                inputMode="numeric"
-                pattern="[0-9]{6}"
-                maxLength={6}
-                required
-                autoComplete="one-time-code"
-                placeholder="000000"
-                className="h-10 w-full rounded border border-line bg-sunken px-3 text-center text-ink text-lg tabular tracking-[0.4em] outline-hidden transition-colors placeholder:text-faint focus-visible:border-accent focus-visible:ring-1 focus-visible:ring-accent"
-              />
-            </div>
+            <OTPField.Root
+              name="code"
+              length={CODE_DIGITS}
+              required
+              autoComplete="one-time-code"
+              value={code}
+              onValueChange={setCode}
+              aria-label="Confirmation code"
+              className="flex justify-between gap-2"
+            >
+              {SLOTS.map((slot) => (
+                <OTPField.Input
+                  key={slot}
+                  className="h-12 w-full rounded border border-line bg-sunken text-center text-ink text-lg tabular outline-hidden transition-colors focus-visible:border-accent focus-visible:ring-1 focus-visible:ring-accent"
+                />
+              ))}
+            </OTPField.Root>
 
             {actionData && "error" in actionData && actionData.error && (
               <p
@@ -120,7 +123,7 @@ const Verify = ({ loaderData, actionData }: Route.ComponentProps) => {
 
             <button
               type="submit"
-              disabled={busy}
+              disabled={busy || code.length < CODE_DIGITS}
               className="inline-flex h-10 w-full items-center justify-center rounded bg-accent font-medium text-sm text-sunken transition-colors hover:bg-accent/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent disabled:opacity-60"
             >
               {busy ? "One moment" : "Confirm"}
