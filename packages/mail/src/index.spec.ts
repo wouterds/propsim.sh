@@ -1,6 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { sendConfirmCode, sendWelcome } from "./index";
 
+// These cover what Mailjet is handed. The log is specced against its own module.
+vi.mock("./log", () => ({ logEmail: vi.fn() }));
+
 const accepted = {
   Messages: [{ Status: "success", To: [{ Email: "trader@example.com", MessageUUID: "cb927469" }] }],
 };

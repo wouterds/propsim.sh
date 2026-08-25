@@ -10,21 +10,24 @@ import { NewDevice } from "./emails/new-device";
 import { PasswordChanged } from "./emails/password-changed";
 import { ResetPassword } from "./emails/reset-password";
 import { Welcome } from "./emails/welcome";
+import { logEmail } from "./log";
 import { send } from "./mailjet";
 
 const deliver = async (
+  template: string,
   to: string,
   subject: string,
-  email: ReactElement,
+  email: ReactElement<object>,
   replyTo?: { email: string; name: string },
 ) => {
   const html = await render(email);
 
   await send({ to, subject, html, text: toPlainText(html), replyTo });
+  await logEmail({ recipient: to, subject, template, payload: email.props });
 };
 
 export const sendWelcome = ({ to }: { to: string }) =>
-  deliver(to, "Welcome to propsim.sh", createElement(Welcome, { to }));
+  deliver("welcome", to, "Welcome to propsim.sh", createElement(Welcome, { to }));
 
 export const sendConfirmCode = ({
   to,
@@ -38,6 +41,7 @@ export const sendConfirmCode = ({
   // The code stays out of the subject. Mailjet keeps subjects in message history, and
   // every relay on the path logs them.
   deliver(
+    "confirm-code",
     to,
     "Confirm your email address",
     createElement(ConfirmCode, { to, code, expiresInMinutes }),
@@ -52,13 +56,23 @@ export const sendResetPassword = ({
   token: string;
   expiresInMinutes: number;
 }) =>
-  deliver(to, "Reset your password", createElement(ResetPassword, { to, token, expiresInMinutes }));
+  deliver(
+    "reset-password",
+    to,
+    "Reset your password",
+    createElement(ResetPassword, { to, token, expiresInMinutes }),
+  );
 
 export const sendPasswordChanged = ({ to }: { to: string }) =>
-  deliver(to, "Your password was changed", createElement(PasswordChanged, { to }));
+  deliver(
+    "password-changed",
+    to,
+    "Your password was changed",
+    createElement(PasswordChanged, { to }),
+  );
 
 export const sendAccountDeleted = ({ to }: { to: string }) =>
-  deliver(to, "Your account was deleted", createElement(AccountDeleted, { to }));
+  deliver("account-deleted", to, "Your account was deleted", createElement(AccountDeleted, { to }));
 
 export const sendConfirmNewEmail = ({
   to,
@@ -70,13 +84,19 @@ export const sendConfirmNewEmail = ({
   expiresInMinutes: number;
 }) =>
   deliver(
+    "confirm-new-email",
     to,
     "Confirm your new address",
     createElement(ConfirmNewEmail, { to, token, expiresInMinutes }),
   );
 
 export const sendEmailChanging = ({ to, email }: { to: string; email: string }) =>
-  deliver(to, "A new address was requested", createElement(EmailChanging, { to, email }));
+  deliver(
+    "email-changing",
+    to,
+    "A new address was requested",
+    createElement(EmailChanging, { to, email }),
+  );
 
 export const sendNewDevice = ({
   to,
@@ -88,7 +108,13 @@ export const sendNewDevice = ({
   device: string;
   place: string | null;
   at: string;
-}) => deliver(to, "A new device signed in", createElement(NewDevice, { to, device, place, at }));
+}) =>
+  deliver(
+    "new-device",
+    to,
+    "A new device signed in",
+    createElement(NewDevice, { to, device, place, at }),
+  );
 
 export const sendContactMessage = ({
   to,
@@ -104,6 +130,7 @@ export const sendContactMessage = ({
   message: string;
 }) =>
   deliver(
+    "contact-message",
     to,
     `Contact: ${subject}`,
     createElement(ContactMessage, { to, name, email, subject, message }),
