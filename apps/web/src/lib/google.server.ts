@@ -1,4 +1,5 @@
 import { createCookie } from "react-router";
+import { siteUrl } from "./site.server";
 import { newToken } from "./token.server";
 
 const AUTH = "https://accounts.google.com/o/oauth2/v2/auth";
@@ -17,10 +18,7 @@ const required = (name: string) => {
   return value;
 };
 
-// Built from configuration, never from the Host header, which the caller sets.
-const site = () => process.env.PUBLIC_URL ?? "http://localhost:5173";
-
-export const callbackUrl = () => `${site()}/auth/google/callback`;
+export const callbackUrl = () => `${siteUrl()}/auth/google/callback`;
 
 export const googleIsSet = () =>
   Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
