@@ -94,8 +94,7 @@ const Auth = ({ actionData }: Route.ComponentProps) => {
 
         <div className="mt-8 rounded-xl border border-line bg-raised p-6 shadow-[0_24px_80px_-40px_rgb(0_0_0)]">
           <ModeTabs mode={mode} onChange={setMode} />
-          <h1 className="font-semibold text-ink text-lg tracking-tight">{COPY[mode].title}</h1>
-          <p className="mt-1 mb-6 text-muted text-sm">{COPY[mode].blurb}</p>
+          <h1 className="mb-6 font-semibold text-ink text-lg tracking-tight">{COPY[mode].title}</h1>
           <AuthForm mode={mode} error={actionData?.error} />
         </div>
       </div>
