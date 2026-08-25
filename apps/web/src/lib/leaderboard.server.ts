@@ -1,0 +1,154 @@
+import { accounts, fills, getDb, users } from "@propsim/database";
+import { type Fill, ledgerOf, toDollars } from "@propsim/engine";
+import { personaOf } from "@propsim/identity";
+import { asc, eq, inArray, isNull } from "drizzle-orm";
+import {
+  bankedSince,
+  cutoffOf,
+  medianPnlOf,
+  profitableShare,
+  returnOf,
+  type Span,
+  type Standing,
+} from "./leaderboard";
+
+const BOARD = 10;
+
+type Tally = {
+  userId: string;
+  username: string | null;
+  accounts: number;
+  startingCents: number;
+  pnlCents: number;
+};
+
+const standingOf = (tally: Tally): Standing => {
+  const persona = personaOf(tally.userId, tally.username);
+
+  return {
+    userId: tally.userId,
+    name: persona.name,
+    initials: persona.initials,
+    hue: persona.hue,
+    accounts: tally.accounts,
+    startingCents: tally.startingCents,
+    pnlCents: tally.pnlCents,
+  };
+};
+
+export type Row = {
+  rank: number;
+  name: string;
+  initials: string;
+  hue: number;
+  accounts: number;
+  pnl: number;
+  return: number;
+};
+
+const toRow = (standing: Standing, index: number): Row => ({
+  rank: index + 1,
+  name: standing.name,
+  initials: standing.initials,
+  hue: standing.hue,
+  accounts: standing.accounts,
+  pnl: toDollars(standing.pnlCents),
+  return: returnOf(standing),
+});
+
+/**
+ * Every account folded from its own fills, then summed per trader. A public
+ * page, so nothing on it names an address or an account.
+ */
+export const loadLeaderboard = async (span: Span, now = new Date()) => {
+  const rows = await getDb()
+    .select({
+      id: accounts.id,
+      userId: accounts.userId,
+      username: users.username,
+      startingBalanceCents: accounts.startingBalanceCents,
+      endedReason: accounts.endedReason,
+    })
+    .from(accounts)
+    .innerJoin(users, eq(users.id, accounts.userId))
+    .where(isNull(users.deletedAt));
+
+  const empty = {
+    standings: [] as Standing[],
+    winners: [] as Row[],
+    losers: [] as Row[],
+    traders: 0,
+    accounts: 0,
+    passed: 0,
+    breached: 0,
+    profitable: null as number | null,
+    median: null as number | null,
+  };
+
+  if (rows.length === 0) {
+    return empty;
+  }
+
+  const printed = await getDb()
+    .select()
+    .from(fills)
+    .where(
+      inArray(
+        fills.accountId,
+        rows.map((row) => row.id),
+      ),
+    )
+    .orderBy(asc(fills.at), asc(fills.id));
+
+  const byAccount = new Map<string, Fill[]>();
+
+  for (const fill of printed) {
+    const held = byAccount.get(fill.accountId) ?? [];
+
+    held.push(fill);
+    byAccount.set(fill.accountId, held);
+  }
+
+  const cutoff = cutoffOf(span, now);
+  const byUser = new Map<string, Tally>();
+
+  for (const row of rows) {
+    const ledger = ledgerOf(byAccount.get(row.id) ?? [], row.startingBalanceCents);
+    const tally = byUser.get(row.userId) ?? {
+      userId: row.userId,
+      username: row.username,
+      accounts: 0,
+      startingCents: 0,
+      pnlCents: 0,
+    };
+
+    tally.accounts += 1;
+    tally.startingCents += row.startingBalanceCents;
+    tally.pnlCents += bankedSince(ledger.trips, cutoff);
+    byUser.set(row.userId, tally);
+  }
+
+  const standings = [...byUser.values()].map(standingOf).sort((a, b) => b.pnlCents - a.pnlCents);
+
+  // Only the ones who actually moved. A flat trader is neither a winner nor a
+  // loser, and padding either board with them would say something untrue.
+  const up = standings.filter((standing) => standing.pnlCents > 0);
+  const down = standings.filter((standing) => standing.pnlCents < 0);
+
+  return {
+    standings,
+    winners: up.slice(0, BOARD).map(toRow),
+    losers: down
+      .slice(-BOARD)
+      .reverse()
+      .map((standing, index) => toRow(standing, index)),
+    traders: standings.length,
+    accounts: rows.length,
+    passed: rows.filter((row) => row.endedReason === "target_met").length,
+    breached: rows.filter(
+      (row) => row.endedReason === "daily_loss" || row.endedReason === "trailing_drawdown",
+    ).length,
+    profitable: profitableShare(standings),
+    median: medianPnlOf(standings),
+  };
+};
