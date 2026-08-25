@@ -53,7 +53,7 @@ const SiteFooter = () => (
     <div className="border-line/70 border-t">
       <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-5 text-faint text-xs sm:flex-row sm:items-center sm:justify-between sm:px-8">
         <p>Simulated fills against historical bars. Not a broker, not investment advice.</p>
-        <p className="tabular">2026 propsim.sh</p>
+        <p className="tabular">© 2026 propsim.sh</p>
       </div>
     </div>
   </footer>
