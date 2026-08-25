@@ -12,7 +12,6 @@ const rowsOf = (plan: Plan) => [
   { label: "Trailing drawdown", value: formatMoney(plan.trailingDrawdown) },
   { label: "Daily loss limit", value: formatMoney(plan.dailyLossLimit) },
   { label: "Position limit", value: `${plan.maxMinis} minis, ${plan.maxMicros} micros` },
-  { label: "Minimum days", value: `${plan.minimumDays}` },
 ];
 
 const PlanRules = ({ plan, className }: Props) => (

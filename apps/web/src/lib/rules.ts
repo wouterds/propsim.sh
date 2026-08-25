@@ -52,12 +52,6 @@ export const rulesOf = (account: Account): Rule[] => {
       state: left <= 0 ? "clean" : "watch",
     },
     {
-      id: "days",
-      label: "Minimum trading days",
-      detail: `${daysTraded} traded, ${plan.minimumDays} required.`,
-      state: daysTraded >= plan.minimumDays ? "clean" : "watch",
-    },
-    {
       id: "consistency",
       label: `Consistency, ${Math.round(CONSISTENCY_CAP * 100)}%`,
       detail:

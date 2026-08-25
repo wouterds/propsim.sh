@@ -7,7 +7,6 @@ export type Plan = {
   dailyLossLimit: number;
   maxMinis: number;
   maxMicros: number;
-  minimumDays: number;
 };
 
 /**
@@ -25,7 +24,6 @@ export const PLANS: Plan[] = [
     dailyLossLimit: 600,
     maxMinis: 2,
     maxMicros: 20,
-    minimumDays: 2,
   },
   {
     id: "daily-50k",
@@ -36,7 +34,6 @@ export const PLANS: Plan[] = [
     dailyLossLimit: 1_200,
     maxMinis: 4,
     maxMicros: 40,
-    minimumDays: 2,
   },
   {
     id: "daily-100k",
@@ -47,7 +44,6 @@ export const PLANS: Plan[] = [
     dailyLossLimit: 1_800,
     maxMinis: 6,
     maxMicros: 60,
-    minimumDays: 2,
   },
   {
     id: "daily-150k",
@@ -58,7 +54,6 @@ export const PLANS: Plan[] = [
     dailyLossLimit: 2_700,
     maxMinis: 10,
     maxMicros: 100,
-    minimumDays: 2,
   },
 ];
 
