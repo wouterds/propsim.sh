@@ -21,7 +21,8 @@ const FAINT = "#7b8493";
 const BASE = "#0a0b0d";
 const RAISED = "#101216";
 const LINE = "#22262d";
-const ACCENT = "#ffffff";
+const UP = "#14b8a6";
+const DOWN = "#f43f5e";
 
 const body: CSSProperties = {
   backgroundColor: BASE,
@@ -104,7 +105,7 @@ export const digits: CSSProperties = {
 };
 
 const buttonCell: CSSProperties = {
-  backgroundColor: ACCENT,
+  backgroundColor: UP,
   borderRadius: "6px",
 };
 
@@ -123,8 +124,9 @@ type ButtonLinkProps = {
 };
 
 /**
- * The fill sits on the cell, not on the link. Apple Mail in dark mode drops a
- * background set on an anchor and leaves the dark label, so the button goes
+ * Filled with the rising colour, never with white. Apple Mail in dark mode
+ * suppresses a pure white background, which leaves the dark label invisible.
+ * The mark in the same mail shows that a saturated colour survives.
  */
 export const ButtonLink = ({ href, children }: ButtonLinkProps) => (
   <table cellPadding={0} cellSpacing={0} role="presentation" style={{ borderCollapse: "separate" }}>
@@ -139,9 +141,6 @@ export const ButtonLink = ({ href, children }: ButtonLinkProps) => (
     </tbody>
   </table>
 );
-
-const UP = "#14b8a6";
-const DOWN = "#f43f5e";
 
 type CandleProps = {
   color: string;
