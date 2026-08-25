@@ -4,6 +4,7 @@ import { createElement, type ReactElement } from "react";
 import { ConfirmCode } from "./emails/confirm-code";
 import { ConfirmNewEmail } from "./emails/confirm-new-email";
 import { EmailChanging } from "./emails/email-changing";
+import { NewDevice } from "./emails/new-device";
 import { PasswordChanged } from "./emails/password-changed";
 import { ResetPassword } from "./emails/reset-password";
 import { Welcome } from "./emails/welcome";
@@ -66,3 +67,15 @@ export const sendConfirmNewEmail = ({
 
 export const sendEmailChanging = ({ to, email }: { to: string; email: string }) =>
   deliver(to, "A new address was requested", createElement(EmailChanging, { to, email }));
+
+export const sendNewDevice = ({
+  to,
+  device,
+  place,
+  at,
+}: {
+  to: string;
+  device: string;
+  place: string | null;
+  at: string;
+}) => deliver(to, "A new device signed in", createElement(NewDevice, { to, device, place, at }));
