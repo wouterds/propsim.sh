@@ -44,7 +44,7 @@ describe("sendConfirmCode", () => {
 });
 
 describe("sendWelcome", () => {
-  it("should link only to absolute urls", async () => {
+  it("should never link to something a mail client has to resolve itself", async () => {
     // given
     const sent = captureSend();
 
@@ -54,6 +54,8 @@ describe("sendWelcome", () => {
     // then
     const links = [...sent().HTMLPart.matchAll(/href="([^"]*)"/g)].map(([, href]) => href);
     expect(links.length).toBeGreaterThan(0);
-    expect(links.every((href: string) => href.startsWith("https://"))).toBe(true);
+    expect(
+      links.every((href: string) => href.startsWith("https://") || href.startsWith("mailto:")),
+    ).toBe(true);
   });
 });

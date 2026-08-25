@@ -1,14 +1,4 @@
-import {
-  Body,
-  Container,
-  Head,
-  Hr,
-  Html,
-  Link,
-  Preview,
-  Section,
-  Text,
-} from "@react-email/components";
+import { Body, Container, Head, Html, Link, Preview, Section, Text } from "@react-email/components";
 import type { CSSProperties, ReactNode, TdHTMLAttributes } from "react";
 
 export const SITE = "https://propsim.sh";
@@ -18,6 +8,7 @@ export const SITE = "https://propsim.sh";
 const INK = "#e6eaf0";
 const MUTED = "#98a1b2";
 const FAINT = "#7b8493";
+const DIM = "#5a626e";
 const BASE = "#0a0b0d";
 const RAISED = "#101216";
 const LINE = "#22262d";
@@ -61,22 +52,21 @@ const suffix: CSSProperties = {
   color: FAINT,
 };
 
-const rule: CSSProperties = {
-  border: "none",
-  borderTop: `1px solid ${LINE}`,
-  margin: "8px 0 16px",
-};
-
+// Under the card, on the page's own background, at the weight of a signature.
 const footer: CSSProperties = {
-  color: FAINT,
-  fontSize: "12px",
-  lineHeight: "18px",
-  margin: 0,
+  color: DIM,
+  fontSize: "11px",
+  lineHeight: "17px",
+  margin: "16px auto 0",
+  maxWidth: "480px",
+  padding: "0 4px",
 };
 
+// No underline and the same colour as the line it sits in: the address only
+// turns blue when a client decides it is a link nobody styled.
 const footerLink: CSSProperties = {
-  color: FAINT,
-  textDecoration: "underline",
+  color: DIM,
+  textDecoration: "none",
 };
 
 export const heading: CSSProperties = {
@@ -219,20 +209,23 @@ export const Layout = ({ preview, footnote, to, children }: LayoutProps) => (
         </table>
 
         {children}
-
-        <Section>
-          <Hr style={rule} />
-          <Text style={footer}>
-            {footnote}
-            <br />
-            Sent to {to} by{" "}
-            <Link href={SITE} style={footerLink}>
-              propsim.sh
-            </Link>
-            , a trading simulator. Nothing is ordered and no money is at stake.
-          </Text>
-        </Section>
       </Container>
+
+      <Section>
+        <Text style={footer}>
+          {footnote}
+          <br />
+          Sent to{" "}
+          <Link href={`mailto:${to}`} style={footerLink}>
+            {to}
+          </Link>{" "}
+          by{" "}
+          <Link href={SITE} style={footerLink}>
+            propsim.sh
+          </Link>
+          , a trading simulator. Nothing is ordered and no money is at stake.
+        </Text>
+      </Section>
     </Body>
   </Html>
 );
