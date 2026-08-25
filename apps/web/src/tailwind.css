@@ -23,15 +23,19 @@
   /* `up` is a rising price, the long side, a profit. `down` is the mirror.
      `accent` is interactive only and never a value, `warn` is pending only.
 
-     Red is the one that goes tight: at 11px on a hovered row this clears 5.2:1
-     where the obvious #ff2d55 lands at 4.78 and fails the next surface up.
+     `up` and `down` are tailwind's teal-500 and rose-500, written as hex rather
+     than as var(--color-teal-500) on purpose: the chart reads these tokens back
+     out and bakes its own alpha from them, and that parser takes hex only. A
+     var() or an oklch() here paints the crosshair at full opacity instead of
+     45% and throws nothing. Measured on the three surfaces, teal clears 7.0:1
+     and rose 4.75:1, so both hold at 11px on a hovered row.
 
      White is only 1.21:1 against `ink`, so it can never be the ONLY thing
      marking something interactive. Every accent-coloured control here also
      carries a fill, a border or an underline, and a bare `text-accent` on body
      copy reads as ordinary text. */
-  --color-up: #00ff88;
-  --color-down: #ff4560;
+  --color-up: #14b8a6;
+  --color-down: #f43f5e;
   --color-accent: #ffffff;
   --color-warn: #ffb020;
 
