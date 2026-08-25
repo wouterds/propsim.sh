@@ -3,13 +3,9 @@ import type { CandleRequest } from "./candles";
 const CHART = "https://query1.finance.yahoo.com/v8/finance/chart";
 
 /**
- * A request carrying no user agent comes back 429 with an empty result, which
- * reads exactly like a symbol Yahoo does not list.
- *
- * **The allowance is bucketed per user agent as well as per address, so this
- * string is not cosmetic and lengthening it is not an improvement.** A fuller
- * Chrome string is measurably worse rather than better, because that bucket is
- * the one every other tool on the machine has already spent.
+ * Without a user agent Yahoo answers 429 with an empty result, which reads like
+ * an unlisted symbol. The rate limit buckets per agent string, so a common
+ * browser string shares a bucket every other tool has already spent.
  */
 const AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)";
 
@@ -41,8 +37,8 @@ export const fetchChart = async (request: CandleRequest): Promise<ChartResult> =
     signal: AbortSignal.timeout(TIMEOUT),
   });
 
-  // A rate-limited or blocked response is HTML, so without this it falls through
-  // to the parse and reports a syntax error instead of the status that came back.
+  // A blocked response is HTML. Without this the parse reports a syntax error
+  // instead of the status.
   if (!response.ok) {
     throw new Error(`Yahoo responded ${response.status} for ${symbol}`);
   }
@@ -50,10 +46,8 @@ export const fetchChart = async (request: CandleRequest): Promise<ChartResult> =
   const payload = (await response.json()) as ChartPayload;
   const result = payload.chart.result?.[0];
 
-  // A delisted or misspelled contract arrives as a 200 with the result nulled
-  // and the reason in the envelope, so an optimistic unwrap turns an expired
-  // symbol into a quiet empty market. Yahoo's own words cost two lines and turn
-  // a generic message into the actual diagnosis.
+  // An unlisted symbol arrives as a 200 with the result nulled and the reason
+  // in the envelope.
   if (!result) {
     const reason = payload.chart.error?.description ?? "no result";
 
