@@ -19,8 +19,14 @@ find.
 - **Lint & typecheck**: `npm run lint:fix && npm run typecheck`
 - **Test**: `npm test`
 
-There are **no apps and no packages yet**. The root manifest holds the toolchain only, and the
-workspace globs are declared for the first one to land in. Do not assume a directory exists.
+## Layout
+
+| | |
+| --- | --- |
+| `apps/web` | the site. Landing, login, dashboard, and the trading screen. React Router 8, ssr |
+| `packages/datasources` | every upstream feed, normalised to one candle shape |
+
+The root manifest holds the toolchain only. Everything an app needs at runtime lives beside it.
 
 ## The Constraint That Shapes Everything
 
