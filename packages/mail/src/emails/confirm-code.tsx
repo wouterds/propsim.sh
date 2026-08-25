@@ -1,5 +1,5 @@
 import { Heading, Text } from "@react-email/components";
-import { digits, heading, Layout, paragraph, warning } from "../layout";
+import { digits, heading, Layout, paragraph } from "../layout";
 
 export type ConfirmCodeProps = {
   to: string;
@@ -21,7 +21,6 @@ export const ConfirmCode = ({ to, code, expiresInMinutes }: ConfirmCodeProps) =>
     <Text style={paragraph}>
       The code expires in {expiresInMinutes} minutes and can be used once.
     </Text>
-    <Text style={warning}>propsim.sh will never ask you for this code.</Text>
   </Layout>
 );
 
