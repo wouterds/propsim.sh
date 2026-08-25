@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { asCode, CODE_DIGITS } from "./verification";
+import { asCode, CODE_DIGITS } from "./policy";
 
 describe("asCode", () => {
   it("should give nothing back when the link carries no code", () => {

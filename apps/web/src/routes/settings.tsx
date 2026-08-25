@@ -6,13 +6,13 @@ import Section from "~/components/settings/section";
 import SessionList, { type SessionRow } from "~/components/settings/session-list";
 import { endSession, requireSession, rotateSession } from "~/lib/auth.server";
 import { describeDevice } from "~/lib/device";
-import { EMAIL_CHANGE_TTL_MINUTES, issueEmailChange } from "~/lib/email-changes.server";
+import { issueEmailChange } from "~/lib/email-changes.server";
 import { countryOf, formatDate, formatRelative } from "~/lib/format";
 import { notify } from "~/lib/notify.server";
 import { hashPassword, verifyPassword } from "~/lib/password.server";
+import { EMAIL_CHANGE_TTL_MINUTES, MIN_PASSWORD } from "~/lib/policy";
 import { listSessions, revokeOtherSessions, revokeSession } from "~/lib/sessions.server";
 import { findUserByEmail, findUserById, updatePassword } from "~/lib/users.server";
-import { MIN_PASSWORD } from "~/lib/verification";
 import type { Route } from "./+types/settings";
 
 export const meta: Route.MetaFunction = () => [{ title: "Settings, propsim.sh" }];

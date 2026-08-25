@@ -1,5 +1,5 @@
 import { createHmac, randomInt, timingSafeEqual } from "node:crypto";
-import { CODE_DIGITS, CODE_TTL_MINUTES } from "./verification";
+import { CODE_DIGITS, CODE_TTL_MINUTES } from "./policy";
 
 export const generateCode = () =>
   String(randomInt(0, 10 ** CODE_DIGITS)).padStart(CODE_DIGITS, "0");

@@ -8,8 +8,8 @@ import Brand from "~/components/layout/brand";
 import GridBackdrop from "~/components/layout/grid-backdrop";
 import { startPending, startSession } from "~/lib/auth.server";
 import { hashPassword, verifyPassword } from "~/lib/password.server";
+import { CODE_TTL_MINUTES, MIN_PASSWORD } from "~/lib/policy";
 import { createUser, findUserByEmail } from "~/lib/users.server";
-import { CODE_TTL_MINUTES, MIN_PASSWORD } from "~/lib/verification";
 import { issueCode } from "~/lib/verifications.server";
 import type { Route } from "./+types/auth";
 

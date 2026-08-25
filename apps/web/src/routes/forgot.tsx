@@ -2,7 +2,8 @@ import { sendResetPassword } from "@propsim/mail";
 import { Form, href, Link, useNavigation } from "react-router";
 import AuthShell from "~/components/auth/auth-shell";
 import { notify } from "~/lib/notify.server";
-import { issueReset, RESET_TTL_MINUTES } from "~/lib/password-resets.server";
+import { issueReset } from "~/lib/password-resets.server";
+import { RESET_TTL_MINUTES } from "~/lib/policy";
 import { findUserByEmail } from "~/lib/users.server";
 import type { Route } from "./+types/forgot";
 

@@ -6,8 +6,8 @@ import Brand from "~/components/layout/brand";
 import GridBackdrop from "~/components/layout/grid-backdrop";
 import { getPendingUserId, startSession } from "~/lib/auth.server";
 import { notify } from "~/lib/notify.server";
+import { asCode, CODE_DIGITS, CODE_TTL_MINUTES } from "~/lib/policy";
 import { findUserById, markEmailVerified } from "~/lib/users.server";
-import { asCode, CODE_DIGITS, CODE_TTL_MINUTES } from "~/lib/verification";
 import { checkCode, issueCode } from "~/lib/verifications.server";
 import type { Route } from "./+types/verify";
 

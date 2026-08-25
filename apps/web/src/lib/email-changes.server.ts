@@ -1,8 +1,7 @@
 import { emailChanges, getDb } from "@propsim/database";
 import { eq } from "drizzle-orm";
+import { EMAIL_CHANGE_TTL_MINUTES } from "./policy";
 import { hashToken, newToken } from "./token.server";
-
-const TTL_MINUTES = 60;
 
 const minutes = (count: number) => count * 60 * 1000;
 
@@ -13,7 +12,7 @@ export const issueEmailChange = async (userId: string, email: string) => {
     userId,
     email,
     hash: hashToken(token),
-    expiresAt: new Date(Date.now() + minutes(TTL_MINUTES)),
+    expiresAt: new Date(Date.now() + minutes(EMAIL_CHANGE_TTL_MINUTES)),
   };
 
   await getDb()
@@ -44,5 +43,3 @@ export const consumeEmailChange = async (token: string) => {
 
   return { userId: row.userId, email: row.email };
 };
-
-export const EMAIL_CHANGE_TTL_MINUTES = TTL_MINUTES;

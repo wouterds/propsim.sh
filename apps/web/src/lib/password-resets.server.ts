@@ -1,8 +1,7 @@
 import { getDb, passwordResets } from "@propsim/database";
 import { eq } from "drizzle-orm";
+import { RESET_TTL_MINUTES } from "./policy";
 import { hashToken, newToken } from "./token.server";
-
-const TTL_MINUTES = 60;
 
 // Stops the form being used to post mail to somebody else's inbox.
 const RESEND_AFTER_SECONDS = 60;
@@ -27,7 +26,7 @@ export const issueReset = async (userId: string) => {
   const row = {
     userId,
     hash: hashToken(token),
-    expiresAt: new Date(now.getTime() + minutes(TTL_MINUTES)),
+    expiresAt: new Date(now.getTime() + minutes(RESET_TTL_MINUTES)),
   };
 
   await getDb()
@@ -69,5 +68,3 @@ export const resetIsLive = async (token: string) => {
 
   return Boolean(row && !row.consumedAt && row.expiresAt.getTime() > Date.now());
 };
-
-export const RESET_TTL_MINUTES = TTL_MINUTES;

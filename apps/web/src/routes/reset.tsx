@@ -4,9 +4,9 @@ import AuthShell from "~/components/auth/auth-shell";
 import { notify } from "~/lib/notify.server";
 import { hashPassword } from "~/lib/password.server";
 import { consumeReset, resetIsLive } from "~/lib/password-resets.server";
+import { MIN_PASSWORD } from "~/lib/policy";
 import { revokeAllSessions } from "~/lib/sessions.server";
 import { findUserById, updatePassword } from "~/lib/users.server";
-import { MIN_PASSWORD } from "~/lib/verification";
 import type { Route } from "./+types/reset";
 
 export const meta: Route.MetaFunction = () => [{ title: "Choose a new password, propsim.sh" }];
