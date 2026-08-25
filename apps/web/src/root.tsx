@@ -8,6 +8,7 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
+import PageLoader from "~/components/layout/page-loader";
 import type { Route } from "./+types/root";
 
 export const Layout = ({ children }: { children: React.ReactNode }) => (
@@ -31,6 +32,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => (
 
 const App = () => (
   <>
+    <PageLoader />
     <Outlet />
     <ScrollRestoration />
     <Scripts />
