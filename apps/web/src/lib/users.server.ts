@@ -21,3 +21,9 @@ export const createUser = async (email: string, password: string) => {
 
 export const markEmailVerified = (id: string) =>
   getDb().update(users).set({ verifiedEmailAt: new Date() }).where(eq(users.id, id));
+
+export const updatePassword = (id: string, password: string) =>
+  getDb().update(users).set({ password }).where(eq(users.id, id));
+
+export const updateEmail = (id: string, email: string) =>
+  getDb().update(users).set({ email, verifiedEmailAt: new Date() }).where(eq(users.id, id));

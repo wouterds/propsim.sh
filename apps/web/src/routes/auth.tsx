@@ -9,13 +9,15 @@ import GridBackdrop from "~/components/layout/grid-backdrop";
 import { startPending, startSession } from "~/lib/auth.server";
 import { hashPassword, verifyPassword } from "~/lib/password.server";
 import { createUser, findUserByEmail } from "~/lib/users.server";
-import { CODE_TTL_MINUTES } from "~/lib/verification";
+import { CODE_TTL_MINUTES, MIN_PASSWORD } from "~/lib/verification";
 import { issueCode } from "~/lib/verifications.server";
 import type { Route } from "./+types/auth";
 
 export const meta: Route.MetaFunction = () => [{ title: "Log in, propsim.sh" }];
 
-const MIN_PASSWORD = 8;
+export const loader = ({ request }: Route.LoaderArgs) => ({
+  reset: new URL(request.url).searchParams.has("reset"),
+});
 
 // The same answer whether the address is unknown or the password is wrong.
 // Anything more specific tells an attacker which addresses are registered.
@@ -77,7 +79,7 @@ export const action = async ({ request }: Route.ActionArgs) => {
   return startSession(request, user.id, back);
 };
 
-const Auth = ({ actionData }: Route.ComponentProps) => {
+const Auth = ({ loaderData, actionData }: Route.ComponentProps) => {
   const [mode, setMode] = useState<AuthMode>("login");
 
   return (
@@ -95,7 +97,22 @@ const Auth = ({ actionData }: Route.ComponentProps) => {
         <div className="mt-8 rounded-xl border border-line bg-raised p-6 shadow-[0_24px_80px_-40px_rgb(0_0_0)]">
           <ModeTabs mode={mode} onChange={setMode} />
           <h1 className="mb-6 font-semibold text-ink text-lg tracking-tight">{COPY[mode].title}</h1>
+          {loaderData.reset && (
+            <p className="mb-4 rounded border border-up/40 bg-up/10 px-3 py-2 text-sm text-up">
+              Your password was changed. Log in with the new one.
+            </p>
+          )}
+
           <AuthForm mode={mode} error={actionData?.error} />
+
+          {mode === "login" && (
+            <Link
+              to={href("/forgot")}
+              className="mt-4 block rounded-sm text-center text-faint text-xs transition-colors hover:text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
+            >
+              Forgot your password?
+            </Link>
+          )}
         </div>
       </div>
     </main>
