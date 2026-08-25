@@ -13,6 +13,19 @@ const HEAD = "h-8 px-4 text-left font-normal";
 const JournalTable = ({ days, title }: Props) => {
   const widest = Math.max(...days.map((day) => Math.abs(day.pnl)), 1);
 
+  if (days.length === 0) {
+    return (
+      <div className="min-w-0 rounded-lg border border-line bg-raised">
+        <div className="flex h-9 items-center border-line border-b px-4">
+          <span className="text-[11px] text-faint uppercase tracking-wider">{title}</span>
+        </div>
+        <p className="px-4 py-8 text-center text-faint text-sm">
+          Nothing traded yet. The first session shows up here once it closes.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-w-0 rounded-lg border border-line bg-raised">
       <div className="flex h-9 items-center border-line border-b px-4">

@@ -8,6 +8,8 @@ export default [
 
   layout("routes/app.tsx", [
     route("dash", "routes/dash.tsx"),
+    route("accounts", "routes/accounts.tsx"),
+    route("accounts/new", "routes/account-new.tsx"),
     route("accounts/:id", "routes/account.tsx"),
     route("accounts/:id/journal", "routes/account-journal.tsx"),
     route("accounts/:id/terminal", "routes/terminal.tsx"),
