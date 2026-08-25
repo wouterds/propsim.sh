@@ -25,6 +25,7 @@ find.
 | --- | --- |
 | `apps/web` | the site. Landing, login, dashboard, and the trading screen. React Router 8, ssr |
 | `packages/datasources` | every upstream feed, normalised to one candle shape |
+| `packages/database` | drizzle models. Two floors, and the peak equity the hard one hangs off |
 
 The root manifest holds the toolchain only. Everything an app needs at runtime lives beside it.
 
