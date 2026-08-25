@@ -6,6 +6,8 @@ import * as schema from "./schema";
 
 let instance: MySql2Database<typeof schema> | undefined;
 
+const POOL_SIZE = 50;
+
 // Built on first use, not on import. Reading the credentials at module load
 // stops the whole server booting when it only needs them for some routes.
 export const getDb = () => {
@@ -19,7 +21,7 @@ export const getDb = () => {
     user: required("DB_USER"),
     password: required("DB_PASS"),
     database: required("DB_NAME"),
-    connectionLimit: Number.parseInt(process.env.DB_POOL_SIZE || "50", 10),
+    connectionLimit: POOL_SIZE,
     maxIdle: 10,
     idleTimeout: 60_000,
     waitForConnections: true,
