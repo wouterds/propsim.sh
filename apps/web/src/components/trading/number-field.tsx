@@ -1,3 +1,4 @@
+import { NumberField as BaseNumberField } from "@base-ui/react/number-field";
 import { useId } from "react";
 import { cn } from "~/lib/utils";
 import { FIELD, FOCUS_RING, LABEL } from "./styles";
@@ -31,71 +32,42 @@ const NumberField = ({
 }: Props) => {
   const id = useId();
 
-  const nudge = (by: number) => {
-    const next = (value ?? 0) + by;
-
-    if (min !== undefined && next < min) return;
-
-    // Steps are fractions of a tick, so the sum drifts into 20124.749999999996
-    // without a round trip through the step size.
-    onChange(Math.round(next / step) * step);
-  };
-
   return (
-    <div className="flex flex-col gap-1">
-      <label className={LABEL} htmlFor={id}>
-        {label}
-      </label>
-      <div className="flex items-center gap-1">
+    <BaseNumberField.Root
+      id={id}
+      value={value}
+      onValueChange={(next) => onChange(next)}
+      step={step}
+      min={min}
+      disabled={disabled}
+      // Snapped to the step, or a sum of tick fractions drifts into 20124.749999999996.
+      snapOnStep
+      className="flex flex-col gap-1"
+    >
+      <BaseNumberField.ScrubArea>
+        <label className={LABEL} htmlFor={id}>
+          <BaseNumberField.ScrubAreaCursor />
+          {label}
+        </label>
+      </BaseNumberField.ScrubArea>
+
+      <BaseNumberField.Group className="flex items-center gap-1">
         {steppers && (
-          <button
-            type="button"
-            aria-label={`decrease ${label}`}
-            className={STEPPER}
-            disabled={disabled}
-            onClick={() => nudge(-step)}
-          >
+          <BaseNumberField.Decrement className={STEPPER} aria-label={`decrease ${label}`}>
             &minus;
-          </button>
+          </BaseNumberField.Decrement>
         )}
-        <input
-          id={id}
-          type="number"
-          inputMode="decimal"
-          className={cn(FIELD, FOCUS_RING, steppers && "text-center")}
-          step={step}
-          min={min}
-          value={value ?? ""}
+        <BaseNumberField.Input
           placeholder={placeholder}
-          disabled={disabled}
-          onChange={(event) => {
-            const raw = event.target.value;
-
-            if (raw === "") {
-              onChange(null);
-              return;
-            }
-
-            const parsed = Number(raw);
-
-            if (!Number.isFinite(parsed)) return;
-
-            onChange(parsed);
-          }}
+          className={cn(FIELD, FOCUS_RING, steppers && "text-center")}
         />
         {steppers && (
-          <button
-            type="button"
-            aria-label={`increase ${label}`}
-            className={STEPPER}
-            disabled={disabled}
-            onClick={() => nudge(step)}
-          >
+          <BaseNumberField.Increment className={STEPPER} aria-label={`increase ${label}`}>
             +
-          </button>
+          </BaseNumberField.Increment>
         )}
-      </div>
-    </div>
+      </BaseNumberField.Group>
+    </BaseNumberField.Root>
   );
 };
 

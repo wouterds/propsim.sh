@@ -1,4 +1,5 @@
-import { useId, useState } from "react";
+import { Select } from "@base-ui/react/select";
+import { useState } from "react";
 import { cn } from "~/lib/utils";
 import Button from "./button";
 import { formatPrice } from "./format";
@@ -26,8 +27,13 @@ const TYPE_LABELS: Record<OrderType, string> = {
 
 type Props = { last: number | null; onSubmit: (draft: OrderDraft) => void };
 
+const ORDER_TYPES = [
+  { value: "market", label: "Market" },
+  { value: "limit", label: "Limit" },
+  { value: "stop", label: "Stop" },
+];
+
 const TradePanel = ({ last, onSubmit }: Props) => {
-  const typeId = useId();
   const [draft, setDraft] = useState(EMPTY_DRAFT);
 
   const patch = (fields: Partial<OrderDraft>) => setDraft((current) => ({ ...current, ...fields }));
@@ -67,22 +73,47 @@ const TradePanel = ({ last, onSubmit }: Props) => {
           steppers
         />
 
-        <div className="flex flex-col gap-1">
-          <label className={LABEL} htmlFor={typeId}>
-            Order type
-          </label>
-          <select
-            id={typeId}
-            className={cn(FIELD, FOCUS_RING)}
-            disabled={stale}
-            value={draft.type}
-            onChange={(event) => patch({ type: event.target.value as OrderType })}
-          >
-            <option value="market">Market</option>
-            <option value="limit">Limit</option>
-            <option value="stop">Stop</option>
-          </select>
-        </div>
+        <Select.Root
+          value={draft.type}
+          onValueChange={(value) => patch({ type: value as OrderType })}
+          disabled={stale}
+        >
+          <div className="flex flex-col gap-1">
+            <Select.Label className={LABEL}>Order type</Select.Label>
+            <Select.Trigger
+              className={cn(FIELD, FOCUS_RING, "flex items-center justify-between text-left")}
+            >
+              <Select.Value />
+              <Select.Icon className="text-faint">
+                <svg viewBox="0 0 16 16" aria-hidden="true" className="size-3">
+                  <path
+                    d="m4 6 4 4 4-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </Select.Icon>
+            </Select.Trigger>
+          </div>
+          <Select.Portal>
+            <Select.Positioner sideOffset={4}>
+              <Select.Popup className="min-w-[var(--anchor-width)] rounded border border-line bg-overlay p-1 shadow-[0_16px_40px_-24px_rgb(0_0_0)]">
+                {ORDER_TYPES.map((type) => (
+                  <Select.Item
+                    key={type.value}
+                    value={type.value}
+                    className="cursor-default rounded px-2 py-1.5 text-ink text-sm data-[highlighted]:bg-accent data-[highlighted]:text-sunken"
+                  >
+                    <Select.ItemText>{type.label}</Select.ItemText>
+                  </Select.Item>
+                ))}
+              </Select.Popup>
+            </Select.Positioner>
+          </Select.Portal>
+        </Select.Root>
       </div>
 
       <NumberField

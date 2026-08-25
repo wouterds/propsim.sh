@@ -1,3 +1,4 @@
+import { Tabs } from "@base-ui/react/tabs";
 import { useState } from "react";
 import { cn } from "~/lib/utils";
 import OrdersTable from "./orders-table";
@@ -24,32 +25,34 @@ const Blotter = ({ positions, orders, last, className, onClose, onCancel }: Prop
   const counts: Record<Tab, number> = { positions: positions.length, orders: working };
 
   const tabs = (
-    <div className="-ml-2 flex items-center gap-0.5">
+    <Tabs.List className="-ml-2 flex items-center gap-0.5">
       {(["positions", "orders"] as const).map((name) => (
-        <button
+        <Tabs.Tab
           key={name}
-          type="button"
-          onClick={() => setTab(name)}
+          value={name}
           className={cn(
-            "rounded px-2 py-1 text-[11px] uppercase tracking-wider transition-colors",
-            tab === name ? "bg-accent/15 text-accent" : "text-muted hover:text-ink",
+            "rounded px-2 py-1 text-[11px] text-muted uppercase tracking-wider transition-colors hover:text-ink",
+            "data-[selected]:bg-accent/15 data-[selected]:text-accent",
             FOCUS_RING,
           )}
         >
           {counts[name] > 0 ? `${name} ${counts[name]}` : name}
-        </button>
+        </Tabs.Tab>
       ))}
-    </div>
+    </Tabs.List>
   );
 
   return (
-    <Panel actions={tabs} className={className} bodyClassName="min-h-0 flex-1 overflow-auto p-0">
-      {tab === "positions" ? (
-        <PositionsTable positions={positions} last={last} onClose={onClose} />
-      ) : (
-        <OrdersTable orders={orders} onCancel={onCancel} />
-      )}
-    </Panel>
+    <Tabs.Root value={tab} onValueChange={(value) => setTab(value as Tab)} render={<div />}>
+      <Panel actions={tabs} className={className} bodyClassName="min-h-0 flex-1 overflow-auto p-0">
+        <Tabs.Panel value="positions">
+          <PositionsTable positions={positions} last={last} onClose={onClose} />
+        </Tabs.Panel>
+        <Tabs.Panel value="orders">
+          <OrdersTable orders={orders} onCancel={onCancel} />
+        </Tabs.Panel>
+      </Panel>
+    </Tabs.Root>
   );
 };
 
