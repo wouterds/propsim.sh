@@ -1,7 +1,5 @@
-import { relations } from "drizzle-orm";
 import { mysqlTable, timestamp, unique, varchar } from "drizzle-orm/mysql-core";
 
-import { tradingAccounts } from "./trading-accounts";
 import { UUIDv7, uuid } from "./types/uuid";
 
 export type User = typeof users.$inferSelect;
@@ -20,7 +18,3 @@ export const users = mysqlTable(
   },
   (table) => [unique("email_unique").on(table.email)],
 );
-
-export const usersRelations = relations(users, ({ many }) => ({
-  tradingAccounts: many(tradingAccounts),
-}));
