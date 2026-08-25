@@ -80,5 +80,7 @@ jobs:
           chmod 600 ~/.ssh/config
       - run: |
           ssh ${{ env.USER }}@${{ env.HOST }} "mkdir -p ${{ env.DIRECTORY }}"
-          scp docker-compose.yml ${{ env.USER }}@${{ env.HOST }}:${{ env.DIRECTORY }}/docker-compose.yml
-          ssh ${{ env.USER }}@${{ env.HOST }} "cd ${{ env.DIRECTORY }} && docker compose pull && docker compose up -d --force-recreate --remove-orphans"
+          scp .deploy/docker-compose.yml ${{ env.USER }}@${{ env.HOST }}:${{ env.DIRECTORY }}/docker-compose.yml
+          scp .deploy/nginx.conf ${{ env.USER }}@${{ env.HOST }}:${{ env.DIRECTORY }}/nginx.conf
+          scp .deploy/rollout.sh ${{ env.USER }}@${{ env.HOST }}:${{ env.DIRECTORY }}/rollout.sh
+          ssh ${{ env.USER }}@${{ env.HOST }} "cd ${{ env.DIRECTORY }} && sh rollout.sh"
