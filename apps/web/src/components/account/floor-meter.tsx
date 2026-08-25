@@ -32,7 +32,7 @@ const FloorMeter = ({ label, equity, floor, limit, detail }: Props) => {
             {formatMoney(room)}
           </p>
           <p className="mt-1 text-faint text-xs">
-            of {formatMoney(limit)} before the account is cut
+            of room, against a limit of {formatMoney(limit)}
           </p>
 
           <Meter.Track className="mt-4 block h-1.5 overflow-hidden rounded-full bg-sunken">

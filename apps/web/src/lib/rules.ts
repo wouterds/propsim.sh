@@ -8,6 +8,7 @@ import {
 } from "./accounts";
 import { formatMoney } from "./format";
 import { concentrationOf, greenDaysOf, type Verdict } from "./journal";
+import { CONSISTENCY_CAP, lockedFloorOf } from "./plans";
 
 export type Rule = {
   id: string;
@@ -15,8 +16,6 @@ export type Rule = {
   detail: string;
   state: Verdict;
 };
-
-const CONSISTENCY_CAP = 0.4;
 
 const breachedOr = (account: Account, state: Verdict): Verdict =>
   account.status === "breached" ? "breached" : state;
@@ -37,7 +36,10 @@ export const rulesOf = (account: Account): Rule[] => {
     {
       id: "trailing",
       label: "Trailing drawdown",
-      detail: `${formatMoney(plan.trailingDrawdown)} from a peak of ${formatMoney(account.peakEquity)}. Floor at ${formatMoney(trailingFloorOf(account))}, and it never comes back down.`,
+      detail:
+        trailingFloorOf(account) >= lockedFloorOf(plan)
+          ? `Locked at ${formatMoney(lockedFloorOf(plan))}. It stopped following the peak and cannot move again.`
+          : `${formatMoney(plan.trailingDrawdown)} from a peak of ${formatMoney(account.peakEquity)}. Floor at ${formatMoney(trailingFloorOf(account))}, and it never comes back down.`,
       state: breachedOr(account, "clean"),
     },
     {

@@ -1,6 +1,6 @@
 import type { FloorTone } from "./format";
 import type { JournalDay, Verdict } from "./journal";
-import { type Plan, planOr } from "./plans";
+import { lockedFloorOf, type Plan, planOr } from "./plans";
 
 export type AccountStatus = "live" | "passed" | "breached";
 
@@ -64,7 +64,7 @@ export const ACCOUNTS: Account[] = [
     sessionOpenEquity: 24_914,
     journal: [
       day("2026-08-25", 5, 2, -318, -252.5, "watch"),
-      day("2026-08-22", 4, 3, -96, 160),
+      day("2026-08-24", 4, 3, -96, 160),
       day("2026-08-21", 9, 3, -588, -428, "watch"),
       day("2026-08-20", 3, 2, -74.5, 101.5),
       day("2026-08-19", 7, 4, -409, -181.5),
@@ -116,9 +116,15 @@ export const liveAccounts = () => ACCOUNTS.filter((account) => account.status ==
 export const dailyFloorOf = (account: Account) =>
   account.sessionOpenEquity - planOf(account).dailyLossLimit;
 
-/** The hard floor is measured from peak equity and only rises. */
-export const trailingFloorOf = (account: Account) =>
-  account.peakEquity - planOf(account).trailingDrawdown;
+/**
+ * The hard floor is measured from peak equity and only rises. It stops
+ * following a new peak once it reaches the locked floor, and never moves again.
+ */
+export const trailingFloorOf = (account: Account) => {
+  const plan = planOf(account);
+
+  return Math.min(account.peakEquity - plan.trailingDrawdown, lockedFloorOf(plan));
+};
 
 export const targetOf = (account: Account) => planOf(account).size + planOf(account).profitTarget;
 
@@ -142,7 +148,9 @@ export const totalsOf = (accounts: Account[]) => ({
   balance: accounts.reduce((total, account) => total + account.balance, 0),
   allocated: accounts.reduce((total, account) => total + planOf(account).size, 0),
   netPnl: accounts.reduce((total, account) => total + netPnlOf(account), 0),
-  dayPnl: accounts.reduce((total, account) => total + dayPnlOf(account), 0),
+  dayPnl: accounts
+    .filter((account) => account.status === "live")
+    .reduce((total, account) => total + dayPnlOf(account), 0),
   trades: accounts.reduce(
     (total, account) => total + account.journal.reduce((sum, entry) => sum + entry.trades, 0),
     0,
@@ -175,4 +183,31 @@ export const combinedJournalOf = (accounts: Account[]): JournalDay[] => {
   }
 
   return [...byDate.values()].sort((a, b) => b.date.localeCompare(a.date));
+};
+
+let created = 0;
+
+/**
+ * In memory only, so a new account lives until the server restarts. It is
+ * enough to walk the flow while the shape of an account is still being decided.
+ */
+export const createAccount = (planId: string, openedOn: string): Account => {
+  const plan = planOr(planId);
+  created += 1;
+
+  const account: Account = {
+    id: `${plan.id}-${created}`,
+    planId: plan.id,
+    name: `${plan.label} Daily`,
+    openedOn,
+    status: "live",
+    balance: plan.size,
+    peakEquity: plan.size,
+    sessionOpenEquity: plan.size,
+    journal: [],
+  };
+
+  ACCOUNTS.unshift(account);
+
+  return account;
 };
