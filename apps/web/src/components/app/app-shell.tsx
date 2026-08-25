@@ -21,8 +21,11 @@ const AppShell = ({ accounts, email, children }: Props) => {
   return (
     <div className="flex h-dvh flex-col">
       <div className="flex min-h-0 flex-1">
-        <aside className="hidden w-60 shrink-0 border-line border-r bg-raised lg:block">
-          <SidebarNav accounts={accounts} email={email} />
+        {/* A panel like the ones beside it, rather than a wall the page starts after. */}
+        <aside className="hidden w-62 shrink-0 py-2 pl-2 lg:block">
+          <div className="h-full overflow-hidden rounded-lg border border-line bg-raised">
+            <SidebarNav accounts={accounts} email={email} />
+          </div>
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
