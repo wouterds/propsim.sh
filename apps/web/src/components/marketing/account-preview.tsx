@@ -1,7 +1,19 @@
 import CandleStrip from "~/components/marketing/candle-strip";
-import { ACCOUNT, dailyFloorOf, floorToneOf, roomLeftOf, trailingFloorOf } from "~/lib/account";
+import {
+  ACCOUNTS,
+  dailyFloorOf,
+  dayPnlOf,
+  floorToneOf,
+  planOf,
+  roomLeftOf,
+  trailingFloorOf,
+} from "~/lib/accounts";
 import { FLOOR_BAR, FLOOR_TEXT, formatMoney, formatSigned, TONE_TEXT, toneOf } from "~/lib/format";
 import { cn } from "~/lib/utils";
+
+// One of the mock accounts, so the landing page and the app never disagree.
+const ACCOUNT = ACCOUNTS[1];
+const PLAN = planOf(ACCOUNT);
 
 const floorFrom = (label: string, floor: number, limit: number) => {
   const room = ACCOUNT.balance - floor;
@@ -11,16 +23,16 @@ const floorFrom = (label: string, floor: number, limit: number) => {
 };
 
 const FLOORS = [
-  floorFrom("Daily floor", dailyFloorOf(ACCOUNT), ACCOUNT.dailyLossLimit),
-  floorFrom("Trailing floor", trailingFloorOf(ACCOUNT), ACCOUNT.trailingDrawdown),
+  floorFrom("Daily floor", dailyFloorOf(ACCOUNT), PLAN.dailyLossLimit),
+  floorFrom("Trailing floor", trailingFloorOf(ACCOUNT), PLAN.trailingDrawdown),
 ];
 
-const DAY_PNL = ACCOUNT.balance - ACCOUNT.sessionOpenEquity;
+const DAY_PNL = dayPnlOf(ACCOUNT);
 
 const AccountPreview = () => (
   <div className="overflow-hidden rounded-xl border border-line bg-raised shadow-[0_24px_80px_-40px_rgb(0_0_0)]">
     <div className="flex h-9 items-center justify-between border-line border-b px-3 text-[11px] uppercase tracking-wider">
-      <span className="text-muted">{ACCOUNT.id}</span>
+      <span className="text-muted">{ACCOUNT.name}</span>
       <span className="flex items-center gap-1.5 text-faint">
         <span className="size-1.5 rounded-full bg-accent" />
         Live, delayed
@@ -73,7 +85,7 @@ const AccountPreview = () => (
         Within rules
       </span>
       <span className="text-faint tabular">
-        {`${ACCOUNT.daysTraded} of ${ACCOUNT.minimumDays} days traded`}
+        {`${ACCOUNT.journal.length} of ${PLAN.minimumDays} days traded`}
       </span>
     </div>
   </div>

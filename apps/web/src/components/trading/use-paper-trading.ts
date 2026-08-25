@@ -1,5 +1,4 @@
 import { useCallback, useMemo, useReducer } from "react";
-import { ACCOUNT } from "~/lib/account";
 import { INITIAL_STATE, type OrderDraft, reduceTrading, unrealisedPnl } from "./trading-state";
 
 // `crypto.randomUUID` is secure-context only, so over plain http every ticket
@@ -16,7 +15,7 @@ const nextId = () => {
  * In memory only. `last` is null while the feed is down, and writes are refused
  * rather than marked to a stand-in, because closing banks that price for good.
  */
-export const usePaperTrading = (last: number | null) => {
+export const usePaperTrading = (last: number | null, opening: number) => {
   const [state, dispatch] = useReducer(reduceTrading, INITIAL_STATE);
 
   const submit = useCallback(
@@ -45,7 +44,7 @@ export const usePaperTrading = (last: number | null) => {
     return state.positions.reduce((total, position) => total + unrealisedPnl(position, last), 0);
   }, [state.positions, last]);
 
-  const balance = ACCOUNT.balance + state.realised;
+  const balance = opening + state.realised;
 
   return {
     positions: state.positions,

@@ -10,13 +10,23 @@ import { barsPerDay, parseTimeframe, rangeFor, SYMBOL } from "~/components/tradi
 import Panel from "~/components/trading/panel";
 import TradePanel from "~/components/trading/trade-panel";
 import { usePaperTrading } from "~/components/trading/use-paper-trading";
+import { findAccount } from "~/lib/accounts";
 import type { Route } from "./+types/terminal";
 
-export const meta = () => [{ title: "Terminal, propsim.sh" }];
+export const meta: Route.MetaFunction = ({ loaderData }) => [
+  {
+    title: loaderData ? `Terminal, ${loaderData.account.name}, propsim.sh` : "Terminal, propsim.sh",
+  },
+];
 
 /** `url`, not `request.url`: the latter carries a `.data` suffix on client navigation. */
-export const loader = async ({ url }: Route.LoaderArgs) => {
+export const loader = async ({ url, params }: Route.LoaderArgs) => {
   const timeframe = parseTimeframe(url.searchParams.get("tf"));
+  const account = findAccount(params.id);
+
+  if (!account) {
+    throw new Response("No such account", { status: 404 });
+  }
 
   try {
     const candles = await getCandles({
@@ -25,23 +35,23 @@ export const loader = async ({ url }: Route.LoaderArgs) => {
       range: rangeFor(timeframe),
     });
 
-    return { symbol: SYMBOL, timeframe, candles, error: null };
+    return { account, symbol: SYMBOL, timeframe, candles, error: null };
   } catch (cause) {
     // Caught, not rethrown. An error boundary would take the ticket and the
     // blotter down with the chart.
     const error = cause instanceof Error ? cause.message : "the price feed did not answer";
 
-    return { symbol: SYMBOL, timeframe, candles: [] as Candle[], error };
+    return { account, symbol: SYMBOL, timeframe, candles: [] as Candle[], error };
   }
 };
 
 const Trading = ({ loaderData }: Route.ComponentProps) => {
-  const { symbol, timeframe, candles, error } = loaderData;
+  const { account, symbol, timeframe, candles, error } = loaderData;
   const [hovered, setHovered] = useState<ChartBar | null>(null);
 
   // Null, not a stand-in. Closing marks to this price and banks it for good.
   const last = candles.at(-1)?.close ?? null;
-  const book = usePaperTrading(last);
+  const book = usePaperTrading(last, account.balance);
 
   // The chart redraws its price lines whenever this array changes identity.
   const priceLines = useMemo<ChartPriceLine[]>(() => {
@@ -85,6 +95,7 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
 
   return (
     <main className="flex flex-col gap-2 p-2 lg:h-full lg:overflow-hidden">
+      <h1 className="sr-only">{`Terminal, ${account.name}`}</h1>
       <AccountStrip
         balance={book.balance}
         equity={book.equity}
