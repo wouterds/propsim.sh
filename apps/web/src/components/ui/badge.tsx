@@ -10,10 +10,10 @@ type Props = {
 };
 
 const TONE: Record<Tone, string> = {
-  up: "bg-up/10 text-up",
-  down: "bg-down/10 text-down",
-  warn: "bg-warn/10 text-warn",
-  accent: "bg-accent/10 text-accent",
+  up: "bg-up/20 text-up",
+  down: "bg-down/20 text-down",
+  warn: "bg-warn/20 text-warn",
+  accent: "bg-accent/20 text-accent",
   muted: "bg-overlay text-muted",
 };
 
