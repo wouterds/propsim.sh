@@ -29,9 +29,19 @@ const Login = () => (
       <p className="mt-6 text-center text-faint text-xs">
         <Link
           to={href("/")}
-          className="rounded-sm transition-colors hover:text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
+          className="inline-flex items-center gap-1.5 rounded-sm transition-colors hover:text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
         >
-          Back to the landing page
+          <svg viewBox="0 0 16 16" aria-hidden="true" className="size-3">
+            <path
+              d="M9.5 3.5 5 8l4.5 4.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          Back
         </Link>
       </p>
     </div>
