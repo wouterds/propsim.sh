@@ -1,3 +1,5 @@
+import { href, Link } from "react-router";
+
 const RULES = [
   {
     title: "Two limits, and they work differently",
@@ -32,6 +34,13 @@ const Rules = () => (
           </div>
         ))}
       </dl>
+
+      <Link
+        to={href("/rules")}
+        className="mt-10 inline-flex rounded-sm text-muted text-sm transition-colors hover:text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
+      >
+        Read the whole rulebook
+      </Link>
     </div>
   </section>
 );

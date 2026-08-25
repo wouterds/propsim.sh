@@ -1,9 +1,10 @@
 import { redirect } from "react-router";
-import SiteFooter from "~/components/layout/site-footer";
-import SiteHeader from "~/components/layout/site-header";
 import Hero from "~/components/marketing/hero";
+import PlanTable from "~/components/marketing/plan-table";
+import Questions from "~/components/marketing/questions";
 import Rules from "~/components/marketing/rules";
 import { getUserId } from "~/lib/auth.server";
+import { HOME_QUESTIONS } from "~/lib/faq";
 import type { Route } from "./+types/home";
 
 export const loader = async ({ request }: Route.LoaderArgs) => {
@@ -24,14 +25,12 @@ export const meta: Route.MetaFunction = () => [
 ];
 
 const Home = () => (
-  <div className="flex min-h-dvh flex-col">
-    <SiteHeader />
-    <main className="flex-1">
-      <Hero />
-      <Rules />
-    </main>
-    <SiteFooter />
-  </div>
+  <>
+    <Hero />
+    <PlanTable />
+    <Rules />
+    <Questions questions={HOME_QUESTIONS} title="Common questions" more />
+  </>
 );
 
 export default Home;
