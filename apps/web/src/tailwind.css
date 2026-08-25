@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+/* `static` is load-bearing. Tailwind only emits the variables some utility
+   actually references, and the chart reads these straight off `:root` with
+   getComputedStyle - so a token nothing styles would resolve to "" and
+   lightweight-charts would silently keep its own teal and red. */
+@theme static {
+  /* Surfaces, darkest to lightest. Neutral and cool, never pure black.
+     `--color-base` makes `text-base` a colour utility that shadows tailwind's
+     own 1rem font size, so reach for `text-[1rem]` when you want the size. */
+  --color-sunken: #06070a;
+  --color-base: #0a0b0d;
+  --color-raised: #101216;
+  --color-overlay: #171a1f;
+
+  --color-line: #22262d;
+  --color-line-strong: #333a45;
+
+  --color-ink: #e6eaf0;
+  --color-muted: #98a1b2;
+  --color-faint: #7b8493;
+
+  /* `up` is a rising price, the long side, a profit. `down` is the mirror.
+     `accent` is interactive only and never a value, `warn` is pending only.
+     Red is the one that goes tight: at 11px on a hovered row this clears 5.2:1
+     where the obvious #ff2d55 lands at 4.78 and fails the next surface up. */
+  --color-up: #00ff88;
+  --color-down: #ff4560;
+  --color-accent: #00d4ff;
+  --color-warn: #ffb020;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+}
+
+/* Tells the browser which way round we are, so its scrollbars and form chrome
+   stop being the one light thing left on the page. */
+html {
+  @apply bg-base text-ink antialiased;
+  color-scheme: dark;
+  font-family: var(--font-sans);
+}
+
+html,
+body {
+  @apply min-h-full;
+}
+
+body {
+  @apply text-sm;
+}
+
+/* Prices redraw on every state change, so the digits are fixed-width to stop
+   the blotter from reflowing as a value moves between "9" and "1". */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* The order ticket draws its own steppers, so the UA spin button is a third
+   control for one job, in a grey that appears nowhere in the palette. It also
+   shoves a centred value off centre. */
+input[type="number"] {
+  appearance: textfield;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+::selection {
+  @apply bg-accent text-sunken;
+}
+
+::-webkit-scrollbar {
+  @apply h-2 w-2;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply rounded-full bg-line-strong;
+}
