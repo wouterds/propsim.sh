@@ -1,3 +1,4 @@
+import { readCache, writeCache } from "./cache";
 import { type CalendarRow, fetchCalendar } from "./forex-factory";
 
 export type Impact = "high" | "medium" | "low" | "holiday" | "unknown";
@@ -50,32 +51,41 @@ export const toEvents = (rows: CalendarRow[]): NewsEvent[] => {
   return events.sort((a, b) => a.time - b.time);
 };
 
-// The calendar changes weekly and the feed throttles hard, so it is read at
-// most this often however many people open the terminal.
-const TTL = 15 * 60 * 1000;
+// The calendar changes weekly and the feed throttles hard.
+const FRESH_SECONDS = 15 * 60;
 
-let events: NewsEvent[] = [];
-let readAt = 0;
+// A feed that is down should not blank the chart, so the last good calendar is
+// kept far longer than the one that decides whether to fetch.
+const LAST_SECONDS = 24 * 60 * 60;
 
-/**
- * Never throws. A feed that is down leaves the last calendar in place, and an
- * empty one is a chart without bands rather than a screen without a chart.
- */
-export const getNewsEvents = async () => {
-  const now = Date.now();
+const BACKOFF_SECONDS = 60;
 
-  if (now - readAt < TTL) {
-    return events;
+const FRESH = "calendar:fresh";
+const LAST = "calendar:last";
+
+/** Never throws. An empty calendar is a chart without bands, not a broken page. */
+export const getNewsEvents = async (): Promise<NewsEvent[]> => {
+  const fresh = await readCache<NewsEvent[]>(FRESH);
+
+  if (fresh) {
+    return fresh;
   }
-
-  // Stamped before the call, so a failing feed is not retried on every request.
-  readAt = now;
 
   try {
-    events = toEvents(await fetchCalendar());
+    const events = toEvents(await fetchCalendar());
+
+    await writeCache(FRESH, events, FRESH_SECONDS);
+    await writeCache(LAST, events, LAST_SECONDS);
+
+    return events;
   } catch (cause) {
     console.error("Economic calendar unavailable", cause);
-  }
 
-  return events;
+    // Held briefly under the fresh key so a dead feed is not asked again on
+    // every request, and the last good calendar is what gets served meanwhile.
+    const last = (await readCache<NewsEvent[]>(LAST)) ?? [];
+    await writeCache(FRESH, last, BACKOFF_SECONDS);
+
+    return last;
+  }
 };
