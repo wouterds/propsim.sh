@@ -7,7 +7,6 @@ import ChartHeader from "~/components/chart/chart-header";
 import TimeframeSwitcher from "~/components/chart/timeframe-switcher";
 import AccountStrip from "~/components/trading/account-strip";
 import Blotter from "~/components/trading/blotter";
-import InstrumentPicker from "~/components/trading/instrument-picker";
 import { instrumentOr } from "~/components/trading/instruments";
 import NewsBanner from "~/components/trading/news-banner";
 import Panel from "~/components/trading/panel";
@@ -128,8 +127,15 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
     return [...openLines, ...restingLines];
   }, [book.positions, book.orders]);
 
+  const goToInstrument = (code: string) =>
+    navigate(`?${new URLSearchParams({ ...Object.fromEntries(params), s: code })}`, {
+      preventScrollReset: true,
+    });
+
+  // flex-1, not h-full: the shell holds this in a min-h-full column so the footer
+  // sits below the fold, and a percentage height against a min-height is auto.
   return (
-    <main className="flex flex-col gap-2 p-2 lg:h-full lg:overflow-hidden">
+    <main className="flex flex-col gap-2 p-2 lg:min-h-0 lg:flex-1 lg:overflow-hidden">
       <h1 className="sr-only">{`Terminal, ${account.name}`}</h1>
 
       {blackout && now !== null && (
@@ -149,6 +155,7 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
           <div className="shrink-0 border-line border-b">
             <ChartHeader
               symbol={instrument.code}
+              onSymbolChange={goToInstrument}
               period={rangeFor(timeframe)}
               first={candles.at(0)}
               last={candles.at(-1)}
@@ -174,18 +181,7 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
             )}
 
             <div className="absolute top-2 right-2 z-10">
-              <div className="flex items-center gap-2">
-                <InstrumentPicker
-                  value={instrument.code}
-                  onChange={(code) =>
-                    navigate(
-                      `?${new URLSearchParams({ ...Object.fromEntries(params), s: code })}`,
-                      { preventScrollReset: true },
-                    )
-                  }
-                />
-                <TimeframeSwitcher value={timeframe} />
-              </div>
+              <TimeframeSwitcher value={timeframe} />
             </div>
           </div>
         </section>
