@@ -15,11 +15,14 @@ const Panel = ({ title, actions, className, bodyClassName, children }: Props) =>
     {(title || actions) && (
       <header
         className={cn(
-          "flex h-9 shrink-0 items-center justify-between gap-3 border-line border-b px-3",
+          "flex h-9 shrink-0 items-center gap-3 border-line border-b px-3",
+          // Without a title the actions ARE the header, so they sit where the
+          // title would have rather than being pushed to the far edge.
+          title && "justify-between",
           LABEL,
         )}
       >
-        <span>{title}</span>
+        {title && <span>{title}</span>}
         {actions}
       </header>
     )}

@@ -24,7 +24,7 @@ const Blotter = ({ positions, orders, last, className, onClose, onCancel }: Prop
   const counts: Record<Tab, number> = { positions: positions.length, orders: working };
 
   const tabs = (
-    <div className="flex items-center gap-0.5">
+    <div className="-ml-2 flex items-center gap-0.5">
       {(["positions", "orders"] as const).map((name) => (
         <button
           key={name}
@@ -43,12 +43,7 @@ const Blotter = ({ positions, orders, last, className, onClose, onCancel }: Prop
   );
 
   return (
-    <Panel
-      title="Blotter"
-      actions={tabs}
-      className={className}
-      bodyClassName="min-h-0 flex-1 overflow-auto p-0"
-    >
+    <Panel actions={tabs} className={className} bodyClassName="min-h-0 flex-1 overflow-auto p-0">
       {tab === "positions" ? (
         <PositionsTable positions={positions} last={last} onClose={onClose} />
       ) : (
