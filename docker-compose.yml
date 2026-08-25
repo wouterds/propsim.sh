@@ -4,6 +4,11 @@ services:
     container_name: sh.propsim--web
     mem_limit: 128mb
     restart: unless-stopped
+    # Written by hand on the server, beside this file. Optional, so a missing one
+    # does not stop the container from starting.
+    env_file:
+      - path: .env
+        required: false
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
