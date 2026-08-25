@@ -54,8 +54,8 @@ const NewsStrip = ({ at, titles }: Props) => {
         <span className="relative inline-flex size-full rounded-full bg-down" />
       </span>
       <span className="shrink-0 font-medium text-down">Red folder news</span>
-      <span className="truncate text-down/70">{titles.join(", ")}</span>
-      <span className="ml-auto shrink-0 text-down/90 tabular">
+      <span className="truncate text-down/55">{titles.join(", ")}</span>
+      <span className="ml-auto shrink-0 text-down/75 tabular">
         {now === null ? "" : `${releaseTime(at)} · ${countdown(at - now)}`}
       </span>
     </Link>
