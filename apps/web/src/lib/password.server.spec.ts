@@ -4,7 +4,7 @@ import { hashPassword, verifyPassword } from "./password.server";
 describe("verifyPassword", () => {
   it("should reject a hash in an unknown format", async () => {
     // given
-    const stored = "$2b$10$abcdefghijklmnopqrstuv";
+    const stored = "not-a-stored-hash";
 
     // when
     const verified = await verifyPassword("hunter2", stored);
@@ -35,9 +35,9 @@ describe("verifyPassword", () => {
     expect(verified).toBe(true);
   });
 
-  it("should verify against the cost the hash was made with", async () => {
+  it("should reject a value carrying no separator", async () => {
     // given
-    const stored = (await hashPassword("hunter2")).replace("scrypt$16384$", "scrypt$1024$");
+    const stored = (await hashPassword("hunter2")).replace(".", "");
 
     // then
     await expect(verifyPassword("hunter2", stored)).resolves.toBe(false);

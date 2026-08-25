@@ -12,26 +12,24 @@ const COST = 16_384;
 const KEY_BYTES = 64;
 const SALT_BYTES = 16;
 
-// The cost is stored beside the hash so it can be raised without invalidating
-// every password already in the table.
+// Raising COST invalidates every password already stored, because the value it
+// was derived with is not written down.
 export const hashPassword = async (password: string) => {
   const salt = randomBytes(SALT_BYTES);
   const key = await derive(password, salt, KEY_BYTES, { N: COST });
 
-  return `scrypt$${COST}$${salt.toString("hex")}$${key.toString("hex")}`;
+  return `${salt.toString("hex")}.${key.toString("hex")}`;
 };
 
 export const verifyPassword = async (password: string, stored: string) => {
-  const [scheme, cost, salt, key] = stored.split("$");
+  const [salt, key] = stored.split(".");
 
-  if (scheme !== "scrypt" || !cost || !salt || !key) {
+  if (!salt || !key) {
     return false;
   }
 
   const expected = Buffer.from(key, "hex");
-  const actual = await derive(password, Buffer.from(salt, "hex"), expected.length, {
-    N: Number(cost),
-  });
+  const actual = await derive(password, Buffer.from(salt, "hex"), expected.length, { N: COST });
 
   return timingSafeEqual(actual, expected);
 };
