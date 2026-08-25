@@ -33,7 +33,7 @@ const container: CSSProperties = {
   borderRadius: "12px",
   margin: "0 auto",
   maxWidth: "480px",
-  padding: "32px",
+  padding: "32px 32px 16px",
 };
 
 const brand: CSSProperties = {
@@ -57,9 +57,12 @@ const footer: CSSProperties = {
   color: DIM,
   fontSize: "11px",
   lineHeight: "17px",
+  boxSizing: "border-box",
   margin: "16px auto 0",
   maxWidth: "480px",
-  padding: "0 4px",
+  // The card's own padding plus its border, so the two blocks of text share a
+  // left edge rather than the footer starting at the card's outer corner.
+  padding: "0 33px",
 };
 
 // No underline and the same colour as the line it sits in: the address only
