@@ -108,6 +108,10 @@ export const digits: CSSProperties = {
 
 const buttonCell: CSSProperties = {
   backgroundColor: ACCENT,
+  // A gradient of one colour, because a client that repaints backgrounds for
+  // dark mode leaves images alone. Without it the white cell is darkened and
+  // the dark label on it disappears.
+  backgroundImage: `linear-gradient(${ACCENT}, ${ACCENT})`,
   borderRadius: "6px",
 };
 
