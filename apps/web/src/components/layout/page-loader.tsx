@@ -45,10 +45,7 @@ const PageLoader = () => {
   }, [phase]);
 
   return (
-    <div
-      aria-hidden="true"
-      className={`fixed top-0 left-0 z-50 h-0.5 bg-accent ${PHASES[phase]}`}
-    />
+    <div aria-hidden="true" className={`fixed top-0 left-0 z-50 h-px bg-accent ${PHASES[phase]}`} />
   );
 };
 
