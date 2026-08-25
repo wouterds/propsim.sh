@@ -18,7 +18,11 @@ const Hero = () => (
         <h1 className="mt-6 font-semibold text-4xl text-ink leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
           Trade the same
           <br />
-          session <span className="text-accent">twice</span>.
+          session{" "}
+          <span className="text-accent underline decoration-4 decoration-accent/30 underline-offset-[0.15em]">
+            twice
+          </span>
+          .
         </h1>
 
         <p className="mt-6 max-w-xl text-[1rem] text-muted leading-relaxed">

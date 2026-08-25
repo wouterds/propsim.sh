@@ -22,11 +22,17 @@
 
   /* `up` is a rising price, the long side, a profit. `down` is the mirror.
      `accent` is interactive only and never a value, `warn` is pending only.
+
      Red is the one that goes tight: at 11px on a hovered row this clears 5.2:1
-     where the obvious #ff2d55 lands at 4.78 and fails the next surface up. */
+     where the obvious #ff2d55 lands at 4.78 and fails the next surface up.
+
+     White is only 1.21:1 against `ink`, so it can never be the ONLY thing
+     marking something interactive. Every accent-coloured control here also
+     carries a fill, a border or an underline, and a bare `text-accent` on body
+     copy reads as ordinary text. */
   --color-up: #00ff88;
   --color-down: #ff4560;
-  --color-accent: #00d4ff;
+  --color-accent: #ffffff;
   --color-warn: #ffb020;
 
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
