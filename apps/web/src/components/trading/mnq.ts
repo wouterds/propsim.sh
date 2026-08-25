@@ -13,10 +13,8 @@ export type Timeframe = (typeof TIMEFRAMES)[number];
 const DEFAULT_TIMEFRAME: Timeframe = "15m";
 
 /**
- * Every window sits inside one contract's life and inside Yahoo's per-interval
- * reach. `MNQ=F` is a continuous front-month series that is not back-adjusted,
- * so anything from `3mo` up crosses a quarterly roll and paints the gap as a
- * real move; `1m` is additionally capped near eight days upstream.
+ * `MNQ=F` is not back-adjusted, so `3mo` and up cross a quarterly roll and the gap
+ * reads as a real move. Yahoo also caps `1m` near eight days.
  */
 const RANGE_FOR: Record<Timeframe, Range> = {
   "1m": "1d",

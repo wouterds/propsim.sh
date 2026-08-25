@@ -15,9 +15,8 @@ export type Account = {
   daysTraded: number;
 };
 
-// The one account behind the login. The dashboard draws its floors, the nav
-// prints its balance and the terminal opens its blotter on it, so a number
-// edited here moves all three instead of leaving two of them disagreeing.
+// The one account. The dashboard, the nav and the terminal all read it, so a
+// number changed here moves all three.
 export const ACCOUNT: Account = {
   id: "MNQ-25K-EVAL",
   name: "Evaluation, 25K",
@@ -37,14 +36,11 @@ export const ACCOUNT: Account = {
 export const dailyFloorOf = (account: Account) =>
   account.sessionOpenEquity - account.dailyLossLimit;
 
-// The hard floor is measured from peak equity and only ever rises, which is why
-// it reads off the peak rather than off the balance.
+// The hard floor is measured from peak equity and only rises.
 export const trailingFloorOf = (account: Account) => account.peakEquity - account.trailingDrawdown;
 
-// Both floors are read the same way in two places, so the fraction and the tone
-// it escalates through live here rather than beside whichever one drew them
-// first. A landing card that stays green while the dashboard turns red is the
-// failure this prevents.
+// Shared so the landing card and the dashboard cannot show different tones for
+// the same floor.
 export const roomLeftOf = (equity: number, floor: number, limit: number) =>
   Math.min(1, Math.max(0, (equity - floor) / limit));
 

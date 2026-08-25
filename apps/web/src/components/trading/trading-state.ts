@@ -41,11 +41,7 @@ const opposite = (side: Side): Side => (side === "buy" ? "sell" : "buy");
 export const unrealisedPnl = (position: Position, last: number) =>
   (last - position.entry) * direction(position.side) * position.quantity * POINT_VALUE;
 
-/**
- * Null rather than a negative number when the stop sits on the wrong side of
- * entry: that is not a smaller risk, it is an order that would fill instantly,
- * and a signed number here quietly flatters the risk:reward line below it.
- */
+/** Null, not a negative, when the stop is the wrong side of entry. That is an instant fill. */
 export const riskOf = (draft: OrderDraft, entry: number | null) => {
   if (entry === null || draft.stopLoss === null) return null;
 
@@ -113,8 +109,7 @@ const submit = (state: TradingState, action: Extract<TradingAction, { kind: "sub
     status: resting ? "working" : "filled",
   };
 
-  // Resting orders never fill. Nothing here watches the tape, and an order that
-  // filled on a timer would be a simulation of a fill rather than one.
+  // Resting orders never fill. Nothing here watches the tape.
   if (resting) {
     return { ...state, orders: [order, ...state.orders] };
   }

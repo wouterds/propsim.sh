@@ -1,12 +1,10 @@
 import { cn } from "~/lib/utils";
 
-// `outline-hidden` rather than `outline-none`: forced-colors mode drops the
-// box-shadow the ring is drawn with, and only the former leaves a transparent
-// outline behind for the OS to repaint. `outline-none` leaves nothing at all.
+// `outline-hidden`, not `outline-none`. Forced-colors mode drops the ring's
+// box-shadow, and only the former leaves an outline to repaint.
 export const FOCUS_RING = "outline-hidden focus-visible:ring-1 focus-visible:ring-accent";
 
-// A disabled field has to look inert. Without this it is pixel-identical to an
-// editable one and the placeholder reads as a value already in the box.
+// Without this a disabled field looks editable and its placeholder reads as a value.
 export const FIELD = cn(
   "h-8 w-full rounded border border-line bg-sunken px-2 text-ink text-sm tabular",
   "placeholder:text-faint focus-visible:border-accent",

@@ -22,11 +22,7 @@ export type ChartTheme = Record<ChartTone, string> & {
 const readToken = (name: string) =>
   getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
-/**
- * The only reader of a colour out of CSS in the whole app. The `@theme static`
- * tokens land on `:root`, so the canvas paints from the same source as every
- * utility class and no hex is written down twice.
- */
+/** The only place a colour is read out of CSS. Keeps the canvas and the utilities on one source. */
 export const readChartTheme = (): ChartTheme => ({
   base: readToken("--color-base"),
   sunken: readToken("--color-sunken"),
@@ -39,9 +35,8 @@ export const readChartTheme = (): ChartTheme => ({
 });
 
 /**
- * Canvas will not resolve a `var(--color-up)` string, so the alpha is baked in
- * here instead. Tailwind minifies hex in the production stylesheet, which hands
- * `#00ff88` back as `#0f8`, so both spellings have to survive.
+ * Canvas cannot resolve a `var()`, so alpha is baked in here. Tailwind minifies
+ * hex in production, so 3-digit and 6-digit both have to work.
  */
 export const withAlpha = (color: string, alpha: number) => {
   const digits = color.replace("#", "");
@@ -55,9 +50,8 @@ export const withAlpha = (color: string, alpha: number) => {
   return `rgba(${(value >> 16) & 255}, ${(value >> 8) & 255}, ${value & 255}, ${alpha})`;
 };
 
-// lightweight-charts has no timezone option and treats every stamp as UTC, so
-// the fix is formatting rather than shifting the bars off the times they print
-// at. MNQ is a CME contract quoted against the New York session.
+// lightweight-charts has no timezone option and treats every stamp as UTC.
+// Format the labels. Never shift the bars.
 const EXCHANGE_ZONE = "America/New_York";
 
 const clockFormat = new Intl.DateTimeFormat("en-US", {
@@ -139,7 +133,6 @@ export const candleOptions = (theme: ChartTheme): CandlestickSeriesPartialOption
   wickUpColor: theme.up,
   wickDownColor: theme.down,
   borderVisible: false,
-  // MNQ ticks in quarter points, so the default minMove of 0.01 fills the axis
-  // with prices that cannot print.
+  // MNQ ticks in quarter points. The default minMove prints prices that cannot exist.
   priceFormat: { type: "price", precision: 2, minMove: TICK_SIZE },
 });

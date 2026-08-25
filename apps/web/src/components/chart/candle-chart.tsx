@@ -34,8 +34,7 @@ const CandleChart = ({ candles, priceLines, onHover }: Props) => {
   const themeRef = useRef<ChartTheme | null>(null);
   const hoverRef = useRef(onHover);
 
-  // Held in a ref so a fresh callback identity does not tear the crosshair
-  // subscription down and rebuild the chart under it.
+  // In a ref so a new callback identity does not rebuild the chart.
   useEffect(() => {
     hoverRef.current = onHover;
   }, [onHover]);
@@ -45,8 +44,7 @@ const CandleChart = ({ candles, priceLines, onHover }: Props) => {
 
     if (!container) return;
 
-    // createChart is the first thing here that touches the DOM, which is why
-    // the module is safe to import from a server-rendered route at all.
+    // createChart is the first DOM access, so the module stays safe to import on the server.
     const theme = readChartTheme();
     const chart = createChart(container, chartOptions(theme));
     const series = chart.addSeries(CandlestickSeries, candleOptions(theme));
@@ -73,8 +71,7 @@ const CandleChart = ({ candles, priceLines, onHover }: Props) => {
     themeRef.current = theme;
 
     return () => {
-      // Nulled before the chart goes: React re-runs this effect in development
-      // and anything touching a disposed series throws rather than no-opping.
+      // Null it first. React re-runs this effect in development and a disposed series throws.
       chartRef.current = null;
       seriesRef.current = null;
       themeRef.current = null;
@@ -88,8 +85,7 @@ const CandleChart = ({ candles, priceLines, onHover }: Props) => {
 
     if (!chart || !series) return;
 
-    // Candle.time is milliseconds, UTCTimestamp is seconds. Handed straight
-    // through, every bar lands 55,000 years out and the chart reads as empty.
+    // Candle.time is milliseconds. UTCTimestamp is seconds.
     const bars = candles.map((candle) => ({
       time: Math.floor(candle.time / 1000) as UTCTimestamp,
       open: candle.open,
@@ -123,8 +119,7 @@ const CandleChart = ({ candles, priceLines, onHover }: Props) => {
     );
 
     return () => {
-      // On unmount the chart's own cleanup has already run and taken the series
-      // with it, which this catches by the ref it nulled on the way out.
+      // On unmount the chart cleanup already disposed the series.
       if (seriesRef.current !== series) return;
 
       for (const line of drawn) {

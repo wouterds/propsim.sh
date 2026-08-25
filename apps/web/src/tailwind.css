@@ -1,13 +1,10 @@
 @import "tailwindcss";
 
-/* `static` is load-bearing. Tailwind only emits the variables some utility
-   actually references, and the chart reads these straight off `:root` with
-   getComputedStyle - so a token nothing styles would resolve to "" and
-   lightweight-charts would silently keep its own teal and red. */
+/* `static` is required. Tailwind emits only the variables a utility references,
+   and the chart reads these off `:root` at runtime. */
 @theme static {
-  /* Surfaces, darkest to lightest. Neutral and cool, never pure black.
-     `--color-base` makes `text-base` a colour utility that shadows tailwind's
-     own 1rem font size, so reach for `text-[1rem]` when you want the size. */
+  /* Surfaces, darkest to lightest. `--color-base` makes `text-base` a colour
+     utility, so use `text-[1rem]` for the font size. */
   --color-sunken: #06070a;
   --color-base: #0a0b0d;
   --color-raised: #101216;
@@ -43,8 +40,7 @@
   --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
 }
 
-/* Tells the browser which way round we are, so its scrollbars and form chrome
-   stop being the one light thing left on the page. */
+/* Keeps the browser's own scrollbars and form chrome dark. */
 html {
   @apply bg-base text-ink antialiased;
   color-scheme: dark;
