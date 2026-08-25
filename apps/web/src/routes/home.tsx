@@ -4,15 +4,14 @@ import CtaBand from "~/components/marketing/cta-band";
 import FeatureGrid from "~/components/marketing/feature-grid";
 import Hero from "~/components/marketing/hero";
 import HowItWorks from "~/components/marketing/how-it-works";
-import ReplayCompare from "~/components/marketing/replay-compare";
 import type { Route } from "./+types/home";
 
 export const meta: Route.MetaFunction = () => [
-  { title: "propsim.sh, trade the same session twice" },
+  { title: "propsim.sh, a prop firm simulator that costs nothing" },
   {
     name: "description",
     content:
-      "A prop firm rule engine over a replayed futures session. Trade a real MNQ day, then trade it again, and compare the two runs.",
+      "Trade a live MNQ session on a short delay against real prop firm rules. Daily loss limit, trailing drawdown, breaches. No eval fee and no card.",
   },
 ];
 
@@ -23,7 +22,6 @@ const Home = () => (
       <Hero />
       <HowItWorks />
       <FeatureGrid />
-      <ReplayCompare />
       <CtaBand />
     </main>
     <SiteFooter />
