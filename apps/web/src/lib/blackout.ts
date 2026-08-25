@@ -1,6 +1,8 @@
 export type NewsWindow = {
   from: number;
   to: number;
+  /** The first release in the window, which is where the line goes. */
+  at: number;
   titles: string[];
 };
 
@@ -32,7 +34,7 @@ export const windowsOf = (events: NewsMoment[]): NewsWindow[] => {
       continue;
     }
 
-    windows.push({ from, to, titles: [event.title] });
+    windows.push({ from, to, at: event.time, titles: [event.title] });
   }
 
   return windows;
