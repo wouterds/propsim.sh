@@ -36,12 +36,14 @@ describe("personaOf", () => {
     expect(initials).toBe(`${name.split(" ")[0][0]}${name.split(" ")[1][0]}`);
   });
 
-  it("should keep every face on the colour wheel", () => {
-    // given a spread of ids rather than one
-    const hues = Array.from({ length: 500 }, (_, index) => personaOf(`user-${index}`).hue);
+  it("should draw from a ring of tints rather than the whole wheel", () => {
+    // given a spread of ids, two of which on a full wheel could land a degree
+    // apart and read as one colour drawn wrong
+    const hues = new Set(Array.from({ length: 5000 }, (_, i) => personaOf(`user-${i}`).hue));
 
     // then
-    expect(hues.every((hue) => hue >= 0 && hue < 360)).toBe(true);
+    expect(hues.size).toBe(8);
+    expect([...hues].every((hue) => hue >= 0 && hue < 360)).toBe(true);
   });
 
   it("should reach both ends of both word lists", () => {

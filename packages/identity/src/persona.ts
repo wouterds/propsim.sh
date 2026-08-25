@@ -83,6 +83,14 @@ const CREATURES = [
   "Wombat",
 ];
 
+/**
+ * A fixed ring of tints rather than the whole wheel. Two ids a degree apart read
+ * as one colour drawn wrong, where two steps of the ring read as two people.
+ */
+const TINTS = 8;
+
+const FIRST_TINT = 20;
+
 export type Persona = {
   name: string;
   /** The two letters the face is drawn with. */
@@ -104,6 +112,6 @@ export const personaOf = (userId: string): Persona => {
   return {
     name: `${adjective} ${creature}`,
     initials: `${adjective[0]}${creature[0]}`,
-    hue: hash(`${userId}/face`) % 360,
+    hue: FIRST_TINT + (hash(`${userId}/face`) % TINTS) * (360 / TINTS),
   };
 };
