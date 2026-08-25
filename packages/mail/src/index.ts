@@ -13,6 +13,8 @@ import { Welcome } from "./emails/welcome";
 import { logEmail } from "./log";
 import { send } from "./mailjet";
 
+export { scrubEmailLogs } from "./log";
+
 const deliver = async (
   template: string,
   to: string,

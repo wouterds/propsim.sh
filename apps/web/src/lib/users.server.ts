@@ -1,4 +1,5 @@
 import { getDb, users } from "@propsim/database";
+import { scrubEmailLogs } from "@propsim/mail";
 import { and, eq, isNull } from "drizzle-orm";
 
 // A deleted account is a row with nobody in it. It must not answer to a login,
@@ -45,9 +46,21 @@ export const updateEmail = (id: string, email: string) =>
  * ties the account to somebody, so anonymising it and stamping the date is what
  * makes the rest untraceable, and the id stays unique either way.
  */
-export const deleteUser = (id: string) =>
-  getDb()
+export const deleteUser = async (id: string) => {
+  const user = await findUserById(id);
+
+  if (!user) {
+    return;
+  }
+
+  // .invalid is reserved and resolves nowhere, so nothing can be sent to it.
+  const anonymised = `deleted-${id}@deleted.invalid`;
+
+  // Before the row is rewritten, while the old address is still readable.
+  await scrubEmailLogs(user.email, anonymised);
+
+  await getDb()
     .update(users)
-    // .invalid is reserved and resolves nowhere, so nothing can be sent to it.
-    .set({ email: `deleted-${id}@deleted.invalid`, deletedAt: new Date() })
+    .set({ email: anonymised, deletedAt: new Date() })
     .where(eq(users.id, id));
+};
