@@ -41,13 +41,13 @@ const PositionsTable = ({ positions, last, onClose }: Props) => {
               <td className={TD}>{position.quantity}</td>
               <td className={TD}>{formatPrice(position.entry)}</td>
               <td className={cn(TD, last === null && "text-faint")}>
-                {last === null ? "—" : formatPrice(last)}
+                {last === null ? "–" : formatPrice(last)}
               </td>
               <td className={cn(TD, "hidden text-muted md:table-cell")}>
-                {position.stopLoss === null ? "—" : formatPrice(position.stopLoss)}
+                {position.stopLoss === null ? "–" : formatPrice(position.stopLoss)}
               </td>
               <td className={cn(TD, "hidden text-muted md:table-cell")}>
-                {position.takeProfit === null ? "—" : formatPrice(position.takeProfit)}
+                {position.takeProfit === null ? "–" : formatPrice(position.takeProfit)}
               </td>
               <td
                 className={cn(
@@ -56,7 +56,7 @@ const PositionsTable = ({ positions, last, onClose }: Props) => {
                   pnl === null ? "text-faint" : toneOf(pnl),
                 )}
               >
-                {pnl === null ? "—" : formatMoney(pnl)}
+                {pnl === null ? "–" : formatMoney(pnl)}
               </td>
               <td className={cn(TD, "hidden text-muted lg:table-cell")}>
                 {formatClock(position.openedAt)}

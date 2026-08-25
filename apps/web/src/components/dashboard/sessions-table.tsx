@@ -9,9 +9,8 @@ type Props = {
 
 const SessionsTable = ({ sessions }: Props) => (
   <div className="min-w-0 rounded-lg border border-line bg-raised">
-    <div className="flex h-9 items-center justify-between border-line border-b px-4">
+    <div className="flex h-9 items-center border-line border-b px-4">
       <span className="text-[11px] text-faint uppercase tracking-wider">Recent sessions</span>
-      <span className="text-[11px] text-faint">A replay never moves the balance</span>
     </div>
 
     <div className="overflow-x-auto">
@@ -19,7 +18,6 @@ const SessionsTable = ({ sessions }: Props) => (
         <thead>
           <tr className="border-line/60 border-b text-[11px] text-faint uppercase tracking-wider">
             <th className="h-8 px-4 text-left font-normal">Session</th>
-            <th className="h-8 px-4 text-left font-normal">Run</th>
             <th className="hidden h-8 px-4 text-right font-normal sm:table-cell">Trades</th>
             <th className="hidden h-8 px-4 text-right font-normal md:table-cell">Worst equity</th>
             <th className="h-8 px-4 text-right font-normal">P&amp;L</th>
@@ -37,13 +35,6 @@ const SessionsTable = ({ sessions }: Props) => (
                   {session.weekday} {session.date}
                 </span>
                 <span className="block text-[11px] text-faint">{session.note}</span>
-              </td>
-              <td className="h-11 px-4">
-                {session.kind === "replay" ? (
-                  <Badge tone="accent">Replay</Badge>
-                ) : (
-                  <Badge tone="muted">Live</Badge>
-                )}
               </td>
               <td className="hidden h-11 px-4 text-right text-ink text-xs tabular sm:table-cell">
                 {session.trades}

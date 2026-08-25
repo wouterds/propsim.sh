@@ -38,7 +38,7 @@ const TradePanel = ({ last, onSubmit }: Props) => {
   const resting = draft.type !== "market";
   const entry = stale ? null : fillPriceFor(draft, last);
   const incomplete = draft.quantity < 1 || (resting && draft.limitPrice === null);
-  const entryLabel = entry === null ? "—" : formatPrice(entry);
+  const entryLabel = entry === null ? "–" : formatPrice(entry);
 
   const place = () => {
     if (incomplete) return;
@@ -90,7 +90,7 @@ const TradePanel = ({ last, onSubmit }: Props) => {
         value={resting ? draft.limitPrice : null}
         onChange={(limitPrice) => patch({ limitPrice })}
         step={TICK_SIZE}
-        placeholder={stale ? "—" : formatPrice(last)}
+        placeholder={stale ? "–" : formatPrice(last)}
         disabled={stale || !resting}
       />
 
@@ -100,7 +100,7 @@ const TradePanel = ({ last, onSubmit }: Props) => {
           value={draft.stopLoss}
           onChange={(stopLoss) => patch({ stopLoss })}
           step={TICK_SIZE}
-          placeholder="—"
+          placeholder="–"
           disabled={stale}
         />
         <NumberField
@@ -108,7 +108,7 @@ const TradePanel = ({ last, onSubmit }: Props) => {
           value={draft.takeProfit}
           onChange={(takeProfit) => patch({ takeProfit })}
           step={TICK_SIZE}
-          placeholder="—"
+          placeholder="–"
           disabled={stale}
         />
       </div>

@@ -12,7 +12,7 @@ import TradePanel from "~/components/trading/trade-panel";
 import { usePaperTrading } from "~/components/trading/use-paper-trading";
 import type { Route } from "./+types/trading";
 
-export const meta = () => [{ title: "Trading — propsim.sh" }];
+export const meta = () => [{ title: "Trading, propsim.sh" }];
 
 /** `url`, not `request.url`: the latter carries a `.data` suffix on client navigation. */
 export const loader = async ({ url }: Route.LoaderArgs) => {

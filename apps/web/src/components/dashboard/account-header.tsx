@@ -14,7 +14,7 @@ const AccountHeader = ({ account }: Props) => (
         <Badge tone="accent">{account.phase}</Badge>
       </div>
       <p className="mt-1 text-faint text-xs tabular">
-        {account.id} · MNQ · {account.daysTraded} sessions on the tape
+        {account.id} · MNQ · {account.daysTraded} sessions traded
       </p>
     </div>
 
@@ -22,7 +22,7 @@ const AccountHeader = ({ account }: Props) => (
       to={href("/trading")}
       className="inline-flex h-9 items-center rounded bg-accent px-4 font-medium text-sm text-sunken transition-colors hover:bg-accent/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
     >
-      Open the terminal
+      Start trading
     </Link>
   </div>
 );

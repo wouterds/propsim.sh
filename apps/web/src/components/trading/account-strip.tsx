@@ -21,13 +21,13 @@ const AccountStrip = ({ balance, equity, realised, openPnl, positions }: Props) 
     <Stat label="Balance" value={formatMoney(balance)} />
     <Stat
       label="Equity"
-      value={equity === null ? "—" : formatMoney(equity)}
+      value={equity === null ? "–" : formatMoney(equity)}
       tone={equity === null ? "text-faint" : undefined}
     />
     <Stat label="Realised" value={formatSignedMoney(realised)} tone={toneOf(realised)} />
     <Stat
       label="Open P&L"
-      value={openPnl === null ? "—" : formatSignedMoney(openPnl)}
+      value={openPnl === null ? "–" : formatSignedMoney(openPnl)}
       tone={openPnl === null ? "text-faint" : toneOf(openPnl)}
     />
     <Stat label="Open" value={`${positions}`} />

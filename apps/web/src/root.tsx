@@ -40,11 +40,11 @@ const App = () => (
 export const ErrorBoundary = ({ error }: Route.ErrorBoundaryProps) => {
   const isResponse = isRouteErrorResponse(error);
   const status = isResponse ? error.status : 500;
-  const detail = isResponse && status === 404 ? "no such page" : "something broke";
+  const detail = isResponse && status === 404 ? "Page not found" : "Something went wrong";
 
   return (
     <main className="p-8 font-medium uppercase tracking-wider">
-      <p className="text-down">{`${status} — ${detail}`}</p>
+      <p className="text-down">{`${status}. ${detail}.`}</p>
       {import.meta.env.DEV && error instanceof Error && error.stack && (
         <pre className="mt-4 overflow-x-auto text-faint text-xs normal-case">{error.stack}</pre>
       )}

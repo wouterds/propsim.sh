@@ -4,7 +4,7 @@ import { notionalOf, type OrderDraft, rewardOf, riskOf, rrRatio } from "./tradin
 const Row = ({ label, value, tone }: { label: string; value: string | null; tone?: string }) => (
   <div className="flex items-baseline justify-between">
     <span className="text-[11px] text-faint uppercase tracking-wider">{label}</span>
-    <span className={value === null ? "text-faint" : (tone ?? "text-ink")}>{value ?? "—"}</span>
+    <span className={value === null ? "text-faint" : (tone ?? "text-ink")}>{value ?? "–"}</span>
   </div>
 );
 

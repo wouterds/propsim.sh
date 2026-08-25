@@ -29,7 +29,7 @@ const AuthForm = ({ mode, error }: Props) => {
           type="email"
           required
           autoComplete="email"
-          placeholder="you@desk.example"
+          placeholder="you@example.com"
           className={FIELD}
         />
       </div>
@@ -66,10 +66,6 @@ const AuthForm = ({ mode, error }: Props) => {
       >
         {busy ? "One moment" : COPY[mode].submit}
       </button>
-
-      <p className="text-center text-[11px] text-faint leading-relaxed">
-        No card, no broker, and no money. The account is simulated and so is every fill.
-      </p>
     </Form>
   );
 };

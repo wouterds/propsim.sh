@@ -4,7 +4,6 @@ export type Session = {
   id: string;
   date: string;
   weekday: string;
-  kind: "live" | "replay";
   trades: number;
   worstEquity: number;
   pnl: number;
@@ -24,7 +23,6 @@ export const SESSIONS: Session[] = [
     id: "2026-08-25",
     date: "25 Aug",
     weekday: "Mon",
-    kind: "live",
     trades: 5,
     worstEquity: -318,
     pnl: -252.5,
@@ -35,7 +33,6 @@ export const SESSIONS: Session[] = [
     id: "2026-08-22",
     date: "22 Aug",
     weekday: "Fri",
-    kind: "live",
     trades: 4,
     worstEquity: -96,
     pnl: 160,
@@ -43,21 +40,9 @@ export const SESSIONS: Session[] = [
     note: "Closed 15:02",
   },
   {
-    id: "2026-08-21-replay",
-    date: "21 Aug",
-    weekday: "Thu",
-    kind: "replay",
-    trades: 6,
-    worstEquity: -212.5,
-    pnl: 96,
-    verdict: "clean",
-    note: "Second run",
-  },
-  {
     id: "2026-08-21",
     date: "21 Aug",
     weekday: "Thu",
-    kind: "live",
     trades: 9,
     worstEquity: -588,
     pnl: -428,
@@ -68,7 +53,6 @@ export const SESSIONS: Session[] = [
     id: "2026-08-20",
     date: "20 Aug",
     weekday: "Wed",
-    kind: "live",
     trades: 3,
     worstEquity: -74.5,
     pnl: 101.5,
@@ -79,7 +63,6 @@ export const SESSIONS: Session[] = [
     id: "2026-08-19",
     date: "19 Aug",
     weekday: "Tue",
-    kind: "live",
     trades: 7,
     worstEquity: -409,
     pnl: -181.5,
@@ -90,7 +73,6 @@ export const SESSIONS: Session[] = [
     id: "2026-08-18",
     date: "18 Aug",
     weekday: "Mon",
-    kind: "live",
     trades: 5,
     worstEquity: -122,
     pnl: 262,
@@ -127,7 +109,7 @@ export const RULES: Rule[] = [
   {
     id: "consistency",
     label: "Consistency, 40%",
-    detail: "Best day is 262.00. Only bites once the account is green.",
+    detail: "Best day is 262.00. Applies once the account is in profit.",
     state: "watch",
   },
 ];

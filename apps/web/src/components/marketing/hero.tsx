@@ -18,15 +18,11 @@ const Hero = () => (
           funded accounts. There is nothing to pay, and none of it is real money.
         </p>
 
-        <p className="mt-4 max-w-xl text-[1rem] text-muted leading-relaxed">
-          An evaluation charges you to find out where those limits bite. This does not.
-        </p>
-
         <Link
           to={href("/trading")}
           className="mt-8 inline-flex h-10 items-center rounded bg-accent px-5 font-medium text-sunken transition-colors hover:bg-accent/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
         >
-          Open the simulator
+          Start trading
         </Link>
       </div>
 

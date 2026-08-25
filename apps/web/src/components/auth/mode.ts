@@ -2,11 +2,11 @@ export type AuthMode = "login" | "signup";
 
 export const COPY: Record<AuthMode, { title: string; submit: string }> = {
   login: {
-    title: "Back to the desk",
+    title: "Welcome back",
     submit: "Log in",
   },
   signup: {
-    title: "Open a desk",
+    title: "Create your account",
     submit: "Create account",
   },
 };
