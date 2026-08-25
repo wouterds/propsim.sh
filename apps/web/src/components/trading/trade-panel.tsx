@@ -1,4 +1,5 @@
 import { Select } from "@base-ui/react/select";
+import { ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import { recall, remember } from "~/lib/remember";
 import { cn } from "~/lib/utils";
@@ -135,16 +136,7 @@ const TradePanel = ({ last, tick, point, onSubmit }: Props) => {
             >
               <Select.Value />
               <Select.Icon className="text-faint">
-                <svg viewBox="0 0 16 16" aria-hidden="true" className="size-3">
-                  <path
-                    d="m4 6 4 4 4-4"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
+                <ChevronDown aria-hidden="true" className="size-3.5" strokeWidth={1.5} />
               </Select.Icon>
             </Select.Trigger>
           </div>

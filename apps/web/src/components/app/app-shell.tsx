@@ -1,4 +1,5 @@
 import { Dialog } from "@base-ui/react/dialog";
+import { Menu } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { href, Link } from "react-router";
 import SidebarNav from "~/components/app/sidebar-nav";
@@ -13,18 +14,6 @@ type Props = {
 };
 
 const FOCUS = "focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent";
-
-const MenuIcon = () => (
-  <svg viewBox="0 0 16 16" aria-hidden="true" className="size-4">
-    <path
-      d="M2 4h12M2 8h12M2 12h12"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-    />
-  </svg>
-);
 
 const AppShell = ({ accounts, email, children }: Props) => {
   const [open, setOpen] = useState(false);
@@ -43,7 +32,7 @@ const AppShell = ({ accounts, email, children }: Props) => {
                 aria-label="Open the menu"
                 className={`inline-flex size-8 items-center justify-center rounded border border-line text-muted transition-colors hover:text-ink ${FOCUS}`}
               >
-                <MenuIcon />
+                <Menu aria-hidden="true" className="size-4" strokeWidth={1.5} />
               </Dialog.Trigger>
 
               <Dialog.Portal>

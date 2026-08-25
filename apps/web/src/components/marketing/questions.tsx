@@ -1,4 +1,5 @@
 import { Accordion } from "@base-ui/react/accordion";
+import { Plus } from "lucide-react";
 import { href, Link } from "react-router";
 import type { Question } from "~/lib/faq";
 
@@ -18,21 +19,13 @@ const Questions = ({ questions, title, more = false }: Props) => (
           {questions.map((question) => (
             <Accordion.Item key={question.q} className="border-line/70 border-b">
               <Accordion.Header>
-                <Accordion.Trigger className="flex w-full items-center justify-between gap-4 py-4 text-left text-ink transition-colors hover:text-muted focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent">
+                <Accordion.Trigger className="flex w-full items-center justify-between gap-4 py-4 text-left text-muted transition-colors hover:text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent">
                   {question.q}
-                  <svg
-                    viewBox="0 0 16 16"
+                  <Plus
                     aria-hidden="true"
-                    className="size-3 shrink-0 text-faint transition-transform data-[panel-open]:rotate-45"
-                  >
-                    <path
-                      d="M8 3v10M3 8h10"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                    />
-                  </svg>
+                    className="size-3.5 shrink-0 text-faint transition-transform data-[panel-open]:rotate-45"
+                    strokeWidth={1.5}
+                  />
                 </Accordion.Trigger>
               </Accordion.Header>
 

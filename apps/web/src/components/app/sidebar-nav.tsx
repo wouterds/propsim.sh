@@ -1,3 +1,4 @@
+import { Plus } from "lucide-react";
 import { Form, href, Link, NavLink } from "react-router";
 import NavIcon, { type NavIconName } from "~/components/app/nav-icon";
 import Brand from "~/components/layout/brand";
@@ -110,7 +111,7 @@ const SidebarNav = ({ accounts, email, onNavigate }: Props) => (
           FOCUS,
         )}
       >
-        <span aria-hidden="true">+</span>
+        <Plus aria-hidden="true" className="size-3.5" strokeWidth={1.5} />
         New account
       </Link>
     </div>
