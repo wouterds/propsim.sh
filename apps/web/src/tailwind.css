@@ -71,10 +71,17 @@ body {
 }
 
 /* Tailwind 4 dropped the pointer from its button reset, so every button in the
-   app looked inert. */
+   app looked inert. The roles are here because the primitives do not all render
+   a <button>: a radio card, a tab and a select trigger are divs with a role. */
 button:not(:disabled),
 [role="button"]:not([aria-disabled="true"]),
+[role="radio"]:not([aria-disabled="true"]),
+[role="tab"]:not([aria-disabled="true"]),
+[role="option"]:not([aria-disabled="true"]),
+[role="combobox"]:not([aria-disabled="true"]),
+[role="switch"]:not([aria-disabled="true"]),
 label:has(> input[type="checkbox"]),
+label:has(> input[type="radio"]),
 summary {
   cursor: pointer;
 }
