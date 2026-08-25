@@ -21,7 +21,9 @@ const FAINT = "#7b8493";
 const BASE = "#0a0b0d";
 const RAISED = "#101216";
 const LINE = "#22262d";
-const ACCENT = "#ffffff";
+// blue-600, the fill a primary button carries on the site. A mail that looks
+// like the product it came from is one less thing that reads as phishing.
+const ACCENT = "#2563eb";
 const UP = "#14b8a6";
 const DOWN = "#f43f5e";
 
@@ -120,7 +122,7 @@ const buttonCell: CSSProperties = {
 const fill = { bgcolor: ACCENT } as TdHTMLAttributes<HTMLTableDataCellElement>;
 
 const buttonLabel: CSSProperties = {
-  color: BASE,
+  color: INK,
   display: "inline-block",
   fontSize: "15px",
   fontWeight: 600,
@@ -143,7 +145,7 @@ export const ButtonLink = ({ href, children }: ButtonLinkProps) => (
       <tr>
         <td {...fill} style={buttonCell}>
           <Link href={href} style={buttonLabel}>
-            <span style={{ color: BASE }}>{children}</span>
+            <span style={{ color: INK }}>{children}</span>
           </Link>
         </td>
       </tr>

@@ -10,6 +10,6 @@ it("should paint the button so a dark mode client cannot repaint it", async () =
   );
 
   // then
-  expect(html).toContain('bgcolor="#ffffff"');
-  expect(html).toContain("background-image:linear-gradient(#ffffff, #ffffff)");
+  expect(html).toContain('bgcolor="#2563eb"');
+  expect(html).toContain("background-image:linear-gradient(#2563eb, #2563eb)");
 });
