@@ -16,8 +16,10 @@ const safe = (value: string) => value.replace(/--/g, "- -");
 
 const REGIONS = new Intl.DisplayNames(["en"], { type: "region" });
 
-const country = (code: string | null) => {
-  if (!code || code.length !== 2) {
+const country = (raw: string | null) => {
+  const code = raw ?? "";
+
+  if (code.length !== 2) {
     return null;
   }
 
