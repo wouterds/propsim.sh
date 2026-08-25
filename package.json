@@ -8,8 +8,8 @@
     "dev": "turbo dev",
     "build": "turbo build",
     "start": "turbo start",
-    "lint": "biome check",
-    "lint:fix": "biome check --write",
+    "lint": "turbo lint",
+    "lint:fix": "turbo lint:fix",
     "typecheck": "turbo typecheck",
     "test": "turbo test"
   },
