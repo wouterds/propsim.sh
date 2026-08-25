@@ -1,3 +1,4 @@
+export { clearDormancy, type Dormant, findDormant, noteDormancy } from "./dormant";
 export {
   daysLeft,
   daysSince,
