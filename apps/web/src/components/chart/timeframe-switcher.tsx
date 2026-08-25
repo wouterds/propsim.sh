@@ -24,7 +24,7 @@ const TimeframeSwitcher = ({ value }: { value: Timeframe }) => {
             preventScrollReset
             className={cn(
               "rounded px-2 py-1 font-medium text-[11px] tabular transition-colors",
-              active && "bg-accent/15 text-accent",
+              active && "bg-line text-ink",
               !active && "text-muted hover:text-ink",
               loading && "text-accent/60",
               FOCUS_RING,

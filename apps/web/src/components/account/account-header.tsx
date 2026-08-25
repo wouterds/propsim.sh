@@ -43,7 +43,7 @@ const AccountHeader = ({ account }: Props) => {
                 cn(
                   "inline-flex h-8 items-center rounded px-2.5 text-sm transition-colors",
                   FOCUS,
-                  isActive ? "bg-accent/15 text-accent" : "text-muted hover:text-ink",
+                  isActive ? "bg-line text-ink" : "text-muted hover:text-ink",
                 )
               }
             >
