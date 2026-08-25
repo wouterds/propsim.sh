@@ -18,7 +18,7 @@ const Questions = ({ questions, title, more = false }: Props) => (
           {questions.map((question) => (
             <Accordion.Item key={question.q} className="border-line/70 border-b">
               <Accordion.Header>
-                <Accordion.Trigger className="flex w-full items-center justify-between gap-4 py-4 text-left text-ink transition-colors hover:text-accent focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent">
+                <Accordion.Trigger className="flex w-full items-center justify-between gap-4 py-4 text-left text-ink transition-colors hover:text-muted focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent">
                   {question.q}
                   <svg
                     viewBox="0 0 16 16"
