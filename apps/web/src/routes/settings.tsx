@@ -201,7 +201,7 @@ const Settings = ({ loaderData, actionData }: Route.ComponentProps) => {
 
         <Section
           title="Where you are signed in"
-          description="A place is worked out from the network the device is on, so it can name the wrong city and the right country."
+          description="A place is worked out from the network the device is on."
         >
           <SessionList sessions={sessions} busy={busy} />
 
