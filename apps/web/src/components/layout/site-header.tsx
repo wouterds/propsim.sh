@@ -36,22 +36,11 @@ const SiteHeader = ({ signedIn }: { signedIn: boolean }) => (
       </nav>
 
       <div className="ml-auto flex shrink-0 items-center gap-3">
-        {!signedIn && (
-          <Link
-            to={href("/auth")}
-            className={cn("rounded-sm text-muted text-sm transition-colors hover:text-ink", FOCUS)}
-          >
-            Log in
-          </Link>
-        )}
-
         <Link
           to={signedIn ? href("/dash") : href("/terminal")}
           className={cn(
             "h-8 items-center rounded bg-accent-strong px-3 font-medium text-ink text-sm transition-colors hover:bg-accent-strong/85",
-            // Signed out it shares the row with the login link, which is enough
-            // on a narrow screen. Signed in it is the only thing there.
-            signedIn ? "inline-flex" : "hidden sm:inline-flex",
+            "inline-flex",
             FOCUS,
           )}
         >
