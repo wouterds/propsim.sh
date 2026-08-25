@@ -49,7 +49,10 @@ const NewsStrip = ({ at, titles }: Props) => {
       to={href("/calendar")}
       className="flex h-8 shrink-0 items-center gap-2 rounded-lg border border-down/25 bg-down/15 px-3 text-xs transition-colors hover:bg-down/25 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
     >
-      <span className="size-1.5 shrink-0 rounded-full bg-down" aria-hidden="true" />
+      <span className="relative flex size-1.5 shrink-0" aria-hidden="true">
+        <span className="absolute inline-flex size-full animate-ping rounded-full bg-down opacity-75" />
+        <span className="relative inline-flex size-full rounded-full bg-down" />
+      </span>
       <span className="shrink-0 font-medium text-down">Red folder news</span>
       <span className="truncate text-down/70">{titles.join(", ")}</span>
       <span className="ml-auto shrink-0 text-down/90 tabular">
