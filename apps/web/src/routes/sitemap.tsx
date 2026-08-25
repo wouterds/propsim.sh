@@ -7,6 +7,7 @@ const PAGES = [
   href("/"),
   href("/plans"),
   href("/rules"),
+  href("/leaderboards"),
   href("/red-folder-events"),
   href("/faq"),
   href("/feature-requests"),
