@@ -26,7 +26,9 @@ const Blotter = ({ positions, orders, last, point, className, onClose, onCancel 
   const counts: Record<Tab, number> = { positions: positions.length, orders: working };
 
   const tabs = (
-    <Tabs.List className="-ml-2 flex items-center gap-0.5">
+    // The selected tab is filled, so the fill is what lines up with the panel
+    // edge rather than the text inside it.
+    <Tabs.List className="flex items-center gap-0.5">
       {(["positions", "orders"] as const).map((name) => (
         <Tabs.Tab
           key={name}
