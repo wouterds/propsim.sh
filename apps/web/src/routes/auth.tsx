@@ -15,6 +15,7 @@ import { CODE_TTL_MINUTES, MIN_PASSWORD } from "~/lib/policy";
 import { safeReturn } from "~/lib/redirect.server";
 import { signIn } from "~/lib/sign-in.server";
 import { createUser, findUserByEmail } from "~/lib/users.server";
+import { cn } from "~/lib/utils";
 import { issueCode } from "~/lib/verifications.server";
 import type { Route } from "./+types/auth";
 
@@ -165,14 +166,19 @@ const Auth = ({ loaderData, actionData }: Route.ComponentProps) => {
           )}
         </div>
 
-        {mode === "login" && (
-          <Link
-            to={href("/forgot")}
-            className="mt-4 block animate-fade-in rounded-sm text-center text-faint text-xs transition-colors hover:text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
-          >
-            Forgot your password?
-          </Link>
-        )}
+        {/* Always here, so the card does not change height when the tab does.
+            Signing up just fades it out and takes it out of reach. */}
+        <Link
+          to={href("/forgot")}
+          aria-hidden={mode !== "login"}
+          tabIndex={mode === "login" ? undefined : -1}
+          className={cn(
+            "mt-4 block rounded-sm text-center text-faint text-xs transition duration-150 hover:text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent",
+            mode === "login" ? "opacity-100" : "pointer-events-none opacity-0",
+          )}
+        >
+          Forgot your password?
+        </Link>
       </div>
     </main>
   );
