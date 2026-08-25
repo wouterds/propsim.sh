@@ -4,22 +4,9 @@ permissions:
   contents: read
   packages: write
 
+# Manual only. A push to main is not a request to ship, and building an image
+# on every merge spends actions minutes on a deploy nobody asked for.
 on:
-  push:
-    branches: main
-    paths:
-      - .github/workflows/deploy.yml
-      - apps/**
-      - packages/**
-      - docker-compose.yml
-      - turbo.json
-      - package.json
-      - package-lock.json
-      # Both feed the image build. .dockerignore decides what reaches the COPY
-      # in the turbo stage, and .npmrc carries the engine-strict that makes the
-      # root manifest's npm range a hard gate on `npm ci`.
-      - .dockerignore
-      - .npmrc
   workflow_dispatch:
 
 concurrency:
