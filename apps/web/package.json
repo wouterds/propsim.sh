@@ -14,7 +14,9 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@propsim/database": "*",
     "@propsim/datasources": "*",
+    "@propsim/mail": "*",
     "@react-router/node": "^8.3.0",
     "@react-router/serve": "^8.3.0",
     "clsx": "^2.1.1",
@@ -28,6 +30,7 @@
   "devDependencies": {
     "@react-router/dev": "^8.3.0",
     "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.5",
     "tailwindcss": "^4.3.3",
