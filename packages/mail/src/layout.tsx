@@ -27,6 +27,7 @@ const DOWN = "#f43f5e";
 
 const body: CSSProperties = {
   backgroundColor: BASE,
+  height: "100%",
   color: INK,
   fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
   margin: 0,
@@ -189,6 +190,9 @@ export const Layout = ({ preview, footnote, to, children }: LayoutProps) => (
       {/* Without these a client treats the dark palette as light and inverts it. */}
       <meta name="color-scheme" content="dark" />
       <meta name="supported-color-schemes" content="dark" />
+      {/* The inline background stops where the content does. The page itself has
+          to carry it, or the client shows its own below the last row. */}
+      <style>{`html,body{margin:0!important;padding:0!important;height:100%!important;width:100%!important;background-color:${BASE}!important;}`}</style>
     </Head>
     <Preview>{preview}</Preview>
     <Body style={body}>
