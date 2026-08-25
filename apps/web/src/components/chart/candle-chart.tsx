@@ -157,8 +157,11 @@ const CandleChart = ({ candles, priceLines, bands, visibleBars, onHover }: Props
 
     const draw = () => {
       const scale = chart.timeScale();
+      const view = scale.getVisibleLogicalRange();
 
       layer.replaceChildren();
+
+      if (!view) return;
 
       for (const band of bands) {
         const from = logicalAt(times, band.from);
@@ -166,6 +169,10 @@ const CandleChart = ({ candles, priceLines, bands, visibleBars, onHover }: Props
         const middle = logicalAt(times, band.at);
 
         if (from === null || to === null || middle === null) continue;
+
+        // Asked for a bar it is not showing, the scale answers with a
+        // coordinate that means nothing, and the band lands against an edge.
+        if (to < view.from || from > view.to) continue;
 
         const left = scale.logicalToCoordinate(from as Logical);
         const right = scale.logicalToCoordinate(to as Logical);
