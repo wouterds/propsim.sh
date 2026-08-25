@@ -9,13 +9,13 @@ const COLUMNS = [
     links: [
       { to: href("/plans"), label: "Plans" },
       { to: href("/terminal"), label: "Terminal" },
+      { to: href("/rules"), label: "Rules" },
     ],
   },
   {
     title: "Learn",
     links: [
-      { to: href("/rules"), label: "Rules" },
-      { to: href("/calendar"), label: "Red folder" },
+      { to: href("/red-folder-events"), label: "Red folder" },
       { to: href("/faq"), label: "FAQ" },
       { to: href("/contact"), label: "Contact" },
     ],
