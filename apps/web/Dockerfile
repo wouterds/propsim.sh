@@ -1,4 +1,4 @@
-FROM node:24-alpine AS base
+FROM node:26-alpine AS base
 WORKDIR /code
 
 # Reduces the monorepo to just this app and whatever it depends on, so the rest
