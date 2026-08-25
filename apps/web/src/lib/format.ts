@@ -127,6 +127,22 @@ export const formatCountdown = (at: Date, now: Date) => {
   return RELATIVE.format(Math.max(1, Math.floor(until / size)), unit);
 };
 
+/**
+ * For something written rather than somebody last seen, which is why it says
+ * "just now" where formatRelative says "Active now".
+ */
+export const formatAgo = (at: Date, now: Date) => {
+  const since = now.getTime() - at.getTime();
+
+  if (since < 60_000) {
+    return "just now";
+  }
+
+  const [unit, size] = stepFor(since);
+
+  return RELATIVE.format(-Math.floor(since / size), unit);
+};
+
 const REGIONS = new Intl.DisplayNames(["en"], { type: "region" });
 
 const flagOf = (code: string) =>

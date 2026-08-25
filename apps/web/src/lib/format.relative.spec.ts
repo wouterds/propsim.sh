@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { countryOf, formatCountdown, formatRelative } from "./format";
+import { countryOf, formatAgo, formatCountdown, formatRelative } from "./format";
 
 const at = (iso: string) => new Date(iso);
 const NOW = at("2026-08-25T12:00:00Z");
@@ -53,5 +53,20 @@ describe("formatCountdown", () => {
   it("should hand a moment already gone back to the other one", () => {
     // then
     expect(formatCountdown(at("2026-08-25T09:00:00Z"), NOW)).toBe("3 hours ago");
+  });
+});
+
+describe("formatAgo", () => {
+  it("should say just now only until the first minute is up", () => {
+    // then
+    expect(formatAgo(at("2026-08-25T11:59:01Z"), NOW)).toBe("just now");
+    expect(formatAgo(at("2026-08-25T11:59:00Z"), NOW)).toBe("1 minute ago");
+  });
+
+  it("should keep counting where formatRelative would still say active", () => {
+    // given ninety seconds, which the other wording swallows
+    // then
+    expect(formatAgo(at("2026-08-25T11:58:30Z"), NOW)).toBe("1 minute ago");
+    expect(formatRelative(at("2026-08-25T11:58:30Z"), NOW)).toBe("Active now");
   });
 });
