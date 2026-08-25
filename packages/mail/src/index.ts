@@ -2,6 +2,10 @@ import { render, toPlainText } from "@react-email/components";
 import { createElement, type ReactElement } from "react";
 
 import { ConfirmCode } from "./emails/confirm-code";
+import { ConfirmNewEmail } from "./emails/confirm-new-email";
+import { EmailChanging } from "./emails/email-changing";
+import { PasswordChanged } from "./emails/password-changed";
+import { ResetPassword } from "./emails/reset-password";
 import { Welcome } from "./emails/welcome";
 import { send } from "./mailjet";
 
@@ -30,3 +34,35 @@ export const sendConfirmCode = ({
     "Confirm your email address",
     createElement(ConfirmCode, { to, code, expiresInMinutes }),
   );
+
+export const sendResetPassword = ({
+  to,
+  token,
+  expiresInMinutes,
+}: {
+  to: string;
+  token: string;
+  expiresInMinutes: number;
+}) =>
+  deliver(to, "Reset your password", createElement(ResetPassword, { to, token, expiresInMinutes }));
+
+export const sendPasswordChanged = ({ to }: { to: string }) =>
+  deliver(to, "Your password was changed", createElement(PasswordChanged, { to }));
+
+export const sendConfirmNewEmail = ({
+  to,
+  token,
+  expiresInMinutes,
+}: {
+  to: string;
+  token: string;
+  expiresInMinutes: number;
+}) =>
+  deliver(
+    to,
+    "Confirm your new address",
+    createElement(ConfirmNewEmail, { to, token, expiresInMinutes }),
+  );
+
+export const sendEmailChanging = ({ to, email }: { to: string; email: string }) =>
+  deliver(to, "A new address was requested", createElement(EmailChanging, { to, email }));
