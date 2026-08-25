@@ -1,5 +1,6 @@
+import { planOr } from "@propsim/plans";
 import { describe, expect, it } from "vitest";
-import { ACCOUNTS, combinedJournalOf } from "./accounts";
+import { type Account, combinedJournalOf } from "./accounts";
 import { concentrationOf, type JournalDay, winRateOf } from "./journal";
 
 const day = (pnl: number, trades = 1, wins = 0): JournalDay => ({
@@ -55,15 +56,27 @@ describe("concentrationOf", () => {
   });
 });
 
+const plan = planOr("daily-50k");
+
+const account = (journal: JournalDay[]): Account => ({
+  id: "spec",
+  name: "spec",
+  openedOn: "2026-08-01",
+  status: "live",
+  plan,
+  balance: plan.size,
+  equity: plan.size,
+  peakEquity: plan.size,
+  sessionOpenEquity: plan.size,
+  journal,
+});
+
 describe("combinedJournalOf", () => {
   it("should keep the worst verdict when two accounts traded the same day", () => {
     // given
     const accounts = [
-      { ...ACCOUNTS[0], journal: [{ ...day(100), date: "2026-08-25", verdict: "clean" as const }] },
-      {
-        ...ACCOUNTS[1],
-        journal: [{ ...day(-50), date: "2026-08-25", verdict: "breached" as const }],
-      },
+      account([{ ...day(100), date: "2026-08-25", verdict: "clean" }]),
+      account([{ ...day(-50), date: "2026-08-25", verdict: "breached" }]),
     ];
 
     // when
@@ -78,13 +91,10 @@ describe("combinedJournalOf", () => {
   it("should order the calendar newest first", () => {
     // given
     const accounts = [
-      {
-        ...ACCOUNTS[0],
-        journal: [
-          { ...day(10), date: "2026-08-19" },
-          { ...day(20), date: "2026-08-24" },
-        ],
-      },
+      account([
+        { ...day(10), date: "2026-08-19" },
+        { ...day(20), date: "2026-08-24" },
+      ]),
     ];
 
     // then

@@ -1,16 +1,30 @@
-import { lockedFloorOf, type Plan, planOr } from "@propsim/plans";
+import {
+  type AccountRules,
+  cents,
+  dailyFloorOf as dailyFloorCents,
+  targetOf as targetCents,
+  toDollars,
+  trailingFloorOf as trailingFloorCents,
+  type Verdict,
+} from "@propsim/engine";
+import type { Plan } from "@propsim/plans";
 import type { FloorTone } from "./format";
-import type { JournalDay, Verdict } from "./journal";
+import type { JournalDay } from "./journal";
 
 export type AccountStatus = "live" | "passed" | "breached";
 
+/**
+ * Read only, and in dollars. Every amount on it was added up in cents first,
+ * and the plan is the copy the account carries rather than the current catalog.
+ */
 export type Account = {
   id: string;
-  planId: string;
   name: string;
   openedOn: string;
   status: AccountStatus;
+  plan: Plan;
   balance: number;
+  equity: number;
   peakEquity: number;
   sessionOpenEquity: number;
   journal: JournalDay[];
@@ -24,113 +38,33 @@ export const STATUS_LABEL: Record<AccountStatus, string> = {
 
 export const STATUS_TONE = { live: "up", passed: "accent", breached: "down" } as const;
 
-const day = (
-  date: string,
-  trades: number,
-  wins: number,
-  worstDrawdown: number,
-  pnl: number,
-  verdict: JournalDay["verdict"] = "clean",
-): JournalDay => ({ date, trades, wins, worstDrawdown, pnl, verdict });
+export const planOf = (account: Account): Plan => account.plan;
 
-export const ACCOUNTS: Account[] = [
-  {
-    id: "a-50k-01",
-    planId: "daily-50k",
-    name: "50K Daily",
-    openedOn: "2026-08-10",
-    status: "live",
-    balance: 51_284,
-    peakEquity: 51_640,
-    sessionOpenEquity: 51_002,
-    journal: [
-      day("2026-08-25", 6, 4, -412, 282, "watch"),
-      day("2026-08-24", 4, 3, -138, 466),
-      day("2026-08-21", 9, 4, -806, -324, "watch"),
-      day("2026-08-20", 3, 2, -92, 178),
-      day("2026-08-19", 7, 5, -244, 391),
-      day("2026-08-18", 5, 2, -520, -210),
-      day("2026-08-17", 4, 3, -117, 501),
-    ],
-  },
-  {
-    id: "a-25k-01",
-    planId: "daily-25k",
-    name: "25K Daily",
-    openedOn: "2026-08-18",
-    status: "live",
-    balance: 24_661.5,
-    peakEquity: 25_182,
-    sessionOpenEquity: 24_914,
-    journal: [
-      day("2026-08-25", 5, 2, -318, -252.5, "watch"),
-      day("2026-08-24", 4, 3, -96, 160),
-      day("2026-08-21", 9, 3, -588, -428, "watch"),
-      day("2026-08-20", 3, 2, -74.5, 101.5),
-      day("2026-08-19", 7, 4, -409, -181.5),
-      day("2026-08-18", 5, 3, -122, 262),
-    ],
-  },
-  {
-    id: "a-100k-01",
-    planId: "daily-100k",
-    name: "100K Daily",
-    openedOn: "2026-07-28",
-    status: "breached",
-    balance: 96_820,
-    peakEquity: 99_820,
-    sessionOpenEquity: 99_140,
-    journal: [
-      day("2026-08-14", 11, 3, -3_140, -2_320, "breached"),
-      day("2026-08-13", 6, 4, -410, 512),
-      day("2026-08-12", 4, 1, -880, -640),
-      day("2026-08-11", 5, 4, -190, 728),
-    ],
-  },
-  {
-    id: "a-50k-00",
-    planId: "daily-50k",
-    name: "50K Daily",
-    openedOn: "2026-07-06",
-    status: "passed",
-    balance: 53_140,
-    peakEquity: 53_140,
-    sessionOpenEquity: 53_140,
-    journal: [
-      day("2026-07-24", 5, 4, -180, 604),
-      day("2026-07-23", 6, 4, -320, 442),
-      day("2026-07-22", 4, 3, -96, 388),
-      day("2026-07-21", 7, 4, -540, -212),
-    ],
-  },
-];
-
-export const planOf = (account: Account): Plan => planOr(account.planId);
-
-export const findAccount = (id: string | undefined) =>
-  ACCOUNTS.find((account) => account.id === id) ?? null;
-
-export const liveAccounts = () => ACCOUNTS.filter((account) => account.status === "live");
+const rulesOf = (account: Account): AccountRules => ({
+  startingBalanceCents: cents(account.plan.size),
+  profitTargetCents: cents(account.plan.profitTarget),
+  trailingDrawdownCents: cents(account.plan.trailingDrawdown),
+  dailyLossLimitCents: cents(account.plan.dailyLossLimit),
+  lockAboveStartCents: cents(account.plan.lockAboveStart),
+});
 
 /** The soft floor is measured from the day's open and resets with the session. */
 export const dailyFloorOf = (account: Account) =>
-  account.sessionOpenEquity - planOf(account).dailyLossLimit;
+  toDollars(dailyFloorCents(rulesOf(account), cents(account.sessionOpenEquity)));
 
 /**
  * The hard floor is measured from peak equity and only rises. It stops
  * following a new peak once it reaches the locked floor, and never moves again.
  */
-export const trailingFloorOf = (account: Account) => {
-  const plan = planOf(account);
+export const trailingFloorOf = (account: Account) =>
+  toDollars(trailingFloorCents(rulesOf(account), cents(account.peakEquity)));
 
-  return Math.min(account.peakEquity - plan.trailingDrawdown, lockedFloorOf(plan));
-};
+export const targetOf = (account: Account) => toDollars(targetCents(rulesOf(account)));
 
-export const targetOf = (account: Account) => planOf(account).size + planOf(account).profitTarget;
+export const netPnlOf = (account: Account) => account.balance - account.plan.size;
 
-export const netPnlOf = (account: Account) => account.balance - planOf(account).size;
-
-export const dayPnlOf = (account: Account) => account.balance - account.sessionOpenEquity;
+/** Equity, not balance: an open position counts against the session as it moves. */
+export const dayPnlOf = (account: Account) => account.equity - account.sessionOpenEquity;
 
 export const roomLeftOf = (equity: number, floor: number, limit: number) =>
   Math.min(1, Math.max(0, (equity - floor) / limit));
@@ -146,7 +80,7 @@ export const totalsOf = (accounts: Account[]) => ({
   accounts: accounts.length,
   live: accounts.filter((account) => account.status === "live").length,
   balance: accounts.reduce((total, account) => total + account.balance, 0),
-  allocated: accounts.reduce((total, account) => total + planOf(account).size, 0),
+  allocated: accounts.reduce((total, account) => total + account.plan.size, 0),
   netPnl: accounts.reduce((total, account) => total + netPnlOf(account), 0),
   dayPnl: accounts
     .filter((account) => account.status === "live")
@@ -183,31 +117,4 @@ export const combinedJournalOf = (accounts: Account[]): JournalDay[] => {
   }
 
   return [...byDate.values()].sort((a, b) => b.date.localeCompare(a.date));
-};
-
-let created = 0;
-
-/**
- * In memory only, so a new account lives until the server restarts. It is
- * enough to walk the flow while the shape of an account is still being decided.
- */
-export const createAccount = (planId: string, openedOn: string): Account => {
-  const plan = planOr(planId);
-  created += 1;
-
-  const account: Account = {
-    id: `${plan.id}-${created}`,
-    planId: plan.id,
-    name: `${plan.label} Daily`,
-    openedOn,
-    status: "live",
-    balance: plan.size,
-    peakEquity: plan.size,
-    sessionOpenEquity: plan.size,
-    journal: [],
-  };
-
-  ACCOUNTS.unshift(account);
-
-  return account;
 };

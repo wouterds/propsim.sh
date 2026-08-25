@@ -1,4 +1,4 @@
-export type Verdict = "clean" | "watch" | "breached";
+import type { Verdict } from "@propsim/engine";
 
 export const VERDICT_TONE = { clean: "up", watch: "warn", breached: "down" } as const;
 
