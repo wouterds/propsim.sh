@@ -1,6 +1,7 @@
-import { type Candle, getCandles, getNewsEvents, isRedFolder } from "@propsim/datasources";
+import { type Candle, getCandles } from "@propsim/datasources";
 import { useEffect, useMemo, useState } from "react";
 import { data, useNavigate, useSearchParams } from "react-router";
+import NewsStrip from "~/components/app/news-strip";
 import type { ChartBar, ChartPriceLine } from "~/components/chart/candle-chart";
 import CandleChart from "~/components/chart/candle-chart";
 import ChartHeader from "~/components/chart/chart-header";
@@ -14,9 +15,12 @@ import { barsPerDay, parseTimeframe, rangeFor } from "~/components/trading/timef
 import TradePanel from "~/components/trading/trade-panel";
 import { usePaperTrading } from "~/components/trading/use-paper-trading";
 import { findAccount } from "~/lib/accounts";
-import { activeWindow, windowsOf } from "~/lib/blackout";
+import { activeWindow, nextWindow } from "~/lib/blackout";
 import { chartPrefs, readChartPrefs } from "~/lib/chart-prefs.server";
+import { redFolderWindows } from "~/lib/news.server";
 import type { Route } from "./+types/terminal";
+
+const DAY = 24 * 60 * 60 * 1000;
 
 export const meta: Route.MetaFunction = ({ loaderData }) => [
   {
@@ -41,8 +45,11 @@ export const loader = async ({ url, params, request }: Route.LoaderArgs) => {
     "Set-Cookie": await chartPrefs.serialize({ s: instrument.code, tf: timeframe }),
   };
 
-  const news = (await getNewsEvents()).filter(isRedFolder);
-  const windows = windowsOf(news.map((event) => ({ time: event.time, title: event.title })));
+  const windows = await redFolderWindows();
+
+  // Only once it is inside a day. Further out it is the calendar's job.
+  const next = nextWindow(windows, Date.now());
+  const upcoming = next && next.at - Date.now() < DAY ? { at: next.at, titles: next.titles } : null;
 
   try {
     const candles = await getCandles({
@@ -51,21 +58,24 @@ export const loader = async ({ url, params, request }: Route.LoaderArgs) => {
       range: rangeFor(timeframe),
     });
 
-    return data({ account, instrument, timeframe, candles, windows, error: null }, { headers });
+    return data(
+      { account, instrument, timeframe, candles, windows, upcoming, error: null },
+      { headers },
+    );
   } catch (cause) {
     // Caught, not rethrown. An error boundary would take the ticket and the
     // blotter down with the chart.
     const error = cause instanceof Error ? cause.message : "the price feed did not answer";
 
     return data(
-      { account, instrument, timeframe, candles: [] as Candle[], windows, error },
+      { account, instrument, timeframe, candles: [] as Candle[], windows, upcoming, error },
       { headers },
     );
   }
 };
 
 const Trading = ({ loaderData }: Route.ComponentProps) => {
-  const { account, instrument, timeframe, candles, windows, error } = loaderData;
+  const { account, instrument, timeframe, candles, windows, upcoming, error } = loaderData;
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const [hovered, setHovered] = useState<ChartBar | null>(null);
@@ -138,8 +148,10 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
     <main className="flex flex-col gap-2 p-2 lg:min-h-0 lg:flex-1 lg:overflow-hidden">
       <h1 className="sr-only">{`Terminal, ${account.name}`}</h1>
 
-      {blackout && now !== null && (
+      {blackout && now !== null ? (
         <NewsBanner titles={blackout.titles} endsIn={Math.ceil((blackout.to - now) / 1000)} />
+      ) : (
+        upcoming && <NewsStrip at={upcoming.at} titles={upcoming.titles} />
       )}
       <AccountStrip
         balance={book.balance}

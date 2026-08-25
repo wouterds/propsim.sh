@@ -1,7 +1,6 @@
 import { Dialog } from "@base-ui/react/dialog";
 import { type ReactNode, useState } from "react";
 import { href, Link } from "react-router";
-import NewsStrip from "~/components/app/news-strip";
 import SidebarNav from "~/components/app/sidebar-nav";
 import Brand from "~/components/layout/brand";
 import SiteFooter from "~/components/layout/site-footer";
@@ -10,8 +9,6 @@ import type { Account } from "~/lib/accounts";
 type Props = {
   accounts: Account[];
   email: string;
-  /** The next red folder release, when it is inside a day. */
-  upcoming: { at: number; titles: string[] } | null;
   children: ReactNode;
 };
 
@@ -29,13 +26,11 @@ const MenuIcon = () => (
   </svg>
 );
 
-const AppShell = ({ accounts, email, upcoming, children }: Props) => {
+const AppShell = ({ accounts, email, children }: Props) => {
   const [open, setOpen] = useState(false);
 
   return (
     <div className="flex h-dvh flex-col">
-      {upcoming && <NewsStrip at={upcoming.at} titles={upcoming.titles} />}
-
       <div className="flex min-h-0 flex-1">
         <aside className="hidden w-60 shrink-0 border-line border-r bg-raised lg:block">
           <SidebarNav accounts={accounts} email={email} />
