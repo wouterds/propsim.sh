@@ -1,6 +1,6 @@
 const ENDPOINT = "https://api.mailjet.com/v3.1/send";
 
-const FROM = "noreply@propsim.sh";
+const FROM = { Email: "noreply@propsim.sh", Name: "propsim.sh" };
 
 const TIMEOUT = 10_000;
 
@@ -63,7 +63,7 @@ export const send = async (message: Message) => {
     body: JSON.stringify({
       Messages: [
         {
-          From: { Email: FROM },
+          From: FROM,
           To: [{ Email: message.to }],
           Subject: message.subject,
           TextPart: message.text,
@@ -76,7 +76,7 @@ export const send = async (message: Message) => {
 
   // A timeout rejects fetch itself, with a message that names neither address.
   const response = await fetch(ENDPOINT, request).catch((error: Error) => {
-    throw new Error(`Mailjet unreachable for ${message.to} from ${FROM}: ${error.message}`);
+    throw new Error(`Mailjet unreachable for ${message.to} from ${FROM.Email}: ${error.message}`);
   });
 
   const payload = (await response.json().catch(() => null)) as SendPayload | null;
@@ -85,7 +85,7 @@ export const send = async (message: Message) => {
   // answers an auth failure with no Messages at all. The status alone is not the answer.
   if (payload?.Messages?.[0]?.Status !== "success") {
     throw new Error(
-      `Mailjet responded ${response.status} for ${message.to} from ${FROM}: ${reason(payload)}`,
+      `Mailjet responded ${response.status} for ${message.to} from ${FROM.Email}: ${reason(payload)}`,
     );
   }
 };

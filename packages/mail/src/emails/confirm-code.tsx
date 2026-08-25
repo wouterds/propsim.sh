@@ -9,13 +9,15 @@ export type ConfirmCodeProps = {
 export const ConfirmCode = ({ code, expiresInMinutes }: ConfirmCodeProps) => (
   // The preview line feeds the inbox list and iOS autofill, but it is stripped from
   // the plain text part. Keep the code in the body text as well.
-  <Layout preview={`${code} is your propsim confirmation code`}>
-    <Heading style={heading}>Confirm your email</Heading>
-    <Text style={paragraph}>Enter this code to confirm your address:</Text>
+  <Layout
+    preview={`${code} is your propsim confirmation code`}
+    footnote="If you did not create a propsim account, you can ignore this email."
+  >
+    <Heading style={heading}>Confirm your email address</Heading>
+    <Text style={paragraph}>Enter this code to finish creating your account.</Text>
     <Text style={digits}>{code}</Text>
     <Text style={paragraph}>
-      The code expires in {expiresInMinutes} minutes and works one time. If you did not create a
-      propsim account, ignore this mail.
+      The code expires in {expiresInMinutes} minutes and can be used once.
     </Text>
   </Layout>
 );

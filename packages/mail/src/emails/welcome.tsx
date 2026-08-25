@@ -1,16 +1,22 @@
 import { Button, Heading, Text } from "@react-email/components";
-import { button, heading, Layout, paragraph } from "../layout";
+import { button, heading, Layout, paragraph, SITE } from "../layout";
 
 export const Welcome = () => (
-  <Layout preview="Your propsim account is ready.">
-    <Heading style={heading}>Welcome to propsim</Heading>
+  <Layout
+    preview="Your propsim account is ready."
+    footnote="You are receiving this because you created a propsim account."
+  >
+    <Heading style={heading}>Your account is ready</Heading>
     <Text style={paragraph}>
-      Your account is ready. propsim trades a live futures tape against a prop firm's account rules,
-      so the rules that end a funded account cost nothing to meet.
+      propsim gives you a simulated futures account with a prop firm's rules on it. You trade live
+      market data on a short delay, and every fill runs against a daily loss limit and a trailing
+      drawdown.
     </Text>
-    <Text style={paragraph}>Nothing is ordered and no money is at stake.</Text>
-    <Button style={button} href="https://propsim.sh/dashboard">
-      Open the dashboard
+    <Text style={paragraph}>
+      Your dashboard shows the balance, both limits, and how much room is left against them.
+    </Text>
+    <Button style={button} href={`${SITE}/dash`}>
+      Open your dashboard
     </Button>
   </Layout>
 );

@@ -1,57 +1,108 @@
-import { Body, Container, Head, Html, Preview, Text } from "@react-email/components";
+import {
+  Body,
+  Container,
+  Head,
+  Hr,
+  Html,
+  Link,
+  Preview,
+  Section,
+  Text,
+} from "@react-email/components";
 import type { CSSProperties, ReactNode } from "react";
 
+export const SITE = "https://propsim.sh";
+
+// The app palette. An email that does not look like the product it came from
+// reads as a phishing attempt.
+const INK = "#e6eaf0";
+const MUTED = "#98a1b2";
+const FAINT = "#7b8493";
+const BASE = "#0a0b0d";
+const RAISED = "#101216";
+const LINE = "#22262d";
+const ACCENT = "#ffffff";
+
 const body: CSSProperties = {
-  backgroundColor: "#09090b",
-  color: "#e4e4e7",
+  backgroundColor: BASE,
+  color: INK,
   fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
   margin: 0,
-  padding: "32px 0",
+  padding: "32px 12px",
 };
 
 const container: CSSProperties = {
-  backgroundColor: "#18181b",
-  border: "1px solid #27272a",
-  borderRadius: "8px",
+  backgroundColor: RAISED,
+  border: `1px solid ${LINE}`,
+  borderRadius: "12px",
   margin: "0 auto",
   maxWidth: "480px",
   padding: "32px",
 };
 
+const wordmark: CSSProperties = {
+  color: INK,
+  fontSize: "15px",
+  fontWeight: 600,
+  letterSpacing: "-0.01em",
+  margin: "0 0 28px",
+};
+
+const suffix: CSSProperties = {
+  color: FAINT,
+};
+
+const rule: CSSProperties = {
+  border: "none",
+  borderTop: `1px solid ${LINE}`,
+  margin: "32px 0 20px",
+};
+
 const footer: CSSProperties = {
-  color: "#52525b",
-  fontSize: "13px",
-  margin: "24px 0 0",
+  color: FAINT,
+  fontSize: "12px",
+  lineHeight: "18px",
+  margin: 0,
+};
+
+const footerLink: CSSProperties = {
+  color: FAINT,
+  textDecoration: "underline",
 };
 
 export const heading: CSSProperties = {
-  color: "#fafafa",
-  fontSize: "22px",
+  color: INK,
+  fontSize: "20px",
   fontWeight: 600,
+  lineHeight: "28px",
   margin: "0 0 16px",
 };
 
 export const paragraph: CSSProperties = {
-  color: "#a1a1aa",
+  color: MUTED,
   fontSize: "15px",
   lineHeight: "24px",
   margin: "0 0 16px",
 };
 
 export const digits: CSSProperties = {
-  color: "#fafafa",
+  backgroundColor: BASE,
+  border: `1px solid ${LINE}`,
+  borderRadius: "8px",
+  color: INK,
   fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-  fontSize: "34px",
+  fontSize: "32px",
   fontWeight: 700,
-  letterSpacing: "8px",
-  margin: "0 0 16px",
+  letterSpacing: "10px",
+  margin: "0 0 20px",
+  padding: "16px 0",
   textAlign: "center",
 };
 
 export const button: CSSProperties = {
-  backgroundColor: "#fafafa",
+  backgroundColor: ACCENT,
   borderRadius: "6px",
-  color: "#09090b",
+  color: BASE,
   display: "inline-block",
   fontSize: "15px",
   fontWeight: 600,
@@ -61,17 +112,33 @@ export const button: CSSProperties = {
 
 type LayoutProps = {
   preview: string;
+  footnote: string;
   children: ReactNode;
 };
 
-export const Layout = ({ preview, children }: LayoutProps) => (
+export const Layout = ({ preview, footnote, children }: LayoutProps) => (
   <Html lang="en">
     <Head />
     <Preview>{preview}</Preview>
     <Body style={body}>
       <Container style={container}>
+        <Text style={wordmark}>
+          propsim<span style={suffix}>.sh</span>
+        </Text>
+
         {children}
-        <Text style={footer}>propsim.sh</Text>
+
+        <Section>
+          <Hr style={rule} />
+          <Text style={footer}>
+            {footnote}
+            <br />
+            propsim is a trading simulator. Nothing is ordered and no money is at stake.{" "}
+            <Link href={SITE} style={footerLink}>
+              propsim.sh
+            </Link>
+          </Text>
+        </Section>
       </Container>
     </Body>
   </Html>
