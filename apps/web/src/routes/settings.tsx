@@ -4,7 +4,7 @@ import {
   sendEmailChanging,
   sendPasswordChanged,
 } from "@propsim/mail";
-import { data, Form, useNavigation } from "react-router";
+import { data, Form, href, Link, useNavigation } from "react-router";
 import DeleteAccount from "~/components/settings/delete-account";
 import Field from "~/components/settings/field";
 import Notice from "~/components/settings/notice";
@@ -53,7 +53,11 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
   const now = new Date();
   const rows = await listSessions(session.userId);
 
-  return { email: user.email, sessions: rows.map((row) => asRow(row, session.id, now)) };
+  return {
+    email: user.email,
+    hasPassword: user.password !== null,
+    sessions: rows.map((row) => asRow(row, session.id, now)),
+  };
 };
 
 export const action = async ({ request }: Route.ActionArgs) => {
@@ -77,6 +81,11 @@ export const action = async ({ request }: Route.ActionArgs) => {
 
     if (next !== String(form.get("confirm") ?? "")) {
       return { done: null, error: "The two new passwords do not match." };
+    }
+
+    // Google only, so there is nothing to check against and nothing to change.
+    if (!user.password) {
+      return { done: null, error: "This account has no password. Set one from the reset link." };
     }
 
     if (!(await verifyPassword(current, user.password))) {
@@ -114,7 +123,9 @@ export const action = async ({ request }: Route.ActionArgs) => {
       return { done: null, error: "The two addresses do not match." };
     }
 
-    if (!(await verifyPassword(current, user.password))) {
+    // An account with no password is asked for none: the session is what says
+    // who this is, and the new address still has to confirm by link.
+    if (user.password && !(await verifyPassword(current, user.password))) {
       return { done: null, error: "That is not your current password." };
     }
 
@@ -172,7 +183,7 @@ export const action = async ({ request }: Route.ActionArgs) => {
 const Settings = ({ loaderData, actionData }: Route.ComponentProps) => {
   const navigation = useNavigation();
   const busy = navigation.state !== "idle";
-  const { email, sessions } = loaderData;
+  const { email, hasPassword, sessions } = loaderData;
   const others = sessions.filter((session) => !session.current).length;
 
   return (
@@ -191,16 +202,20 @@ const Settings = ({ loaderData, actionData }: Route.ComponentProps) => {
             <input type="hidden" name="intent" value="email" />
             <Field name="email" label="New address" type="email" autoComplete="email" />
             <Field name="confirm" label="Confirm new address" type="email" autoComplete="off" />
-            <Field
-              name="current"
-              label="Current password"
-              type="password"
-              autoComplete="current-password"
-            />
-            <div className="hidden sm:block" />
+            {hasPassword && (
+              <>
+                <Field
+                  name="current"
+                  label="Current password"
+                  type="password"
+                  autoComplete="current-password"
+                />
+                <div className="hidden sm:block" />
+              </>
+            )}
             <div className="sm:col-span-2">
               <button type="submit" disabled={busy} className={PRIMARY_SM}>
-                {busy ? "One moment" : "Send the confirmation"}
+                {busy ? "One moment" : "Send the link"}
               </button>
             </div>
           </Form>
@@ -208,37 +223,53 @@ const Settings = ({ loaderData, actionData }: Route.ComponentProps) => {
 
         <Section
           title="Password"
-          description="Changing it signs out every other device. This one stays signed in."
+          description={
+            hasPassword
+              ? "Changing it signs out every other device. This one stays signed in."
+              : "This account signs in with Google, so there is no password on it."
+          }
         >
-          <Form method="post" className="grid gap-4 sm:grid-cols-2">
-            <input type="hidden" name="intent" value="password" />
-            <Field
-              name="password"
-              label="New password"
-              type="password"
-              autoComplete="new-password"
-              minLength={MIN_PASSWORD}
-            />
-            <Field
-              name="confirm"
-              label="Confirm new password"
-              type="password"
-              autoComplete="new-password"
-              minLength={MIN_PASSWORD}
-            />
-            <Field
-              name="current"
-              label="Current password"
-              type="password"
-              autoComplete="current-password"
-            />
-            <div className="hidden sm:block" />
-            <div className="sm:col-span-2">
-              <button type="submit" disabled={busy} className={PRIMARY_SM}>
-                {busy ? "One moment" : "Change the password"}
-              </button>
-            </div>
-          </Form>
+          {hasPassword ? (
+            <Form method="post" className="grid gap-4 sm:grid-cols-2">
+              <input type="hidden" name="intent" value="password" />
+              <Field
+                name="password"
+                label="New password"
+                type="password"
+                autoComplete="new-password"
+                minLength={MIN_PASSWORD}
+              />
+              <Field
+                name="confirm"
+                label="Confirm new password"
+                type="password"
+                autoComplete="new-password"
+                minLength={MIN_PASSWORD}
+              />
+              <Field
+                name="current"
+                label="Current password"
+                type="password"
+                autoComplete="current-password"
+              />
+              <div className="hidden sm:block" />
+              <div className="sm:col-span-2">
+                <button type="submit" disabled={busy} className={PRIMARY_SM}>
+                  {busy ? "One moment" : "Change the password"}
+                </button>
+              </div>
+            </Form>
+          ) : (
+            <>
+              <p className="text-muted text-sm leading-relaxed">
+                Sending yourself a reset link is how you set one. After that you can sign in either
+                way.
+              </p>
+              <Link to={href("/forgot")} className={`mt-4 ${SECONDARY_SM}`}>
+                Set a password
+              </Link>
+            </>
+          )}
         </Section>
 
         <Section

@@ -1,8 +1,6 @@
 import { href, redirect } from "react-router";
 import { handoff, readGoogleUser } from "~/lib/google.server";
-import { hashPassword } from "~/lib/password.server";
 import { signIn } from "~/lib/sign-in.server";
-import { newToken } from "~/lib/token.server";
 import { createUser, findUserByEmail, markEmailVerified } from "~/lib/users.server";
 import type { Route } from "./+types/google-callback";
 
@@ -46,9 +44,9 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
     return signIn(request, existing, sent.back ?? null);
   }
 
-  // Signing in with Google when there is no account signs you up. There is no
-  // password to set, so an unguessable one stands in until a reset replaces it.
-  const id = await createUser(google.email, await hashPassword(newToken()));
+  // Signing in with Google when there is no account signs you up, and no
+  // password is set. The reset flow is how one is added later.
+  const id = await createUser(google.email, null);
   await markEmailVerified(id);
 
   return signIn(request, { id, email: google.email }, sent.back ?? null);

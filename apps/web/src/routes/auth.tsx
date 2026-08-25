@@ -96,6 +96,14 @@ export const action = async ({ request }: Route.ActionArgs) => {
     return { error: REFUSED };
   }
 
+  // Google only, so there is nothing to check against. Hashed anyway, or the
+  // reply says which accounts have a password on them.
+  if (!user.password) {
+    await hashPassword(password);
+
+    return { error: REFUSED };
+  }
+
   if (!(await verifyPassword(password, user.password))) {
     return { error: REFUSED };
   }

@@ -12,7 +12,9 @@ export const users = mysqlTable(
       .primaryKey()
       .$defaultFn(() => UUIDv7()),
     email: varchar("email", { length: 255 }).notNull(),
-    password: varchar("password", { length: 255 }).notNull(),
+    // Null on an account that only ever signed in with Google. The reset flow
+    // is how one gets a password later.
+    password: varchar("password", { length: 255 }),
     verifiedEmailAt: timestamp("verified_email_at"),
     // Set when the person deletes the account. The row stays, emptied of them.
     deletedAt: timestamp("deleted_at"),
