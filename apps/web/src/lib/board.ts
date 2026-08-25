@@ -21,7 +21,7 @@ const slugify = (title: string) =>
 export const featurePath = (id: string, title: string) => {
   const slug = slugify(title);
 
-  return slug ? `/features/${id}-${slug}` : `/features/${id}`;
+  return slug ? `/feature-requests/${id}-${slug}` : `/feature-requests/${id}`;
 };
 
 /** The id back out of that address, or nothing when it was never one of ours. */

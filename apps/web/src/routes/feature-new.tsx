@@ -48,7 +48,7 @@ const NewFeature = ({ actionData }: Route.ComponentProps) => {
       open
       onOpenChange={(open) => {
         if (!open) {
-          navigate(href("/features"));
+          navigate(href("/feature-requests"));
         }
       }}
     >

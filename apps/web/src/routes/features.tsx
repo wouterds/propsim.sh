@@ -13,7 +13,7 @@ export const meta: Route.MetaFunction = () =>
     title: "Feature requests, propsim.sh",
     description:
       "What people want the simulator to do next, in the order they want it. Vote on a request or add one.",
-    path: "/features",
+    path: "/feature-requests",
   });
 
 export const loader = async ({ request }: Route.LoaderArgs) => {
@@ -36,7 +36,7 @@ export const action = async ({ request }: Route.ActionArgs) => {
 
 const Features = ({ loaderData }: Route.ComponentProps) => {
   const { features, signedIn } = loaderData;
-  const board = href("/features");
+  const board = href("/feature-requests");
 
   return (
     <>
@@ -59,8 +59,8 @@ const Features = ({ loaderData }: Route.ComponentProps) => {
               <Link
                 to={
                   signedIn
-                    ? href("/features/new")
-                    : `/auth?r=${encodeURIComponent("/features/new")}`
+                    ? href("/feature-requests/new")
+                    : `/auth?r=${encodeURIComponent("/feature-requests/new")}`
                 }
                 className={PRIMARY_SM}
               >

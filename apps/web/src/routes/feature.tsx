@@ -37,7 +37,7 @@ export const loader = async ({ request, params }: Route.LoaderArgs) => {
 
   // A reworded title leaves the old address in circulation. One canonical page
   // rather than a second copy of it under every title it ever had.
-  if (path !== `/features/${params.slug}`) {
+  if (path !== `/feature-requests/${params.slug}`) {
     throw redirect(path);
   }
 
@@ -117,7 +117,7 @@ export const action = async ({ request, params }: Route.ActionArgs) => {
   // under, so the thread cannot grow a third rail.
   await createComment(id, userId, body, parent ? (parent.parentId ?? parent.id) : null);
 
-  return redirect(`/features/${params.slug}`);
+  return redirect(`/feature-requests/${params.slug}`);
 };
 
 const QUIET_LINK =
@@ -136,7 +136,10 @@ const Feature = ({ loaderData, actionData }: Route.ComponentProps) => {
     <section className="border-line/70 border-b">
       <div className="mx-auto max-w-6xl px-5 py-20 sm:px-8">
         <div className="max-w-3xl">
-          <Link to={href("/features")} className={`inline-flex items-center gap-1 ${QUIET_LINK}`}>
+          <Link
+            to={href("/feature-requests")}
+            className={`inline-flex items-center gap-1 ${QUIET_LINK}`}
+          >
             <ChevronLeft aria-hidden="true" className="size-3.5" strokeWidth={1.5} />
             Feature requests
           </Link>
