@@ -1,7 +1,10 @@
 # AGENTS.md
 
-Prop trading simulator. Replays a futures session against a prop firm's account rules, so the same
-session can be traded twice and the two runs compared. Nothing is live and nothing is ordered.
+Prop trading simulator. Trades a live futures tape, a few minutes delayed, against a prop firm's
+account rules, so the rules that end a funded account can be met for nothing. Nothing is ordered and
+no money is at stake.
+
+It is **not** a replay tool. A stored session is a test fixture here, not the product.
 
 ## Guiding Principle
 
@@ -35,8 +38,9 @@ The root manifest holds the toolchain only. Everything an app needs at runtime l
 a feed. Whatever produced the fills, stored bars or a delayed live tape, the engine cannot tell and
 must not care.
 
-That is what makes replay free rather than a second implementation, so anything that couples the
-engine to where its input came from is the change to refuse.
+That is what lets the same code judge a delayed live tick and a stored bar, so the rules are
+testable from a literal array of fills rather than only observable in a running session. Anything
+that couples the engine to where its input came from is the change to refuse.
 
 ## Critical Rules
 
