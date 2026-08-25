@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { activeWindow, windowsOf } from "./blackout";
+import { activeWindow, nextWindow, windowsOf } from "./blackout";
 
 const at = (iso: string) => new Date(iso).getTime();
 const NFP = at("2026-09-04T12:30:00Z");
@@ -67,5 +67,23 @@ describe("activeWindow", () => {
     // then
     expect(activeWindow(windows, NFP - 60_001)).toBeNull();
     expect(activeWindow(windows, NFP + 60_001)).toBeNull();
+  });
+});
+
+describe("nextWindow", () => {
+  it("should skip a window already open", () => {
+    // given one running now and one later
+    const windows = windowsOf([
+      { time: NFP, title: "NFP" },
+      { time: NFP + 3_600_000, title: "FOMC" },
+    ]);
+
+    // then
+    expect(nextWindow(windows, NFP)?.titles).toEqual(["FOMC"]);
+  });
+
+  it("should give nothing back once the calendar is spent", () => {
+    // then
+    expect(nextWindow(windowsOf([{ time: NFP, title: "NFP" }]), NFP + 86_400_000)).toBeNull();
   });
 });

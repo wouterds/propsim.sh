@@ -6,6 +6,8 @@ export default [
     route("plans", "routes/plans.tsx"),
     route("rules", "routes/rules.tsx"),
     route("faq", "routes/faq.tsx"),
+    route("calendar", "routes/calendar.tsx"),
+    route("contact", "routes/contact.tsx"),
   ]),
 
   route("auth", "routes/auth.tsx"),
@@ -24,6 +26,7 @@ export default [
     route("accounts/new", "routes/account-new.tsx"),
     route("accounts/:id", "routes/account.tsx"),
     route("accounts/:id/journal", "routes/account-journal.tsx"),
+    route("accounts/:id/journal/:date", "routes/account-day.tsx"),
     route("accounts/:id/terminal", "routes/terminal.tsx"),
     route("terminal", "routes/terminal-redirect.tsx"),
   ]),
