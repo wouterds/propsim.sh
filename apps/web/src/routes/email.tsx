@@ -9,8 +9,7 @@ export const meta: Route.MetaFunction = () => [{ title: "Confirm your address, p
 
 const tokenOf = (request: Request) => new URL(request.url).searchParams.get("token") ?? "";
 
-// Nothing is consumed by opening the link. A mail scanner follows links, and a
-// scanner must not be able to move somebody's account.
+// Opening the link consumes nothing. A mail scanner must not move an account.
 export const loader = ({ request }: Route.LoaderArgs) => ({ token: tokenOf(request) });
 
 export const action = async ({ request }: Route.ActionArgs) => {

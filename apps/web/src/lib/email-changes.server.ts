@@ -5,7 +5,6 @@ import { hashToken, newToken } from "./token.server";
 
 const minutes = (count: number) => count * 60 * 1000;
 
-/** Held here until the new address answers, so the account keeps the old one. */
 export const issueEmailChange = async (userId: string, email: string) => {
   const token = newToken();
   const row = {

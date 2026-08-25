@@ -5,8 +5,7 @@ import { UUIDv7, uuid } from "./types/uuid";
 export type EmailChange = typeof emailChanges.$inferSelect;
 export type EmailChangeInsert = typeof emailChanges.$inferInsert;
 
-// The address only moves once the new one answers, so it is held here rather
-// than written to the user.
+// Held here until the new address answers, so the account keeps the old one.
 export const emailChanges = mysqlTable(
   "email_changes",
   {

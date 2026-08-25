@@ -6,16 +6,12 @@ import { hashToken, newToken } from "./token.server";
 
 export type RevokeReason = NonNullable<Session["revokedReason"]>;
 
-// A session dies of old age even if it is used daily, so a token that leaked
-// cannot be kept alive forever by using it. NIST puts the ceiling for a
-// password-only account at 30 days.
+// A leaked token cannot be kept alive by being used.
 const LIFETIME_DAYS = 30;
 
-// And it dies of neglect, which is what closes the laptop somebody sold.
 const IDLE_DAYS = 14;
 
-// `last_seen_at` drives a line of text. Writing it on every navigation costs a
-// row update per request and buys nothing.
+// It drives a line of text, so it is not worth a row update per request.
 const TOUCH_AFTER_MINUTES = 5;
 
 const days = (count: number) => count * 24 * 60 * 60 * 1000;
@@ -70,11 +66,7 @@ export const findSession = async (token: string) => {
   return session;
 };
 
-/**
- * Keeps one row describing the same browser rather than leaving stale text. A
- * browser update rewrites the user agent, and which session this is comes from
- * the cookie, so there is nothing here that should make a second row.
- */
+/** A browser update rewrites the row rather than adding one. */
 export const touchSession = async (session: Session, request: Request) => {
   const now = new Date();
 
@@ -97,14 +89,13 @@ export const listSessions = (userId: string) =>
 
 const close = { revokedAt: new Date() };
 
-/** Scoped to the owner, so an id read off someone else's page closes nothing. */
+/** Scoped to the owner, so a guessed id closes nothing. */
 export const revokeSession = (userId: string, id: string, revokedReason: RevokeReason) =>
   getDb()
     .update(sessions)
     .set({ ...close, revokedReason })
     .where(and(eq(sessions.id, id), eq(sessions.userId, userId), isNull(sessions.revokedAt)));
 
-/** Everything but the session asking, which keeps the current tab signed in. */
 export const revokeOtherSessions = (userId: string, keep: string, revokedReason: RevokeReason) =>
   getDb()
     .update(sessions)

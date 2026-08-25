@@ -1,10 +1,6 @@
 /**
- * For mail that reports something already done. The password is changed, the
- * address is moving, the account exists. Letting the provider fail the request
- * would leave the caller with a 500 and no idea the thing had worked.
- *
- * Mail the flow depends on is not sent through here. A confirmation link that
- * silently fails to send strands the person waiting for it.
+ * For mail that reports something already done. A provider outage must not fail
+ * the request that succeeded, or answer differently for an address that exists.
  */
 export const notify = async (send: () => Promise<unknown>) => {
   try {

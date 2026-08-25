@@ -6,8 +6,7 @@ export type Device = {
   kind: DeviceKind;
 };
 
-// Order matters. Every Chromium browser also says "Chrome", and Edge and Opera
-// also say "Safari", so the specific names have to be tried first.
+// Order matters. Edge and Opera also say Chrome, and Chrome also says Safari.
 const BROWSERS: [RegExp, string][] = [
   [/\bEdg(?:e|A|iOS)?\//, "Edge"],
   [/\bOPR\/|\bOpera\//, "Opera"],
@@ -44,11 +43,7 @@ const kindOf = (agent: string, os: string | null): DeviceKind => {
   return "unknown";
 };
 
-/**
- * Names a session for the person reading their own device list, nothing more.
- * User agents are being reduced by the browsers on purpose, so treat a miss as
- * normal rather than as something to widen the patterns for.
- */
+/** A label, not an identity. Browsers are reducing this string on purpose. */
 export const readDevice = (userAgent: string | null): Device => {
   const agent = userAgent?.trim() ?? "";
 

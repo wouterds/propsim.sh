@@ -5,8 +5,6 @@ import { UUIDv7, uuid } from "./types/uuid";
 export type PasswordReset = typeof passwordResets.$inferSelect;
 export type PasswordResetInsert = typeof passwordResets.$inferInsert;
 
-// One row per user, so asking again replaces the live token rather than leaving
-// two that both open the account.
 export const passwordResets = mysqlTable(
   "password_resets",
   {

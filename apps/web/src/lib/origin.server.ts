@@ -1,13 +1,11 @@
 import ipaddr from "ipaddr.js";
 
-// Cloudflare sets these at its edge and the tunnel carries them through, so they
-// are the caller's address rather than the proxy's. Both are absent in local
-// development, and a missing value is stored as a missing value.
+// Set at Cloudflare's edge and carried through the tunnel. Absent locally.
 const CLIENT_IP = "cf-connecting-ip";
 const COUNTRY = "cf-ipcountry";
 const FORWARDED = "x-forwarded-for";
 
-// Cloudflare answers this for an address it cannot place, and for its own probes.
+// Answered for an address Cloudflare cannot place, and for Tor.
 const UNKNOWN_COUNTRY = new Set(["XX", "T1"]);
 
 export type Origin = {
@@ -16,14 +14,8 @@ export type Origin = {
   userAgent: string | null;
 };
 
-/**
- * `x-forwarded-for` is a chain the client can prepend to, so only its first
- * entry is read and only when Cloudflare gave nothing better.
- */
-/**
- * IPv6 clients rotate the low 64 host bits on a timer, so the whole address
- * changes for a device that never moved. The /64 prefix is the stable part.
- */
+/** The client can prepend to the chain, so only the first entry is read. */
+/** IPv6 hosts rotate their low 64 bits, so the /64 prefix is the stable part. */
 export const normalizeIp = (ip: string) => {
   if (!ipaddr.isValid(ip)) {
     return ip;

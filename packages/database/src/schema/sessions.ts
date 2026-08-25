@@ -20,11 +20,10 @@ export const sessions = mysqlTable(
       .primaryKey()
       .$defaultFn(() => UUIDv7()),
     userId: uuid("user_id").notNull(),
-    // A hash of the cookie token, never the token. A database dump then hands
-    // over no working session.
+    // The hash of the cookie token, never the token.
     hash: varchar("hash", { length: 64 }).notNull(),
-    // Descriptive only. Which session this is comes from the cookie, so a
-    // browser update rewrites these fields rather than making a second row.
+    // Descriptive only. The cookie decides which session this is, so a browser
+    // update rewrites these rather than adding a row.
     userAgent: varchar("user_agent", { length: 512 }),
     browser: varchar("browser", { length: 32 }),
     os: varchar("os", { length: 32 }),
@@ -34,8 +33,6 @@ export const sessions = mysqlTable(
     lastSeenAt: datetime("last_seen_at").notNull(),
     expiresAt: datetime("expires_at").notNull(),
     revokedAt: datetime("revoked_at"),
-    // Kept so the reason a session ended can be told to the person it belonged
-    // to, and so an incident can be read back later.
     revokedReason: mysqlEnum("revoked_reason", [
       "logout",
       "revoked",

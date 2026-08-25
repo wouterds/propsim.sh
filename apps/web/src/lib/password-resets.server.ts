@@ -3,12 +3,12 @@ import { eq } from "drizzle-orm";
 import { RESET_TTL_MINUTES } from "./policy";
 import { hashToken, newToken } from "./token.server";
 
-// Stops the form being used to post mail to somebody else's inbox.
+// Stops the form posting mail to somebody else's inbox.
 const RESEND_AFTER_SECONDS = 60;
 
 const minutes = (count: number) => count * 60 * 1000;
 
-/** Null when one was asked for moments ago, which the caller must not report. */
+/** Null when one went out moments ago, which the caller must not report. */
 export const issueReset = async (userId: string) => {
   const [live] = await getDb()
     .select()
@@ -39,7 +39,7 @@ export const issueReset = async (userId: string) => {
   return token;
 };
 
-/** The token names the user on its own, so nothing about them is in the link. */
+/** The token names the user, so the link carries nothing else. */
 export const consumeReset = async (token: string) => {
   const [row] = await getDb()
     .select()

@@ -73,11 +73,7 @@ const STEPS: [Intl.RelativeTimeFormatUnit, number][] = [
   ["month", 2_592_000_000],
 ];
 
-/**
- * Formatted where the data is read, not where it is drawn. A clock difference
- * between the server and the browser would otherwise change the text on
- * hydration.
- */
+/** Formatted in the loader, or the text changes on hydration. */
 export const formatRelative = (at: Date, now: Date) => {
   const since = now.getTime() - at.getTime();
 
@@ -100,7 +96,6 @@ export const formatRelative = (at: Date, now: Date) => {
 
 const REGIONS = new Intl.DisplayNames(["en"], { type: "region" });
 
-/** A flag is two regional indicators, which are the letters offset into their own block. */
 export const flagOf = (code: string) =>
   String.fromCodePoint(...[...code.toUpperCase()].map((letter) => 0x1_f1a5 + letter.charCodeAt(0)));
 

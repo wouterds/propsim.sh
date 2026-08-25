@@ -35,8 +35,7 @@ export const action = async ({ request }: Route.ActionArgs) => {
 
   await updatePassword(userId, await hashPassword(password));
 
-  // Whoever asked for this may not be the only one holding the old password, so
-  // every device starts again. Signing in here is deliberate, not automatic.
+  // Somebody else may hold the old password. Signing in again is deliberate.
   await revokeAllSessions(userId, "password_reset");
 
   const user = await findUserById(userId);

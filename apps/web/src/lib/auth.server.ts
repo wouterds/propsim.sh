@@ -12,8 +12,7 @@ import {
 const DAYS = 30;
 
 type SessionData = {
-  // The session's own secret, not the user's id. Everything about the session
-  // lives in the row it names, so it can be closed from another device.
+  // The session's secret, not the user's id, so it can be closed from elsewhere.
   token: string;
   // Set between signup and the code being confirmed. It opens nothing.
   pendingUserId: string;
@@ -60,7 +59,6 @@ export const getUserId = async (request: Request) => (await getSession(request))
 export const getPendingUserId = async (request: Request) =>
   (await read(request)).get("pendingUserId") ?? null;
 
-/** The session behind the request, with its last seen time kept current. */
 export const requireSession = async (request: Request): Promise<Session> => {
   const session = await getSession(request);
 
@@ -77,7 +75,6 @@ export const requireSession = async (request: Request): Promise<Session> => {
 
 export const requireUserId = async (request: Request) => (await requireSession(request)).userId;
 
-// A fresh cookie on every sign in, so one handed out before does not carry over.
 export const startSession = async (request: Request, userId: string, to: string | null) => {
   const session = await sessions().getSession();
   session.set("token", await openSession(request, userId));
@@ -98,10 +95,7 @@ export const startPending = async (userId: string, to: string | null) => {
   });
 };
 
-/**
- * A new token for the same person, and the old one closed. Anything that proves
- * the account again has to leave nothing behind that was handed out before it.
- */
+/** A new token for the same person, and the old one closed. */
 export const rotateSession = async (request: Request, current: Session, reason: RevokeReason) => {
   await revokeSession(current.userId, current.id, reason);
 
@@ -111,8 +105,7 @@ export const rotateSession = async (request: Request, current: Session, reason: 
   return sessions().commitSession(session);
 };
 
-// The row is closed as well as the cookie, or the token would still open the
-// account from anywhere it was copied to.
+// The row is closed as well as the cookie, or a copied token still works.
 export const endSession = async (request: Request, to = "/") => {
   const live = await getSession(request);
 

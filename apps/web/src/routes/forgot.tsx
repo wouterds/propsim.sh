@@ -22,21 +22,18 @@ export const action = async ({ request }: Route.ActionArgs) => {
   const user = await findUserByEmail(email);
 
   if (user) {
-    // Null when one went out moments ago, which is not reported either.
     const token = await issueReset(user.id);
 
     if (token) {
-      // Sent through notify so a provider outage cannot answer differently for
-      // an address that exists. A failed send is recoverable by asking again;
-      // a 500 here would turn this form into an account lookup.
+      // Through notify, or a failed send answers differently for an address
+      // that exists and turns this form into an account lookup.
       await notify(() =>
         sendResetPassword({ to: user.email, token, expiresInMinutes: RESET_TTL_MINUTES }),
       );
     }
   }
 
-  // The same answer whether or not the address is registered. Anything else
-  // turns this form into a way to ask which addresses have accounts.
+  // The same answer either way.
   return { sent: true };
 };
 

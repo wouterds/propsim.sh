@@ -10,18 +10,13 @@ export type NewsMoment = {
   title: string;
 };
 
-// Flat from a minute before to a minute after the release. This is the window
-// the funded firms hold you to, and on a daily payout account breaching it ends
-// the account rather than the day.
+// On a daily payout account this ends the account, not the day.
 export const BEFORE_MINUTES = 1;
 export const AFTER_MINUTES = 1;
 
 const minute = 60_000;
 
-/**
- * Overlapping windows are merged, so two releases at the same time read as one
- * span rather than two bands drawn on top of each other.
- */
+/** Overlapping windows merge, so releases at the same time read as one span. */
 export const windowsOf = (events: NewsMoment[]): NewsWindow[] => {
   const sorted = [...events].sort((a, b) => a.time - b.time);
   const windows: NewsWindow[] = [];
@@ -43,7 +38,7 @@ export const windowsOf = (events: NewsMoment[]): NewsWindow[] => {
   return windows;
 };
 
-/** Both edges count. A fill on the boundary is inside the window, not outside it. */
+/** Both edges count as inside. */
 export const activeWindow = (windows: NewsWindow[], now: number) =>
   windows.find((window) => now >= window.from && now <= window.to) ?? null;
 

@@ -82,8 +82,6 @@ export const action = async ({ request }: Route.ActionArgs) => {
     await revokeOtherSessions(user.id, session.id, "password_change");
     await notify(() => sendPasswordChanged({ to: user.email }));
 
-    // The tab doing this stays signed in, on a new token. Everything handed out
-    // before the password changed is now dead.
     const cookie = await rotateSession(request, session, "password_change");
 
     return data(
@@ -106,13 +104,10 @@ export const action = async ({ request }: Route.ActionArgs) => {
       return { done: null, error: "That is already the address on this account." };
     }
 
-    // Silent when the address belongs to somebody else, or this form would say
-    // which addresses are registered.
+    // Silent when the address is taken, or this says which addresses exist.
     if (!(await findUserByEmail(email))) {
       const token = await issueEmailChange(user.id, email);
 
-      // Same reasoning as the reset form: answering differently would say
-      // whether the address already belongs to somebody.
       await notify(() =>
         sendConfirmNewEmail({ to: email, token, expiresInMinutes: EMAIL_CHANGE_TTL_MINUTES }),
       );
