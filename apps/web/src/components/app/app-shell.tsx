@@ -4,7 +4,6 @@ import { type ReactNode, useState } from "react";
 import { href, Link } from "react-router";
 import SidebarNav from "~/components/app/sidebar-nav";
 import Brand from "~/components/layout/brand";
-import SiteFooter from "~/components/layout/site-footer";
 import type { Account } from "~/lib/accounts";
 
 type Props = {
@@ -52,9 +51,11 @@ const AppShell = ({ accounts, email, children }: Props) => {
             </Link>
           </header>
 
+          {/* No footer behind a login. The sidebar floats beside the content,
+              and a full site footer under it reads as the end of a page rather
+              than the bottom of an app. */}
           <div className="min-h-0 flex-1 overflow-y-auto">
             <div className="flex min-h-full flex-col">{children}</div>
-            <SiteFooter />
           </div>
         </div>
       </div>
