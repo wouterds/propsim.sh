@@ -18,7 +18,7 @@ export const EmailChanging = ({ to, email }: EmailChangingProps) => (
       The account keeps this address until the new one is confirmed.
     </Text>
     <Text style={paragraph}>
-      If this was not you, reply to this message and change your password. Somebody else knows it.
+      If this was not you, change your password now. Somebody else knows it.
     </Text>
   </Layout>
 );

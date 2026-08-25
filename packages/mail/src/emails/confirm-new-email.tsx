@@ -16,7 +16,7 @@ export const ConfirmNewEmail = ({ to, token, expiresInMinutes }: ConfirmNewEmail
     <Heading style={heading}>Confirm this address</Heading>
     <Text style={paragraph}>Your account keeps its old address until you confirm this one.</Text>
     <ButtonLink href={`${SITE}/email?token=${token}`}>Confirm this address</ButtonLink>
-    <Text style={{ ...paragraph, margin: "16px 0 0" }}>
+    <Text style={{ ...paragraph, margin: "16px 0 16px" }}>
       The link works once and expires in {expiresInMinutes} minutes. If you were not expecting it,
       ignore this message and nothing changes.
     </Text>

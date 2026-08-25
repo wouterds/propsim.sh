@@ -19,7 +19,7 @@ export const ConfirmCode = ({ to, code, expiresInMinutes }: ConfirmCodeProps) =>
     <Text style={paragraph}>Confirm with the button, or enter the code yourself.</Text>
     <Text style={digits}>{code}</Text>
     <ButtonLink href={`${SITE}/verify?code=${code}`}>Confirm my email</ButtonLink>
-    <Text style={{ ...paragraph, margin: "16px 0 0" }}>
+    <Text style={{ ...paragraph, margin: "16px 0 16px" }}>
       The code expires in {expiresInMinutes} minutes and can be used once. The button only works in
       the browser you signed up with.
     </Text>

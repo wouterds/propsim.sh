@@ -16,8 +16,8 @@ export const PasswordChanged = ({ to }: PasswordChangedProps) => (
       Every other device has been signed out. If this was you, there is nothing to do.
     </Text>
     <Text style={paragraph}>
-      If it was not, reply to this message. Somebody else can reach your account and we need to
-      close it with you.
+      If it was not, somebody else can reach your account. Reset the password from the login page to
+      take it back and sign every device out.
     </Text>
   </Layout>
 );

@@ -19,14 +19,10 @@ export const NewDevice = ({ to, device, place, at }: NewDeviceProps) => (
       {device}
       {place ? ` from ${place}` : ""}, on {at}.
     </Text>
-    <Text style={paragraph}>
-      If that was you, there is nothing to do. A place is worked out from the network the device is
-      on, so it can name the wrong city and the right country.
-    </Text>
+    <Text style={paragraph}>If that was you, there is nothing to do.</Text>
     <ButtonLink href={`${SITE}/settings`}>Review your devices</ButtonLink>
-    <Text style={{ ...paragraph, margin: "16px 0 0" }}>
-      If it was not you, sign that device out from the page above and change your password. Reply to
-      this message if you cannot get back in.
+    <Text style={{ ...paragraph, margin: "16px 0 16px" }}>
+      If it was not you, sign that device out from the page above and change your password.
     </Text>
   </Layout>
 );

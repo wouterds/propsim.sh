@@ -16,7 +16,7 @@ export const ResetPassword = ({ to, token, expiresInMinutes }: ResetPasswordProp
     <Heading style={heading}>Choose a new password</Heading>
     <Text style={paragraph}>Use the button to set a new password on your account.</Text>
     <ButtonLink href={`${SITE}/reset?token=${token}`}>Choose a new password</ButtonLink>
-    <Text style={{ ...paragraph, margin: "16px 0 0" }}>
+    <Text style={{ ...paragraph, margin: "16px 0 16px" }}>
       The link works once and expires in {expiresInMinutes} minutes. If you did not ask for this,
       nothing has happened and your password has not changed.
     </Text>
