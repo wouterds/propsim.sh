@@ -15,6 +15,12 @@ const FOCUS = "focus-visible:outline-hidden focus-visible:ring-1 focus-visible:r
 
 const ITEM = "flex h-8 items-center gap-2 rounded px-2.5 text-sm transition-colors";
 
+// One hover for every row. Plainly there, and plainly weaker than the tint an
+// active row carries.
+const HOVER = "hover:bg-overlay hover:text-ink";
+
+const ACTIVE = "bg-accent/15 text-accent";
+
 const DOT: Record<string, string> = {
   up: "bg-up",
   down: "bg-down",
@@ -40,9 +46,7 @@ const SidebarNav = ({ accounts, email, onNavigate }: Props) => (
           key={link.to}
           to={link.to}
           onClick={onNavigate}
-          className={({ isActive }) =>
-            cn(ITEM, FOCUS, isActive ? "bg-accent/15 text-accent" : "text-muted hover:text-ink")
-          }
+          className={({ isActive }) => cn(ITEM, FOCUS, isActive ? ACTIVE : cn("text-muted", HOVER))}
         >
           <NavIcon name={link.icon} />
           {link.label}
@@ -66,9 +70,9 @@ const SidebarNav = ({ accounts, email, onNavigate }: Props) => (
                 onClick={onNavigate}
                 className={({ isActive }) =>
                   cn(
-                    "flex items-center gap-2 rounded px-2.5 py-2 transition-colors",
+                    "flex items-center gap-2 rounded border-l-2 px-2.5 py-2 transition-colors",
                     FOCUS,
-                    isActive ? "bg-overlay" : "hover:bg-overlay/60",
+                    isActive ? "border-accent bg-accent/15" : cn("border-transparent", HOVER),
                   )
                 }
               >
@@ -99,7 +103,8 @@ const SidebarNav = ({ accounts, email, onNavigate }: Props) => (
         to={href("/accounts/new")}
         onClick={onNavigate}
         className={cn(
-          "mt-2 flex h-9 items-center justify-center gap-1.5 rounded border border-line border-dashed text-muted text-sm transition-colors hover:border-line-strong hover:text-ink",
+          "mt-2 flex h-9 items-center justify-center gap-1.5 rounded border border-line border-dashed text-muted text-sm transition-colors hover:border-line-strong",
+          HOVER,
           FOCUS,
         )}
       >
@@ -113,16 +118,14 @@ const SidebarNav = ({ accounts, email, onNavigate }: Props) => (
         to={href("/settings")}
         onClick={onNavigate}
         title={email}
-        className={({ isActive }) =>
-          cn(ITEM, FOCUS, isActive ? "bg-accent/15 text-accent" : "text-muted hover:text-ink")
-        }
+        className={({ isActive }) => cn(ITEM, FOCUS, isActive ? ACTIVE : cn("text-muted", HOVER))}
       >
         <NavIcon name="user" />
         <span className="truncate">{email}</span>
       </NavLink>
 
       <Form method="post" action={href("/logout")} className="mt-1">
-        <button type="submit" className={cn(ITEM, FOCUS, "w-full text-muted hover:text-ink")}>
+        <button type="submit" className={cn(ITEM, FOCUS, "w-full text-muted", HOVER)}>
           <NavIcon name="logout" />
           Log out
         </button>
