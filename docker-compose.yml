@@ -1,0 +1,47 @@
+services:
+  web:
+    image: ghcr.io/wouterds/propsim.sh/web
+    container_name: sh.propsim--web
+    mem_limit: 128mb
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      # Nothing else in the container listens, but naming the port keeps the
+      # route pinned to the app rather than whatever traefik infers.
+      - "traefik.http.services.propsimsh.loadbalancer.server.port=3000"
+      - "traefik.http.middlewares.propsimsh.redirectscheme.scheme=https"
+      - "traefik.http.routers.propsimsh-http.rule=Host(`propsim.sh`) || Host(`www.propsim.sh`)"
+      - "traefik.http.routers.propsimsh-http.entrypoints=web"
+      - "traefik.http.routers.propsimsh-http.middlewares=propsimsh"
+      - "traefik.http.routers.propsimsh.rule=Host(`propsim.sh`) || Host(`www.propsim.sh`)"
+      - "traefik.http.routers.propsimsh.entrypoints=websecure"
+      - "traefik.http.routers.propsimsh.tls.certresolver=myhttpchallenge"
+      # www is served by the same container, so it is redirected to the apex
+      # rather than left as a second copy of the whole site.
+      #
+      # Added alongside the routers above rather than by narrowing them, so a
+      # label traefik will not take leaves the site serving exactly as it does
+      # now. The priority is what makes these win: traefik ranks by rule length
+      # otherwise, and `Host(a) || Host(b)` is the longer string.
+      #
+      # `$${1}` and not `${1}` - compose substitutes its own variables first,
+      # and would quietly send every path to the bare apex.
+      - "traefik.http.middlewares.propsimsh-apex.redirectregex.regex=^https?://www\\.propsim\\.sh/(.*)"
+      - "traefik.http.middlewares.propsimsh-apex.redirectregex.replacement=https://propsim.sh/$${1}"
+      - "traefik.http.middlewares.propsimsh-apex.redirectregex.permanent=true"
+      - "traefik.http.routers.propsimsh-www.rule=Host(`www.propsim.sh`)"
+      - "traefik.http.routers.propsimsh-www.entrypoints=websecure"
+      - "traefik.http.routers.propsimsh-www.tls.certresolver=myhttpchallenge"
+      - "traefik.http.routers.propsimsh-www.middlewares=propsimsh-apex"
+      - "traefik.http.routers.propsimsh-www.priority=1000"
+      - "traefik.http.routers.propsimsh-www-http.rule=Host(`www.propsim.sh`)"
+      - "traefik.http.routers.propsimsh-www-http.entrypoints=web"
+      - "traefik.http.routers.propsimsh-www-http.middlewares=propsimsh-apex"
+      - "traefik.http.routers.propsimsh-www-http.priority=1000"
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
