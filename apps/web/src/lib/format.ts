@@ -96,7 +96,7 @@ export const formatRelative = (at: Date, now: Date) => {
 
 const REGIONS = new Intl.DisplayNames(["en"], { type: "region" });
 
-export const flagOf = (code: string) =>
+const flagOf = (code: string) =>
   String.fromCodePoint(...[...code.toUpperCase()].map((letter) => 0x1_f1a5 + letter.charCodeAt(0)));
 
 export const countryOf = (code: string | null) => {

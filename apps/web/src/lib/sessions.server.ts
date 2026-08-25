@@ -17,7 +17,7 @@ const TOUCH_AFTER_MINUTES = 5;
 const days = (count: number) => count * 24 * 60 * 60 * 1000;
 const minutes = (count: number) => count * 60 * 1000;
 
-export const isLive = (session: Session, now = new Date()) => {
+const isLive = (session: Session, now = new Date()) => {
   if (session.revokedAt) {
     return false;
   }

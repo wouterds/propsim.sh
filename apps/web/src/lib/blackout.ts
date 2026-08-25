@@ -43,6 +43,3 @@ export const windowsOf = (events: NewsMoment[]): NewsWindow[] => {
 /** Both edges count as inside. */
 export const activeWindow = (windows: NewsWindow[], now: number) =>
   windows.find((window) => now >= window.from && now <= window.to) ?? null;
-
-export const nextWindow = (windows: NewsWindow[], now: number) =>
-  windows.find((window) => window.from > now) ?? null;

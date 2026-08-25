@@ -3,7 +3,7 @@ import { type Message, send } from "./mailjet";
 
 const message: Message = {
   to: "trader@example.com",
-  subject: "Confirm your propsim email",
+  subject: "Confirm your email address",
   html: "<p>048213</p>",
   text: "048213",
 };
