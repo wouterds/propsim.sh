@@ -9,6 +9,8 @@ export default [
   ]),
 
   route("auth", "routes/auth.tsx"),
+  route("auth/google", "routes/google.tsx"),
+  route("auth/google/callback", "routes/google-callback.tsx"),
   route("forgot", "routes/forgot.tsx"),
   route("reset", "routes/reset.tsx"),
   route("email", "routes/email.tsx"),
