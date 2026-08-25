@@ -68,6 +68,11 @@ export const send = async (message: Message) => {
           Subject: message.subject,
           TextPart: message.text,
           HTMLPart: message.html,
+          // Click tracking rewrites every href to a plain http mailjet domain, so
+          // a confirmation link stops naming where it goes. Open tracking adds a
+          // pixel. Neither belongs in mail the account itself depends on.
+          TrackOpens: "disabled",
+          TrackClicks: "disabled",
         },
       ],
     }),

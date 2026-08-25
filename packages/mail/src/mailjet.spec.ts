@@ -112,6 +112,21 @@ describe("send", () => {
     );
   });
 
+  it("should refuse the tracking that rewrites links and adds a pixel", async () => {
+    // given
+    const fetched = answer(200, accepted);
+    vi.stubGlobal("fetch", fetched);
+
+    // when
+    await send(message);
+
+    // then
+    const [, request] = fetched.mock.calls[0];
+    const sent = JSON.parse(request.body).Messages[0];
+    expect(sent.TrackClicks).toBe("disabled");
+    expect(sent.TrackOpens).toBe("disabled");
+  });
+
   it("should authorise with the key as the user and the secret as the password", async () => {
     // given
     const fetched = answer(200, accepted);
