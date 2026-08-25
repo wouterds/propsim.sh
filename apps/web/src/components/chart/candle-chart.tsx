@@ -30,22 +30,32 @@ type Props = {
   priceLines: ChartPriceLine[];
   /** Spans in milliseconds, drawn behind the bars. */
   bands: ChartBand[];
+  /** The contract's smallest price move. */
+  tick: number;
   visibleBars: number;
   onHover: (bar: ChartBar | null) => void;
 };
 
-const CandleChart = ({ candles, priceLines, bands, visibleBars, onHover }: Props) => {
+const CandleChart = ({ candles, priceLines, bands, tick, visibleBars, onHover }: Props) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const bandsRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
   const themeRef = useRef<ChartTheme | null>(null);
+  const tickRef = useRef(tick);
   const hoverRef = useRef(onHover);
 
   // In a ref so a new callback identity does not rebuild the chart.
   useEffect(() => {
     hoverRef.current = onHover;
   }, [onHover]);
+
+  // Applied to the live series too, so switching contract reformats the axis
+  // without rebuilding the chart.
+  useEffect(() => {
+    tickRef.current = tick;
+    seriesRef.current?.applyOptions(candleOptions(themeRef.current ?? readChartTheme(), tick));
+  }, [tick]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -55,7 +65,7 @@ const CandleChart = ({ candles, priceLines, bands, visibleBars, onHover }: Props
     // createChart is the first DOM access, so the module stays safe to import on the server.
     const theme = readChartTheme();
     const chart = createChart(container, chartOptions(theme));
-    const series = chart.addSeries(CandlestickSeries, candleOptions(theme));
+    const series = chart.addSeries(CandlestickSeries, candleOptions(theme, tickRef.current));
 
     chart.subscribeCrosshairMove((param) => {
       const bar = param.seriesData.get(series) as CandlestickData<UTCTimestamp> | undefined;

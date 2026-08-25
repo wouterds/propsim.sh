@@ -9,6 +9,9 @@ import {
   unrealisedPnl,
 } from "./trading-state";
 
+// The numbers below were written against the micro Nasdaq.
+const POINT = 2;
+
 const draft = (overrides: Partial<OrderDraft> = {}): OrderDraft => ({
   side: "buy",
   quantity: 1,
@@ -36,7 +39,7 @@ describe("riskOf", () => {
     const long = draft({ side: "buy", stopLoss: 20_010 });
 
     // when the risk is measured
-    const risk = riskOf(long, 20_000);
+    const risk = riskOf(long, 20_000, POINT);
 
     // then it is not a negative number that would flatter the risk:reward line
     expect(risk).toBeNull();
@@ -47,7 +50,7 @@ describe("riskOf", () => {
     const short = draft({ side: "sell", quantity: 2, stopLoss: 20_010 });
 
     // when the risk is measured
-    const risk = riskOf(short, 20_000);
+    const risk = riskOf(short, 20_000, POINT);
 
     // then it is ten points on two contracts at two dollars a point
     expect(risk).toBe(40);
@@ -70,7 +73,7 @@ describe("unrealisedPnl", () => {
     const short = position({ side: "sell", quantity: 3 });
 
     // when the tape prints twenty points lower
-    const pnl = unrealisedPnl(short, 19_980);
+    const pnl = unrealisedPnl(short, 19_980, POINT);
 
     // then the position is up, not down
     expect(pnl).toBe(120);
@@ -108,7 +111,13 @@ describe("reduceTrading", () => {
     });
 
     // when it is closed five points lower
-    const closed = reduceTrading(open, { kind: "close", id: "o1", at: 2, last: 19_995 });
+    const closed = reduceTrading(open, {
+      kind: "close",
+      id: "o1",
+      at: 2,
+      last: 19_995,
+      point: POINT,
+    });
 
     // then the realised total carries the sign, and nothing is left open
     expect(closed.realised).toBe(-20);

@@ -10,6 +10,7 @@ import type { Order, Position } from "./trading-state";
 type Tab = "positions" | "orders";
 
 type Props = {
+  point: number;
   positions: Position[];
   orders: Order[];
   last: number | null;
@@ -18,7 +19,7 @@ type Props = {
   onCancel: (id: string) => void;
 };
 
-const Blotter = ({ positions, orders, last, className, onClose, onCancel }: Props) => {
+const Blotter = ({ positions, orders, last, point, className, onClose, onCancel }: Props) => {
   const [tab, setTab] = useState<Tab>("positions");
 
   const working = orders.filter((order) => order.status === "working").length;
@@ -46,7 +47,7 @@ const Blotter = ({ positions, orders, last, className, onClose, onCancel }: Prop
     <Tabs.Root value={tab} onValueChange={(value) => setTab(value as Tab)} render={<div />}>
       <Panel actions={tabs} className={className} bodyClassName="min-h-0 flex-1 overflow-auto p-0">
         <Tabs.Panel value="positions">
-          <PositionsTable positions={positions} last={last} onClose={onClose} />
+          <PositionsTable positions={positions} last={last} point={point} onClose={onClose} />
         </Tabs.Panel>
         <Tabs.Panel value="orders">
           <OrdersTable orders={orders} onCancel={onCancel} />

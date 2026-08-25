@@ -5,9 +5,14 @@ import { formatClock, formatMoney, formatPrice, toneOf } from "./format";
 import { ROW, TD, TH } from "./styles";
 import { type Position, unrealisedPnl } from "./trading-state";
 
-type Props = { positions: Position[]; last: number | null; onClose: (id: string) => void };
+type Props = {
+  positions: Position[];
+  last: number | null;
+  point: number;
+  onClose: (id: string) => void;
+};
 
-const PositionsTable = ({ positions, last, onClose }: Props) => {
+const PositionsTable = ({ positions, last, point, onClose }: Props) => {
   if (positions.length === 0) {
     return <p className="px-3 py-6 text-center text-faint text-xs">Nothing open.</p>;
   }
@@ -29,7 +34,7 @@ const PositionsTable = ({ positions, last, onClose }: Props) => {
       </thead>
       <tbody>
         {positions.map((position) => {
-          const pnl = last === null ? null : unrealisedPnl(position, last);
+          const pnl = last === null ? null : unrealisedPnl(position, last, point);
 
           return (
             <tr key={position.id} className={ROW}>

@@ -1,5 +1,3 @@
-import { POINT_VALUE } from "./mnq";
-
 export type Side = "buy" | "sell";
 export type OrderType = "market" | "limit" | "stop";
 export type OrderStatus = "filled" | "working" | "cancelled";
@@ -37,28 +35,28 @@ const direction = (side: Side) => (side === "buy" ? 1 : -1);
 
 const opposite = (side: Side): Side => (side === "buy" ? "sell" : "buy");
 
-export const unrealisedPnl = (position: Position, last: number) =>
-  (last - position.entry) * direction(position.side) * position.quantity * POINT_VALUE;
+export const unrealisedPnl = (position: Position, last: number, point: number) =>
+  (last - position.entry) * direction(position.side) * position.quantity * point;
 
 /** Null, not a negative, when the stop is the wrong side of entry. That is an instant fill. */
-export const riskOf = (draft: OrderDraft, entry: number | null) => {
+export const riskOf = (draft: OrderDraft, entry: number | null, point: number) => {
   if (entry === null || draft.stopLoss === null) return null;
 
   const adverse = (entry - draft.stopLoss) * direction(draft.side);
 
   if (adverse <= 0) return null;
 
-  return adverse * draft.quantity * POINT_VALUE;
+  return adverse * draft.quantity * point;
 };
 
-export const rewardOf = (draft: OrderDraft, entry: number | null) => {
+export const rewardOf = (draft: OrderDraft, entry: number | null, point: number) => {
   if (entry === null || draft.takeProfit === null) return null;
 
   const favourable = (draft.takeProfit - entry) * direction(draft.side);
 
   if (favourable <= 0) return null;
 
-  return favourable * draft.quantity * POINT_VALUE;
+  return favourable * draft.quantity * point;
 };
 
 export const rrRatio = (risk: number | null, reward: number | null) => {
@@ -67,10 +65,10 @@ export const rrRatio = (risk: number | null, reward: number | null) => {
   return reward / risk;
 };
 
-export const notionalOf = (quantity: number, price: number | null) => {
+export const notionalOf = (quantity: number, price: number | null, point: number) => {
   if (price === null) return null;
 
-  return quantity * price * POINT_VALUE;
+  return quantity * price * point;
 };
 
 export const fillPriceFor = (draft: OrderDraft, last: number) => {
@@ -90,7 +88,7 @@ export const INITIAL_STATE: TradingState = { positions: [], orders: [], realised
 export type TradingAction =
   | { kind: "submit"; id: string; at: number; draft: OrderDraft; last: number }
   | { kind: "cancel"; id: string }
-  | { kind: "close"; id: string; at: number; last: number };
+  | { kind: "close"; id: string; at: number; last: number; point: number };
 
 const submit = (state: TradingState, action: Extract<TradingAction, { kind: "submit" }>) => {
   const { draft, last, at, id } = action;
@@ -143,7 +141,7 @@ const close = (state: TradingState, action: Extract<TradingAction, { kind: "clos
   return {
     positions: state.positions.filter((open) => open.id !== action.id),
     orders: [exit, ...state.orders],
-    realised: state.realised + unrealisedPnl(position, action.last),
+    realised: state.realised + unrealisedPnl(position, action.last, action.point),
   };
 };
 

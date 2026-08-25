@@ -1,9 +1,9 @@
 import { Select } from "@base-ui/react/select";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { recall, remember } from "~/lib/remember";
 import { cn } from "~/lib/utils";
 import Button from "./button";
 import { formatPrice } from "./format";
-import { TICK_SIZE } from "./mnq";
 import NumberField from "./number-field";
 import RiskReadout from "./risk-readout";
 import SideToggle from "./side-toggle";
@@ -25,7 +25,12 @@ const TYPE_LABELS: Record<OrderType, string> = {
   stop: "STP",
 };
 
-type Props = { last: number | null; onSubmit: (draft: OrderDraft) => void };
+type Props = {
+  last: number | null;
+  tick: number;
+  point: number;
+  onSubmit: (draft: OrderDraft) => void;
+};
 
 const ORDER_TYPES = [
   { value: "market", label: "Market" },
@@ -33,10 +38,55 @@ const ORDER_TYPES = [
   { value: "stop", label: "Stop" },
 ];
 
-const TradePanel = ({ last, onSubmit }: Props) => {
+const KEY = "terminal.ticket";
+
+const SIDES: Side[] = ["buy", "sell"];
+const TYPES: OrderType[] = ["market", "limit", "stop"];
+
+type Kept = { side: Side; type: OrderType; quantity: number };
+
+/** Prices are quoted against a tape that has moved on, so only the shape is kept. */
+const keptFrom = (raw: string | null): Kept | null => {
+  try {
+    const held = JSON.parse(raw ?? "") as Partial<Kept>;
+
+    if (!SIDES.includes(held.side as Side) || !TYPES.includes(held.type as OrderType)) {
+      return null;
+    }
+
+    const quantity = Math.floor(Number(held.quantity));
+
+    return {
+      side: held.side as Side,
+      type: held.type as OrderType,
+      quantity: Number.isFinite(quantity) && quantity > 0 ? Math.min(quantity, 100) : 1,
+    };
+  } catch {
+    return null;
+  }
+};
+
+const TradePanel = ({ last, tick, point, onSubmit }: Props) => {
   const [draft, setDraft] = useState(EMPTY_DRAFT);
 
-  const patch = (fields: Partial<OrderDraft>) => setDraft((current) => ({ ...current, ...fields }));
+  // Taken after the first paint, so the server and the browser start the same.
+  useEffect(() => {
+    const kept = keptFrom(recall(KEY));
+
+    if (kept) {
+      setDraft((current) => ({ ...current, ...kept }));
+    }
+  }, []);
+
+  const patch = (fields: Partial<OrderDraft>) => {
+    setDraft((current) => {
+      const next = { ...current, ...fields };
+
+      remember(KEY, JSON.stringify({ side: next.side, type: next.type, quantity: next.quantity }));
+
+      return next;
+    });
+  };
 
   // No tape, no ticket. Every price on this form is quoted against the last
   // print, so a stand-in would put a number on the button that nothing backs.
@@ -120,7 +170,7 @@ const TradePanel = ({ last, onSubmit }: Props) => {
         label={resting ? "Trigger price" : "Trigger price (market)"}
         value={resting ? draft.limitPrice : null}
         onChange={(limitPrice) => patch({ limitPrice })}
-        step={TICK_SIZE}
+        step={tick}
         placeholder={stale ? "–" : formatPrice(last)}
         disabled={stale || !resting}
       />
@@ -130,7 +180,7 @@ const TradePanel = ({ last, onSubmit }: Props) => {
           label="Stop loss"
           value={draft.stopLoss}
           onChange={(stopLoss) => patch({ stopLoss })}
-          step={TICK_SIZE}
+          step={tick}
           placeholder="–"
           disabled={stale}
         />
@@ -138,14 +188,14 @@ const TradePanel = ({ last, onSubmit }: Props) => {
           label="Take profit"
           value={draft.takeProfit}
           onChange={(takeProfit) => patch({ takeProfit })}
-          step={TICK_SIZE}
+          step={tick}
           placeholder="–"
           disabled={stale}
         />
       </div>
 
       <div className="border-line border-t pt-3">
-        <RiskReadout draft={draft} entry={entry} />
+        <RiskReadout point={point} draft={draft} entry={entry} />
       </div>
 
       <Button

@@ -7,7 +7,6 @@ import {
   TickMarkType,
   type Time,
 } from "lightweight-charts";
-import { TICK_SIZE } from "~/components/trading/mnq";
 
 export type ChartTone = "up" | "down" | "accent";
 
@@ -126,12 +125,23 @@ export const chartOptions = (theme: ChartTheme): DeepPartial<ChartOptions> => ({
   },
 });
 
-export const candleOptions = (theme: ChartTheme): CandlestickSeriesPartialOptions => ({
+/** Decimals enough to show one tick, so 0.005 prints three and 0.25 prints two. */
+const precisionFor = (tick: number) => {
+  const decimals = `${tick}`.split(".")[1]?.length ?? 0;
+
+  return Math.min(decimals, 8);
+};
+
+export const candleOptions = (
+  theme: ChartTheme,
+  tick: number,
+): CandlestickSeriesPartialOptions => ({
   upColor: theme.up,
   downColor: theme.down,
   wickUpColor: theme.up,
   wickDownColor: theme.down,
   borderVisible: false,
-  // MNQ ticks in quarter points. The default minMove prints prices that cannot exist.
-  priceFormat: { type: "price", precision: 2, minMove: TICK_SIZE },
+  // A contract ticks in its own increment. The default minMove prints prices
+  // that cannot exist.
+  priceFormat: { type: "price", precision: precisionFor(tick), minMove: tick },
 });

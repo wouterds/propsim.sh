@@ -1,11 +1,12 @@
-import { Link, useNavigation } from "react-router";
-import { TIMEFRAMES, type Timeframe } from "~/components/trading/mnq";
+import { Link, useNavigation, useSearchParams } from "react-router";
 import { FOCUS_RING } from "~/components/trading/styles";
+import { TIMEFRAMES, type Timeframe } from "~/components/trading/timeframes";
 import { cn } from "~/lib/utils";
 
 /** Links, not buttons. The timeframe is the loader's input, so it lives in the URL. */
 const TimeframeSwitcher = ({ value }: { value: Timeframe }) => {
   const navigation = useNavigation();
+  const [params] = useSearchParams();
   const pending = navigation.location
     ? new URLSearchParams(navigation.location.search).get("tf")
     : null;
@@ -19,7 +20,7 @@ const TimeframeSwitcher = ({ value }: { value: Timeframe }) => {
         return (
           <Link
             key={timeframe}
-            to={`?tf=${timeframe}`}
+            to={`?${new URLSearchParams({ ...Object.fromEntries(params), tf: timeframe })}`}
             preventScrollReset
             className={cn(
               "rounded px-2 py-1 font-medium text-[11px] tabular transition-colors",

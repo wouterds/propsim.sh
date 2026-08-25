@@ -15,7 +15,7 @@ const nextId = () => {
  * In memory only. `last` is null while the feed is down, and writes are refused
  * rather than marked to a stand-in, because closing banks that price for good.
  */
-export const usePaperTrading = (last: number | null, opening: number) => {
+export const usePaperTrading = (last: number | null, opening: number, point: number) => {
   const [state, dispatch] = useReducer(reduceTrading, INITIAL_STATE);
 
   const submit = useCallback(
@@ -31,9 +31,9 @@ export const usePaperTrading = (last: number | null, opening: number) => {
     (id: string) => {
       if (last === null) return;
 
-      dispatch({ kind: "close", id, at: Date.now(), last });
+      dispatch({ kind: "close", id, at: Date.now(), last, point });
     },
-    [last],
+    [last, point],
   );
 
   const cancel = useCallback((id: string) => dispatch({ kind: "cancel", id }), []);
@@ -41,8 +41,11 @@ export const usePaperTrading = (last: number | null, opening: number) => {
   const openPnl = useMemo(() => {
     if (last === null) return null;
 
-    return state.positions.reduce((total, position) => total + unrealisedPnl(position, last), 0);
-  }, [state.positions, last]);
+    return state.positions.reduce(
+      (total, position) => total + unrealisedPnl(position, last, point),
+      0,
+    );
+  }, [state.positions, last, point]);
 
   const balance = opening + state.realised;
 

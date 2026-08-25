@@ -8,11 +8,19 @@ const Row = ({ label, value, tone }: { label: string; value: string | null; tone
   </div>
 );
 
-const RiskReadout = ({ draft, entry }: { draft: OrderDraft; entry: number | null }) => {
-  const risk = riskOf(draft, entry);
-  const reward = rewardOf(draft, entry);
+const RiskReadout = ({
+  draft,
+  entry,
+  point,
+}: {
+  draft: OrderDraft;
+  entry: number | null;
+  point: number;
+}) => {
+  const risk = riskOf(draft, entry, point);
+  const reward = rewardOf(draft, entry, point);
   const ratio = rrRatio(risk, reward);
-  const notional = notionalOf(draft.quantity, entry);
+  const notional = notionalOf(draft.quantity, entry, point);
 
   return (
     <div className="flex flex-col gap-1.5 text-xs tabular">
