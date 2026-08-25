@@ -1,8 +1,5 @@
 export type AuthMode = "login" | "signup";
 
-export const parseMode = (value: string | null): AuthMode =>
-  value === "signup" ? "signup" : "login";
-
 export const COPY: Record<AuthMode, { title: string; blurb: string; submit: string }> = {
   login: {
     title: "Back to the desk",

@@ -18,7 +18,7 @@ const AuthForm = ({ mode }: Props) => {
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    navigate(href("/dashboard"));
+    navigate(href("/dash"));
   };
 
   return (
