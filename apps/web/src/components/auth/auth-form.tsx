@@ -1,5 +1,4 @@
-import { type FormEvent, useState } from "react";
-import { href, useNavigate } from "react-router";
+import { Form, useNavigation } from "react-router";
 import { type AuthMode, COPY } from "./mode";
 
 const FIELD =
@@ -9,20 +8,17 @@ const LABEL = "mb-1.5 block text-[11px] text-faint uppercase tracking-wider";
 
 type Props = {
   mode: AuthMode;
+  error?: string;
 };
 
-const AuthForm = ({ mode }: Props) => {
-  const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    navigate(href("/dash"));
-  };
+const AuthForm = ({ mode, error }: Props) => {
+  const navigation = useNavigation();
+  const busy = navigation.state !== "idle";
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <Form method="post" className="space-y-4">
+      <input type="hidden" name="mode" value={mode} />
+
       <div>
         <label htmlFor="email" className={LABEL}>
           Email
@@ -34,8 +30,6 @@ const AuthForm = ({ mode }: Props) => {
           required
           autoComplete="email"
           placeholder="you@desk.example"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
           className={FIELD}
         />
       </div>
@@ -44,7 +38,6 @@ const AuthForm = ({ mode }: Props) => {
         <label htmlFor="password" className={LABEL}>
           Password
         </label>
-        {/* Keyed so the browser re-reads autocomplete when the mode changes. */}
         <input
           key={mode}
           id="password"
@@ -52,24 +45,32 @@ const AuthForm = ({ mode }: Props) => {
           type="password"
           required
           autoComplete={mode === "signup" ? "new-password" : "current-password"}
-          placeholder="anything at all"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
+          placeholder={mode === "signup" ? "at least 8 characters" : "your password"}
           className={FIELD}
         />
       </div>
 
+      {error && (
+        <p
+          role="alert"
+          className="rounded border border-down/40 bg-down/10 px-3 py-2 text-down text-sm"
+        >
+          {error}
+        </p>
+      )}
+
       <button
         type="submit"
-        className="inline-flex h-10 w-full items-center justify-center rounded bg-accent font-medium text-sm text-sunken transition-colors hover:bg-accent/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
+        disabled={busy}
+        className="inline-flex h-10 w-full items-center justify-center rounded bg-accent font-medium text-sm text-sunken transition-colors hover:bg-accent/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent disabled:opacity-60"
       >
-        {COPY[mode].submit}
+        {busy ? "One moment" : COPY[mode].submit}
       </button>
 
       <p className="text-center text-[11px] text-faint leading-relaxed">
         No card, no broker, and no money. The account is simulated and so is every fill.
       </p>
-    </form>
+    </Form>
   );
 };
 
