@@ -14,6 +14,8 @@ export const users = mysqlTable(
     email: varchar("email", { length: 255 }).notNull(),
     password: varchar("password", { length: 255 }).notNull(),
     verifiedEmailAt: timestamp("verified_email_at"),
+    // Set when the person deletes the account. The row stays, emptied of them.
+    deletedAt: timestamp("deleted_at"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
   },
