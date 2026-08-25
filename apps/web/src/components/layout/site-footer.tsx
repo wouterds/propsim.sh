@@ -26,7 +26,7 @@ const SiteFooter = () => (
       <div>
         <Brand className="text-[15px] text-ink" />
         <p className="mt-3 max-w-xs text-faint text-sm leading-relaxed">
-          A prop firm rule engine over a replayed futures session. Nothing here is live, and no
+          A prop firm rule engine over a delayed live futures tape. No broker, no money, and no
           order ever leaves the browser.
         </p>
       </div>

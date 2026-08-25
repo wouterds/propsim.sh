@@ -26,7 +26,7 @@ const AccountPreview = () => (
       <span className="text-muted">{ACCOUNT.id}</span>
       <span className="flex items-center gap-1.5 text-faint">
         <span className="size-1.5 rounded-full bg-accent" />
-        Replay, session 2
+        Live, delayed
       </span>
     </div>
 

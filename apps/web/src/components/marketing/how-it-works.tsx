@@ -1,15 +1,15 @@
 const STEPS = [
   {
-    title: "Load a session",
-    body: "Pick a day of MNQ and the bars it actually printed, 1m through 1h. The window stays inside one contract's life, so a quarterly roll never shows up as a move that never happened.",
+    title: "Open a desk",
+    body: "A simulated account with a plan's rules attached: a daily loss limit measured from the day's open, and a trailing drawdown measured from the highest equity the account has ever reached.",
   },
   {
-    title: "Trade it",
-    body: "Market, limit and stop orders, with a bracket attached if you want one. Every fill drops straight into the rule engine, which has no idea whether the bar behind it is from today or from March.",
+    title: "Trade the tape",
+    body: "MNQ as it prints, on a short delay. Market, limit and stop orders, with a bracket attached if you want one. Every fill drops straight into the rule engine.",
   },
   {
-    title: "Replay it",
-    body: "Same bars, second run. The engine is a pure function over the fill stream, so between the two runs the only thing that changed is you.",
+    title: "Find where it bites",
+    body: "Hit the floor and watch the account lock or die, exactly as it would on a funded plan. The only thing it costs is the afternoon.",
   },
 ];
 
@@ -18,7 +18,7 @@ const HowItWorks = () => (
     <div className="mx-auto max-w-6xl px-5 py-20 sm:px-8">
       <p className="text-[11px] text-accent uppercase tracking-wider">How it works</p>
       <h2 className="mt-3 max-w-2xl font-semibold text-2xl text-ink tracking-tight sm:text-3xl">
-        Three steps, and the third one is the whole point.
+        Three steps, and the third one is free.
       </h2>
 
       <ol className="mt-12 grid gap-px overflow-hidden rounded-xl border border-line bg-line md:grid-cols-3">

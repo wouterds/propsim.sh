@@ -17,7 +17,7 @@ const FEATURES = [
   },
   {
     title: "Deterministic by construction",
-    body: "The engine never reaches for a clock or a socket. Same fills in, same verdict out, which is what makes a replay free rather than a second implementation.",
+    body: "The engine never reaches for a clock or a socket. The same code judges a delayed live tick and a stored bar, which is what makes the rules testable rather than merely written down.",
   },
   {
     title: "Bars that really printed",

@@ -2,7 +2,7 @@ import { href, Link } from "react-router";
 import GridBackdrop from "~/components/layout/grid-backdrop";
 import AccountPreview from "~/components/marketing/account-preview";
 
-const FACTS = ["MNQ, micro Nasdaq 100", "1m to 1h bars", "No card, no broker"];
+const FACTS = ["MNQ, micro Nasdaq 100", "Live bars on a delay", "No card, no broker"];
 
 const Hero = () => (
   <section className="relative overflow-hidden border-line/70 border-b">
@@ -12,24 +12,24 @@ const Hero = () => (
       <div>
         <p className="inline-flex items-center gap-2 rounded-full border border-line bg-raised/70 px-3 py-1 text-[11px] text-muted uppercase tracking-wider">
           <span className="size-1.5 rounded-full bg-accent" />
-          The session already happened
+          Live tape, on a delay
         </p>
 
         <h1 className="mt-6 font-semibold text-4xl text-ink leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
-          Trade the same
+          Blow up a prop account
           <br />
-          session{" "}
+          that costs{" "}
           <span className="text-accent underline decoration-4 decoration-accent/30 underline-offset-[0.15em]">
-            twice
+            nothing
           </span>
           .
         </h1>
 
         <p className="mt-6 max-w-xl text-[1rem] text-muted leading-relaxed">
-          propsim replays a real futures session bar by bar and runs every fill through a prop
-          firm's rule engine. The daily loss floor, the trailing drawdown, the breach that quietly
-          ends an account. Then it hands you the same bars again, so you find out what the other
-          decision was worth.
+          propsim runs a live MNQ session on a short delay and puts every fill through a prop firm's
+          rule engine. The daily loss limit, the trailing drawdown that ratchets on your peak
+          equity, the breach that quietly ends an account. The same rules an evaluation charges you
+          to learn, on an account that costs nothing to lose.
         </p>
 
         <div className="mt-8 flex flex-wrap items-center gap-3">
