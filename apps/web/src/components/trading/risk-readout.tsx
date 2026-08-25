@@ -1,4 +1,4 @@
-import { formatMoney } from "./format";
+import { formatMoney, formatRatio } from "./format";
 import { notionalOf, type OrderDraft, rewardOf, riskOf, rrRatio } from "./trading-state";
 
 const Row = ({ label, value, tone }: { label: string; value: string | null; tone?: string }) => (
@@ -26,7 +26,7 @@ const RiskReadout = ({
     <div className="flex flex-col gap-1.5 text-xs tabular">
       <Row label="Risk" value={risk === null ? null : formatMoney(risk)} tone="text-down" />
       <Row label="Reward" value={reward === null ? null : formatMoney(reward)} tone="text-up" />
-      <Row label="R : R" value={ratio === null ? null : `${ratio.toFixed(2)} : 1`} />
+      <Row label="R : R" value={ratio === null ? null : `${formatRatio(ratio)} : 1`} />
       <Row label="Notional" value={notional === null ? null : formatMoney(notional)} />
     </div>
   );
