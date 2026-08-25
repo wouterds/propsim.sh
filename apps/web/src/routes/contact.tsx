@@ -135,7 +135,10 @@ const Contact = ({ loaderData, actionData }: Route.ComponentProps) => {
             </div>
 
             {loaderData.siteKey && (
-              <Turnstile siteKey={loaderData.siteKey} options={{ action: "turnstile-spin-v2" }} />
+              <Turnstile
+                siteKey={loaderData.siteKey}
+                options={{ action: "turnstile-spin-v2", theme: "dark" }}
+              />
             )}
 
             {actionData?.error && (
