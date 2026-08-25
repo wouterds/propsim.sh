@@ -8,6 +8,8 @@ export default [
     route("faq", "routes/faq.tsx"),
     route("calendar", "routes/calendar.tsx"),
     route("contact", "routes/contact.tsx"),
+    route("privacy", "routes/privacy.tsx"),
+    route("terms", "routes/terms.tsx"),
   ]),
 
   route("auth", "routes/auth.tsx"),
