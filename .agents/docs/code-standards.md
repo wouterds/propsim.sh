@@ -46,6 +46,8 @@ Default to none. Names and small functions are the documentation.
   written
 - Do not narrate the alternatives you rejected, or what an upstream "silently" does, or how a bug
   once felt. State the fact that prevents the mistake and stop
+- **The `// given`, `// when`, `// then` markers in a spec are exempt.** They are structure, not
+  prose, they are required by [Testing](testing.md), and none of the rules above apply to them
 
 Worth a comment:
 
