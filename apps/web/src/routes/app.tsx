@@ -1,7 +1,7 @@
 import { Outlet } from "react-router";
 import AppShell from "~/components/app/app-shell";
 import { ACCOUNTS } from "~/lib/accounts";
-import { requireUserId } from "~/lib/auth.server";
+import { endSession, requireUserId } from "~/lib/auth.server";
 import { findUserById } from "~/lib/users.server";
 import type { Route } from "./+types/app";
 
@@ -11,7 +11,13 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
   const userId = await requireUserId(request);
   const user = await findUserById(userId);
 
-  return { accounts: ACCOUNTS, email: user?.email ?? "" };
+  // The cookie only proves this server signed it. An account deleted since still
+  // carries a valid one, so the row is what decides.
+  if (!user) {
+    throw await endSession(request);
+  }
+
+  return { accounts: ACCOUNTS, email: user.email };
 };
 
 const AppLayout = ({ loaderData }: Route.ComponentProps) => (
