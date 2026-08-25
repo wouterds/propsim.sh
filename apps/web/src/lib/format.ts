@@ -110,3 +110,16 @@ export const countryOf = (code: string | null) => {
     return { name: code, flag: "" };
   }
 };
+
+const MOMENT = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: "UTC",
+  hour12: false,
+});
+
+/** UTC and said so. The reader's own zone is not knowable from a mail. */
+export const formatMoment = (at: Date) => `${MOMENT.format(at)} UTC`;

@@ -4,9 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import { Form, href, Link, redirect, useNavigation } from "react-router";
 import Brand from "~/components/layout/brand";
 import GridBackdrop from "~/components/layout/grid-backdrop";
-import { getPendingUserId, startSession } from "~/lib/auth.server";
+import { getPendingUserId } from "~/lib/auth.server";
 import { notify } from "~/lib/notify.server";
 import { asCode, CODE_DIGITS, CODE_TTL_MINUTES } from "~/lib/policy";
+import { signIn } from "~/lib/sign-in.server";
 import { findUserById, markEmailVerified } from "~/lib/users.server";
 import { checkCode, issueCode } from "~/lib/verifications.server";
 import type { Route } from "./+types/verify";
@@ -62,7 +63,7 @@ export const action = async ({ request }: Route.ActionArgs) => {
   await markEmailVerified(user.id);
   await notify(() => sendWelcome({ to: user.email }));
 
-  return startSession(request, user.id, back);
+  return signIn(request, user, back);
 };
 
 const Verify = ({ loaderData, actionData }: Route.ComponentProps) => {

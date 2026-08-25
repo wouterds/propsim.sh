@@ -6,9 +6,10 @@ import { type AuthMode, COPY } from "~/components/auth/mode";
 import ModeTabs from "~/components/auth/mode-tabs";
 import Brand from "~/components/layout/brand";
 import GridBackdrop from "~/components/layout/grid-backdrop";
-import { startPending, startSession } from "~/lib/auth.server";
+import { startPending } from "~/lib/auth.server";
 import { hashPassword, verifyPassword } from "~/lib/password.server";
 import { CODE_TTL_MINUTES, MIN_PASSWORD } from "~/lib/policy";
+import { signIn } from "~/lib/sign-in.server";
 import { createUser, findUserByEmail } from "~/lib/users.server";
 import { issueCode } from "~/lib/verifications.server";
 import type { Route } from "./+types/auth";
@@ -76,7 +77,7 @@ export const action = async ({ request }: Route.ActionArgs) => {
     return startPending(user.id, back);
   }
 
-  return startSession(request, user.id, back);
+  return signIn(request, user, back);
 };
 
 const Auth = ({ loaderData, actionData }: Route.ComponentProps) => {

@@ -80,6 +80,35 @@ export const touchSession = async (session: Session, request: Request) => {
     .where(eq(sessions.id, session.id));
 };
 
+export type Recognition = "first" | "known" | "new";
+
+type Marks = { browser: string | null; os: string | null; country: string | null };
+
+/**
+ * Matched on the family names and the country, never on the version. A browser
+ * updating itself is not a new device, and a sign in from another country is.
+ */
+export const isKnown = (seen: Marks[], device: Marks) =>
+  seen.some(
+    (mark) =>
+      mark.browser === device.browser && mark.os === device.os && mark.country === device.country,
+  );
+
+/** Call before the session is opened, or it recognises the row it just wrote. */
+export const recognise = async (userId: string, request: Request): Promise<Recognition> => {
+  const device = describe(request);
+  const seen = await getDb()
+    .select({ browser: sessions.browser, os: sessions.os, country: sessions.country })
+    .from(sessions)
+    .where(eq(sessions.userId, userId));
+
+  if (seen.length === 0) {
+    return "first";
+  }
+
+  return isKnown(seen, device) ? "known" : "new";
+};
+
 export const listSessions = (userId: string) =>
   getDb()
     .select()
