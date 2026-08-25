@@ -1,0 +1,24 @@
+{
+  "name": "@propsim/accounts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "biome check --error-on-warnings src",
+    "lint:fix": "biome check --write src",
+    "typecheck": "tsc",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@propsim/database": "*",
+    "@propsim/mail": "*",
+    "drizzle-orm": "^0.45.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "typescript": "^7.0.2"
+  }
+}
