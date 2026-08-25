@@ -15,7 +15,8 @@ const SECTIONS = [
   {
     title: "Who answers for this",
     body: [
-      `${OPERATOR} is run from ${OPERATOR_COUNTRY} and is the controller of everything described here. Write to ${CONTACT_EMAIL} about anything on this page, including a request to delete your account.`,
+      `${OPERATOR} is run from ${OPERATOR_COUNTRY} and is the controller of everything described here. Write to ${CONTACT_EMAIL} about anything on this page.`,
+      "Deleting the account needs no one's help: the settings page does it, and it takes effect the moment you confirm.",
     ],
   },
   {
@@ -52,7 +53,7 @@ const SECTIONS = [
     title: "How long",
     body: [
       "A session expires thirty days after it was opened, or after fourteen days of not being used, whichever comes first. Ending a session or changing your password removes them sooner.",
-      "The rest is kept for as long as the account exists. Delete it from the settings page and it goes at once: the device records are removed, the address is freed for a new signup, and what is left is an empty row carrying nothing but the date it was emptied.",
+      "The rest is kept for as long as the account exists. Deleting it takes your address off it at once, replacing it with one that reaches nobody and stamping the date, and what is left behind cannot be traced back to you or to the address it used to hold. That address is free to open a new account with.",
     ],
   },
   {
