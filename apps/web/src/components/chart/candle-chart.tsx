@@ -24,10 +24,11 @@ export type ChartPriceLine = { id: string; price: number; tone: ChartTone; title
 type Props = {
   candles: Candle[];
   priceLines: ChartPriceLine[];
+  visibleBars: number;
   onHover: (bar: ChartBar | null) => void;
 };
 
-const CandleChart = ({ candles, priceLines, onHover }: Props) => {
+const CandleChart = ({ candles, priceLines, visibleBars, onHover }: Props) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
@@ -95,8 +96,17 @@ const CandleChart = ({ candles, priceLines, onHover }: Props) => {
     }));
 
     series.setData(bars);
-    chart.timeScale().fitContent();
-  }, [candles]);
+
+    // The fetch reaches back further than the view. Anything else makes a month
+    // of bars unreadable and ties the window to the range asked for.
+    if (bars.length <= visibleBars) {
+      chart.timeScale().fitContent();
+
+      return;
+    }
+
+    chart.timeScale().setVisibleLogicalRange({ from: bars.length - visibleBars, to: bars.length });
+  }, [candles, visibleBars]);
 
   useEffect(() => {
     const series = seriesRef.current;

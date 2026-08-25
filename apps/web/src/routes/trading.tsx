@@ -6,7 +6,7 @@ import ChartHeader from "~/components/chart/chart-header";
 import TimeframeSwitcher from "~/components/chart/timeframe-switcher";
 import AccountStrip from "~/components/trading/account-strip";
 import Blotter from "~/components/trading/blotter";
-import { parseTimeframe, rangeFor, SYMBOL } from "~/components/trading/mnq";
+import { barsPerDay, parseTimeframe, rangeFor, SYMBOL } from "~/components/trading/mnq";
 import Panel from "~/components/trading/panel";
 import TradePanel from "~/components/trading/trade-panel";
 import { usePaperTrading } from "~/components/trading/use-paper-trading";
@@ -112,7 +112,12 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
                 <p className="max-w-sm text-faint text-xs">{error}</p>
               </div>
             ) : (
-              <CandleChart candles={candles} priceLines={priceLines} onHover={setHovered} />
+              <CandleChart
+                candles={candles}
+                priceLines={priceLines}
+                visibleBars={barsPerDay(timeframe)}
+                onHover={setHovered}
+              />
             )}
 
             <div className="absolute top-2 right-2 z-10">
