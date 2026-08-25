@@ -44,3 +44,22 @@ export const toneOf = (value: number): Tone => {
   if (value < 0) return "down";
   return "neutral";
 };
+
+const DAY = new Intl.DateTimeFormat("en-GB", {
+  weekday: "short",
+  day: "numeric",
+  month: "short",
+  timeZone: "UTC",
+});
+
+/** UTC, so the server and the browser never disagree on which day a row is. */
+export const formatDay = (iso: string) => DAY.format(new Date(`${iso}T00:00:00Z`));
+
+const MONTH = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  timeZone: "UTC",
+});
+
+export const formatDate = (iso: string) => MONTH.format(new Date(`${iso}T00:00:00Z`));

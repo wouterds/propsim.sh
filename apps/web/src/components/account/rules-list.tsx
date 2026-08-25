@@ -1,5 +1,6 @@
-import Badge from "~/components/dashboard/badge";
-import { type Rule, VERDICT_TONE } from "~/components/dashboard/data";
+import Badge from "~/components/ui/badge";
+import { VERDICT_TONE } from "~/lib/journal";
+import type { Rule } from "~/lib/rules";
 
 const LABEL = { clean: "Pass", watch: "Watch", breached: "Fail" } as const;
 

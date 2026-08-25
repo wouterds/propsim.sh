@@ -1,10 +1,16 @@
+export type Verdict = "clean" | "watch" | "breached";
+
+export const VERDICT_TONE = { clean: "up", watch: "warn", breached: "down" } as const;
+
+export const VERDICT_LABEL = { clean: "Clean", watch: "Watch", breached: "Breach" } as const;
+
 export type JournalDay = {
   date: string;
   trades: number;
   wins: number;
   worstDrawdown: number;
   pnl: number;
-  verdict: "clean" | "watch" | "breached";
+  verdict: Verdict;
 };
 
 export const winRateOf = (days: JournalDay[]) => {

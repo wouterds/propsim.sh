@@ -1,5 +1,5 @@
 import type { FloorTone } from "./format";
-import type { JournalDay } from "./journal";
+import type { JournalDay, Verdict } from "./journal";
 import { type Plan, planOr } from "./plans";
 
 export type AccountStatus = "live" | "passed" | "breached";
@@ -148,3 +148,31 @@ export const totalsOf = (accounts: Account[]) => ({
     0,
   ),
 });
+
+const WORST: Verdict[] = ["clean", "watch", "breached"];
+
+const worseOf = (a: Verdict, b: Verdict) => (WORST.indexOf(a) >= WORST.indexOf(b) ? a : b);
+
+/** Every account's sessions folded onto one calendar, newest first. */
+export const combinedJournalOf = (accounts: Account[]): JournalDay[] => {
+  const byDate = new Map<string, JournalDay>();
+
+  for (const account of accounts) {
+    for (const day of account.journal) {
+      const seen = byDate.get(day.date);
+
+      if (!seen) {
+        byDate.set(day.date, { ...day });
+        continue;
+      }
+
+      seen.trades += day.trades;
+      seen.wins += day.wins;
+      seen.pnl += day.pnl;
+      seen.worstDrawdown = Math.min(seen.worstDrawdown, day.worstDrawdown);
+      seen.verdict = worseOf(seen.verdict, day.verdict);
+    }
+  }
+
+  return [...byDate.values()].sort((a, b) => b.date.localeCompare(a.date));
+};

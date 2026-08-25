@@ -1,6 +1,6 @@
 import { Meter } from "@base-ui/react/meter";
-import Badge from "~/components/dashboard/badge";
-import { floorToneOf, roomLeftOf } from "~/lib/account";
+import Badge from "~/components/ui/badge";
+import { floorToneOf, roomLeftOf } from "~/lib/accounts";
 import { FLOOR_BAR, FLOOR_TEXT, formatMoney, formatPercent } from "~/lib/format";
 import { cn } from "~/lib/utils";
 

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { ACCOUNTS, combinedJournalOf } from "./accounts";
 import { concentrationOf, type JournalDay, winRateOf } from "./journal";
 
 const day = (pnl: number, trades = 1, wins = 0): JournalDay => ({
@@ -43,5 +44,45 @@ describe("concentrationOf", () => {
 
     // then
     expect(concentrationOf(days)).toBe(0.75);
+  });
+});
+
+describe("combinedJournalOf", () => {
+  it("should keep the worst verdict when two accounts traded the same day", () => {
+    // given
+    const accounts = [
+      { ...ACCOUNTS[0], journal: [{ ...day(100), date: "2026-08-25", verdict: "clean" as const }] },
+      {
+        ...ACCOUNTS[1],
+        journal: [{ ...day(-50), date: "2026-08-25", verdict: "breached" as const }],
+      },
+    ];
+
+    // when
+    const combined = combinedJournalOf(accounts);
+
+    // then
+    expect(combined).toHaveLength(1);
+    expect(combined[0]?.verdict).toBe("breached");
+    expect(combined[0]?.pnl).toBe(50);
+  });
+
+  it("should order the calendar newest first", () => {
+    // given
+    const accounts = [
+      {
+        ...ACCOUNTS[0],
+        journal: [
+          { ...day(10), date: "2026-08-19" },
+          { ...day(20), date: "2026-08-24" },
+        ],
+      },
+    ];
+
+    // then
+    expect(combinedJournalOf(accounts).map((entry) => entry.date)).toEqual([
+      "2026-08-24",
+      "2026-08-19",
+    ]);
   });
 });
