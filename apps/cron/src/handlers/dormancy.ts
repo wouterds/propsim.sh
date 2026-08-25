@@ -1,3 +1,4 @@
+import { sendInactivityNotice } from "@propsim/mail";
 import {
   clearDormancy,
   daysLeft,
@@ -5,8 +6,7 @@ import {
   noteDormancy,
   scrubUser,
   stageOf,
-} from "@propsim/accounts";
-import { sendInactivityNotice } from "@propsim/mail";
+} from "@propsim/users";
 
 /**
  * Two notices and then the account is emptied. The stage is written down after
@@ -15,43 +15,43 @@ import { sendInactivityNotice } from "@propsim/mail";
  */
 export const dormancy = async () => {
   const now = new Date();
-  const accounts = await findDormant(now);
+  const dormant = await findDormant(now);
   let warned = 0;
   let scrubbed = 0;
 
-  for (const account of accounts) {
-    const stage = stageOf(account.lastSeenAt, now);
+  for (const user of dormant) {
+    const stage = stageOf(user.lastSeenAt, now);
 
     try {
       if (stage === "active") {
-        if (account.notice) {
-          await clearDormancy(account.id);
+        if (user.notice) {
+          await clearDormancy(user.id);
         }
 
         continue;
       }
 
       if (stage === "scrub") {
-        await scrubUser(account.id);
+        await scrubUser(user.id);
         scrubbed += 1;
 
         continue;
       }
 
       // Already told, at this stage or a later one.
-      if (account.notice === stage || account.notice === "final") {
+      if (user.notice === stage || user.notice === "final") {
         continue;
       }
 
       await sendInactivityNotice({
-        to: account.email,
-        daysLeft: daysLeft(account.lastSeenAt, now),
+        to: user.email,
+        daysLeft: daysLeft(user.lastSeenAt, now),
       });
-      await noteDormancy(account.id, stage);
+      await noteDormancy(user.id, stage);
       warned += 1;
     } catch (error) {
       // One address must not stop the sweep reaching the rest.
-      console.error(`dormancy skipped ${account.id}`, error);
+      console.error(`dormancy skipped ${user.id}`, error);
     }
   }
 

@@ -1,10 +1,10 @@
-import { scrubUser } from "@propsim/accounts";
 import {
   sendAccountDeleted,
   sendConfirmNewEmail,
   sendEmailChanging,
   sendPasswordChanged,
 } from "@propsim/mail";
+import { scrubUser } from "@propsim/users";
 import { useEffect, useRef } from "react";
 import { data, Form, href, Link, useNavigation } from "react-router";
 import DeleteAccount from "~/components/settings/delete-account";
