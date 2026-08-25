@@ -14,6 +14,7 @@ export default [
 
   layout("routes/app.tsx", [
     route("dash", "routes/dash.tsx"),
+    route("settings", "routes/settings.tsx"),
     route("accounts", "routes/accounts.tsx"),
     route("accounts/new", "routes/account-new.tsx"),
     route("accounts/:id", "routes/account.tsx"),

@@ -107,9 +107,16 @@ const SidebarNav = ({ accounts, email, onNavigate }: Props) => (
     </div>
 
     <div className="shrink-0 border-line border-t p-3">
-      <p className="truncate px-2.5 text-faint text-xs" title={email}>
-        {email}
-      </p>
+      <NavLink
+        to={href("/settings")}
+        onClick={onNavigate}
+        title={email}
+        className={({ isActive }) =>
+          cn(ITEM, FOCUS, isActive ? "bg-accent/15 text-accent" : "text-muted hover:text-ink")
+        }
+      >
+        <span className="truncate">{email}</span>
+      </NavLink>
 
       <Form method="post" action={href("/logout")} className="mt-1">
         <button type="submit" className={cn(ITEM, FOCUS, "w-full text-muted hover:text-ink")}>
