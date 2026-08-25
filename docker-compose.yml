@@ -41,6 +41,21 @@ services:
       - mariadb
       - cache
 
+  cron:
+    image: ghcr.io/wouterds/propsim.sh/cron
+    container_name: sh.propsim--cron
+    mem_limit: 128mb
+    restart: unless-stopped
+    # The same file the web container reads, so a job reaches the database and
+    # the mailer the way a route does.
+    env_file:
+      - path: .env
+        required: false
+    # No traefik labels and no port: it wakes on a schedule, nothing calls it.
+    networks:
+      - mariadb
+      - cache
+
   redis:
     image: redis:8-alpine
     container_name: sh.propsim--redis
