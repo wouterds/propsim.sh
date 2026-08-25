@@ -10,7 +10,7 @@ export const TIMEFRAMES = ["1m", "5m", "15m", "30m", "1h"] as const satisfies re
 
 export type Timeframe = (typeof TIMEFRAMES)[number];
 
-const DEFAULT_TIMEFRAME: Timeframe = "5m";
+const DEFAULT_TIMEFRAME: Timeframe = "15m";
 
 /**
  * Every window sits inside one contract's life and inside Yahoo's per-interval
@@ -21,7 +21,7 @@ const DEFAULT_TIMEFRAME: Timeframe = "5m";
 const RANGE_FOR: Record<Timeframe, Range> = {
   "1m": "1d",
   "5m": "5d",
-  "15m": "1mo",
+  "15m": "1d",
   "30m": "1mo",
   "1h": "1mo",
 };
