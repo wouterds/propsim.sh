@@ -47,6 +47,8 @@ ENV NODE_ENV=production
 # route to it.
 USER node
 
-# PID 1, so SIGTERM reaches node instead of timing out on recreate.
+# dumb-init is PID 1 and node is its only child, so the SIGTERM compose sends on
+# a redeploy reaches the signal handler. With npm in between it reaches npm, npm
+# dies, and a job in flight is cut off halfway.
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["npm", "run", "start"]
+CMD ["node", "./build/index.js"]
