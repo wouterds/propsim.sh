@@ -5,9 +5,11 @@ import GridBackdrop from "~/components/layout/grid-backdrop";
 
 type Props = {
   children: ReactNode;
+  /** A way out, under the card rather than inside it. */
+  below?: ReactNode;
 };
 
-const AuthShell = ({ children }: Props) => (
+const AuthShell = ({ children, below }: Props) => (
   <main className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden px-5 py-16">
     <GridBackdrop />
 
@@ -22,8 +24,14 @@ const AuthShell = ({ children }: Props) => (
       <div className="mt-8 rounded-xl border border-line bg-raised p-6 shadow-[0_24px_80px_-40px_rgb(0_0_0)]">
         {children}
       </div>
+
+      {below}
     </div>
   </main>
 );
+
+/** The same weight as the reset link under the sign in card. */
+export const BELOW_LINK =
+  "mt-4 block rounded-sm text-center text-faint text-xs transition-colors hover:text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent";
 
 export default AuthShell;

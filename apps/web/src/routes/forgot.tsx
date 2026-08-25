@@ -1,6 +1,6 @@
 import { sendResetPassword } from "@propsim/mail";
 import { Form, href, Link, useNavigation } from "react-router";
-import AuthShell from "~/components/auth/auth-shell";
+import AuthShell, { BELOW_LINK } from "~/components/auth/auth-shell";
 import { notify } from "~/lib/notify.server";
 import { issueReset } from "~/lib/password-resets.server";
 import { RESET_TTL_MINUTES } from "~/lib/policy";
@@ -45,7 +45,13 @@ const Forgot = ({ actionData }: Route.ComponentProps) => {
   const busy = navigation.state !== "idle";
 
   return (
-    <AuthShell>
+    <AuthShell
+      below={
+        <Link to={href("/auth")} className={BELOW_LINK}>
+          Back to log in
+        </Link>
+      }
+    >
       <h1 className="font-semibold text-ink text-lg tracking-tight">Reset your password</h1>
 
       {actionData && "sent" in actionData ? (
@@ -54,12 +60,6 @@ const Forgot = ({ actionData }: Route.ComponentProps) => {
             If that address has an account, a link is on its way. It works once and expires in{" "}
             {RESET_TTL_MINUTES} minutes.
           </p>
-          <Link
-            to={href("/auth")}
-            className="mt-6 inline-flex rounded-sm text-muted text-sm transition-colors hover:text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
-          >
-            Back to log in
-          </Link>
         </>
       ) : (
         <>
@@ -99,13 +99,6 @@ const Forgot = ({ actionData }: Route.ComponentProps) => {
               {busy ? "One moment" : "Send the link"}
             </button>
           </Form>
-
-          <Link
-            to={href("/auth")}
-            className="mt-4 block rounded-sm text-center text-faint text-xs transition-colors hover:text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
-          >
-            Back to log in
-          </Link>
         </>
       )}
     </AuthShell>
