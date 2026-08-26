@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { type Printed, STEPS, settledOf, shownOf, stepsOf } from "./dance";
+import {
+  MATCH_MARGIN_MS,
+  type Printed,
+  revealedOf,
+  STEPS,
+  settledOf,
+  shownOf,
+  stepsOf,
+} from "./dance";
 import { type Fill, ledgerOf } from "./fills";
 import type { AccountRules } from "./floors";
 import { markingOf } from "./liquidation";
@@ -346,5 +354,52 @@ describe("markingOf, over the danced steps", () => {
     // then it sits inside the step the trader was shown, never outside it
     expect(mark).toBeGreaterThanOrEqual(priceUnits(step?.low ?? 0));
     expect(mark).toBeLessThanOrEqual(priceUnits(step?.high ?? 0));
+  });
+});
+
+describe("revealedOf", () => {
+  const MID = OPEN + MINUTE + MINUTE / 2;
+
+  it("should reach into the bar still being revealed", () => {
+    // given the newest bar half way through its reveal
+    const settled = settledOf([UP], MID, TICK);
+    const revealed = revealedOf([UP], MID, TICK);
+
+    // when the two readings are compared
+    // then waiting for the whole bar gives nothing and the prefix gives the
+    // steps the trader has already watched
+    expect(settled).toHaveLength(0);
+    expect(revealed.length).toBeGreaterThan(0);
+  });
+
+  it("should stay behind the screen by the margin", () => {
+    // given what the chart is showing at this instant
+    const shown = shownOf(UP, MID, TICK);
+
+    // when the matcher reads the same instant
+    const revealed = revealedOf([UP], MID, TICK);
+
+    // then it is never further along than the chart
+    expect(revealed.length).toBeLessThanOrEqual(shown.length);
+    expect(revealed).toEqual(shown.slice(0, revealed.length));
+  });
+
+  it("should never be further along than the chart at any point of the reveal", () => {
+    // given every instant across the reveal
+    for (let ms = 0; ms <= MINUTE; ms += 1_000) {
+      const at = OPEN + MINUTE + ms;
+
+      // when both are read
+      const shown = shownOf(UP, at, TICK);
+      const revealed = revealedOf([UP], at, TICK);
+
+      // then the matcher is a prefix of the screen, always
+      expect(revealed).toEqual(shown.slice(0, revealed.length));
+    }
+  });
+
+  it("should keep the margin to a few steps rather than a whole bar", () => {
+    // given, when, then
+    expect(MATCH_MARGIN_MS).toBeLessThan(MINUTE / 2);
   });
 });

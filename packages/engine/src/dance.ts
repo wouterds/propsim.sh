@@ -111,9 +111,7 @@ export const shownOf = (bar: Printed, at: number, tick: number): Printed[] => {
 };
 
 /**
- * Every step of every bar the tape has finished showing, oldest first. This is
- * what the matcher and the floor sweep read, and it is why a fill can never
- * land on a step the trader has not been given.
+ * Every step of every bar the tape has finished showing, oldest first.
  */
 export const settledOf = (bars: Printed[], at: number, tick: number): Printed[] =>
   bars.flatMap((bar) => {
@@ -121,3 +119,21 @@ export const settledOf = (bars: Printed[], at: number, tick: number): Printed[] 
 
     return steps.length === STEPS ? steps : [];
   });
+
+/**
+ * How far behind the screen a fill is decided, so one is never decided on a step
+ * the trader has not been drawn. Three steps covers the longest a cached answer
+ * is held, which is the only way the two readings can drift apart.
+ */
+export const MATCH_MARGIN_MS = 3 * (MINUTE / STEPS);
+
+/**
+ * Every step the trader has been shown, the bar still being revealed included,
+ * held back by the margin. This is what the matcher and the floor sweep read.
+ *
+ * Waiting for a bar to finish revealing instead puts the frontier a whole minute
+ * behind the chart, and the trader watches price trade through a resting order
+ * while nothing fills. That is the thing the dance was built to stop.
+ */
+export const revealedOf = (bars: Printed[], at: number, tick: number): Printed[] =>
+  bars.flatMap((bar) => shownOf(bar, at - MATCH_MARGIN_MS, tick));
