@@ -1,0 +1,76 @@
+import { accounts as accountsTable, getDb, users } from "@propsim/database";
+import { balanceOf, ledgerOf, statsOf, toDollars } from "@propsim/engine";
+import { listFillsFor } from "@propsim/orders";
+import { findPlan } from "@propsim/plans";
+import { desc, eq } from "drizzle-orm";
+
+export type TraderAccount = {
+  id: string;
+  name: string;
+  plan: string;
+  size: number;
+  state: "live" | "passed" | "breached";
+  pnl: number;
+  openedOn: string;
+};
+
+/**
+ * A trader as anybody may see them. Never their address, and never an account
+ * they have not asked to show.
+ *
+ * A deleted trader keeps their record and loses their name, so the standings
+ * they earned still add up and nothing on the page points at a person.
+ */
+export const loadTrader = async (id: string) => {
+  const [user] = await getDb().select().from(users).where(eq(users.id, id)).limit(1);
+
+  if (!user) {
+    return null;
+  }
+
+  const gone = user.deletedAt !== null;
+  const rows = await getDb()
+    .select()
+    .from(accountsTable)
+    .where(eq(accountsTable.userId, id))
+    .orderBy(desc(accountsTable.createdAt));
+
+  const fills = await listFillsFor(rows.map((row) => row.id));
+  const ledgers = rows.map((row) => ledgerOf(fills.get(row.id) ?? [], row.startingBalanceCents));
+
+  const accounts: TraderAccount[] = rows.map((row, index) => ({
+    id: row.id,
+    name: row.name,
+    plan: findPlan(row.planId)?.label ?? row.planId,
+    size: toDollars(row.startingBalanceCents),
+    state: row.endedReason === "target_met" ? "passed" : row.endedAt !== null ? "breached" : "live",
+    pnl: toDollars(balanceOf(ledgers[index]) - row.startingBalanceCents),
+    openedOn: row.openedOn,
+  }));
+
+  const started = rows.reduce((total, row) => total + row.startingBalanceCents, 0);
+  const stats = statsOf(ledgers.flatMap((ledger) => ledger.trips));
+
+  return {
+    id: user.id,
+    username: gone ? null : user.username,
+    gone,
+    joinedOn: user.createdAt.toISOString(),
+    links: gone
+      ? { twitter: null, youtube: null, twitch: null }
+      : { twitter: user.twitter, youtube: user.youtube, twitch: user.twitch },
+    // The preference is theirs, but a profile nobody owns any more shows nothing.
+    showsAccounts: user.showsAccounts && !gone,
+    accounts,
+    counts: {
+      total: accounts.length,
+      live: accounts.filter((one) => one.state === "live").length,
+      passed: accounts.filter((one) => one.state === "passed").length,
+      breached: accounts.filter((one) => one.state === "breached").length,
+    },
+    stats,
+    // What every account together started with, so a return means something.
+    startedWith: toDollars(started),
+    returnRate: started === 0 ? null : stats.pnlCents / started,
+  };
+};
