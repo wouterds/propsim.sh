@@ -20,7 +20,14 @@ import { issueEmailChange } from "~/lib/email-changes.server";
 import { countryOf, formatDate, formatRelative } from "~/lib/format";
 import { notify } from "~/lib/notify.server";
 import { hashPassword, verifyPassword } from "~/lib/password.server";
-import { EMAIL_CHANGE_TTL_MINUTES, MAX_USERNAME, MIN_PASSWORD, usernameError } from "~/lib/policy";
+import {
+  EMAIL_CHANGE_TTL_MINUTES,
+  handleError,
+  MAX_HANDLE,
+  MAX_USERNAME,
+  MIN_PASSWORD,
+  usernameError,
+} from "~/lib/policy";
 import { PRIVATE } from "~/lib/seo";
 import { listSessions, revokeOtherSessions, revokeSession } from "~/lib/sessions.server";
 import {
@@ -28,6 +35,7 @@ import {
   findUserById,
   findUserByUsername,
   updatePassword,
+  updateProfile,
   updateUsername,
 } from "~/lib/users.server";
 import type { Route } from "./+types/settings";
@@ -66,6 +74,10 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
   return {
     email: user.email,
     username: user.username,
+    twitter: user.twitter,
+    youtube: user.youtube,
+    twitch: user.twitch,
+    showsAccounts: user.showsAccounts,
     pseudonym: personaOf(user.id).name,
     hasPassword: user.password !== null,
     sessions: rows.map((row) => asRow(row, session.id, now)),
@@ -107,6 +119,44 @@ export const action = async ({ request }: Route.ActionArgs) => {
     await updateUsername(user.id, username);
 
     return { done: `You now show up as ${username}.`, error: null };
+  }
+
+  if (intent === "profile") {
+    const handles = ["twitter", "youtube", "twitch"] as const;
+    const cleaned: Record<string, string | null> = {};
+
+    for (const key of handles) {
+      // A pasted profile address is the obvious mistake, so the handle is taken
+      // out of one rather than the whole thing being refused.
+      const raw = String(form.get(key) ?? "")
+        .trim()
+        .replace(/^@/, "")
+        .replace(/^https?:\/\/[^/]+\//, "")
+        .replace(/^@/, "")
+        .replace(/\/+$/, "");
+
+      if (raw === "") {
+        cleaned[key] = null;
+        continue;
+      }
+
+      const wrong = handleError(raw);
+
+      if (wrong) {
+        return { done: null, error: wrong };
+      }
+
+      cleaned[key] = raw;
+    }
+
+    await updateProfile(user.id, {
+      twitter: cleaned.twitter,
+      youtube: cleaned.youtube,
+      twitch: cleaned.twitch,
+      showsAccounts: form.get("showsAccounts") === "on",
+    });
+
+    return { done: "Profile saved.", error: null };
   }
 
   if (intent === "password") {
@@ -241,7 +291,17 @@ const Settings = ({ loaderData, actionData }: Route.ComponentProps) => {
     passwordForm.current?.reset();
   }, [actionData]);
 
-  const { email, username, pseudonym, hasPassword, sessions } = loaderData;
+  const {
+    email,
+    username,
+    pseudonym,
+    hasPassword,
+    sessions,
+    twitter,
+    youtube,
+    twitch,
+    showsAccounts,
+  } = loaderData;
   const others = sessions.filter((session) => !session.current).length;
 
   return (
@@ -277,6 +337,64 @@ const Settings = ({ loaderData, actionData }: Route.ComponentProps) => {
                   ? "Clear the field to go back to a generated name."
                   : `You currently show up as ${pseudonym}.`}
               </p>
+            </div>
+          </Form>
+        </Section>
+
+        <Section
+          title="Profile"
+          description="Your profile is public. Handles only, and each one links to the site it belongs to."
+        >
+          <Form method="post" className="grid gap-4 sm:grid-cols-3">
+            <input type="hidden" name="intent" value="profile" />
+            <Field
+              name="twitter"
+              label="X"
+              autoComplete="off"
+              required={false}
+              maxLength={MAX_HANDLE}
+              defaultValue={twitter ?? ""}
+              placeholder="handle"
+            />
+            <Field
+              name="youtube"
+              label="YouTube"
+              autoComplete="off"
+              required={false}
+              maxLength={MAX_HANDLE}
+              defaultValue={youtube ?? ""}
+              placeholder="handle"
+            />
+            <Field
+              name="twitch"
+              label="Twitch"
+              autoComplete="off"
+              required={false}
+              maxLength={MAX_HANDLE}
+              defaultValue={twitch ?? ""}
+              placeholder="handle"
+            />
+
+            <label className="flex items-start gap-3 sm:col-span-3">
+              <input
+                type="checkbox"
+                name="showsAccounts"
+                defaultChecked={showsAccounts}
+                className="mt-0.5 size-4 shrink-0 rounded border-line bg-sunken accent-accent-strong focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
+              />
+              <span className="text-muted text-sm leading-relaxed">
+                Show my accounts on my profile
+                <span className="mt-0.5 block text-faint text-xs">
+                  The plans you run, how each one is going, and which of them passed or broke. Your
+                  trades and your balances stay private either way.
+                </span>
+              </span>
+            </label>
+
+            <div className="sm:col-span-3">
+              <button type="submit" disabled={busy("profile")} className={PRIMARY_SM}>
+                {busy("profile") ? "One moment" : "Save profile"}
+              </button>
             </div>
           </Form>
         </Section>
