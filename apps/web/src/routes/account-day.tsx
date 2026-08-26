@@ -108,7 +108,9 @@ const Day = ({ loaderData }: Route.ComponentProps) => {
         <span className="text-faint">/</span>
         <h2 className="font-medium text-ink">{day.label}</h2>
         <Badge tone={VERDICT_TONE[day.verdict]}>{VERDICT_LABEL[day.verdict]}</Badge>
-        {session.lockedOut && <Badge tone="warn">Shut for the day</Badge>}
+        {/* Being shut for the day only means something while there is a next
+            day to trade. An account that ended is just ended. */}
+        {session.lockedOut && !account.endedAt && <Badge tone="warn">Shut for the day</Badge>}
         {/* The header names the rule and the moment. What it cannot say is that
             it happened in the session being read. */}
         {ended && (
