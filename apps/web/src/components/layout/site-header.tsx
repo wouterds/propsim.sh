@@ -23,13 +23,11 @@ const SiteHeader = ({ signedIn }: { signedIn: boolean }) => {
 
   return (
     <header className="sticky top-0 z-30 border-line/70 border-b bg-base/80 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 sm:gap-6 sm:px-8">
+      <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-5 sm:gap-6 sm:px-8">
         <Link to={href("/")} className={cn("shrink-0 rounded-sm", FOCUS)}>
           <Brand className="text-[15px] text-ink" />
         </Link>
 
-        {/* A phone fits the brand and one button. Three labels beside them wrap
-            into each other and read as one run of words. */}
         <nav className="-mx-2 hidden items-center gap-1 md:flex">
           {LINKS.map((link) => (
             <NavLink
@@ -66,8 +64,6 @@ const SiteHeader = ({ signedIn }: { signedIn: boolean }) => {
             </Dialog.Trigger>
 
             <Dialog.Portal>
-              {/* The whole screen, like the one behind the sign in. A drawer
-                  leaves a strip of a page nobody can reach. */}
               <Dialog.Popup className="fixed inset-0 z-50 flex flex-col bg-base outline-hidden">
                 <Dialog.Title className="sr-only">Navigation</Dialog.Title>
 

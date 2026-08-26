@@ -97,7 +97,7 @@ const Trader = ({ loaderData }: Route.ComponentProps) => {
           </p>
         </div>
 
-        <div className="ml-auto flex flex-wrap items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:ml-auto sm:w-auto">
           {LINKS.map((link) =>
             links[link.key] ? (
               <a
@@ -216,8 +216,6 @@ const Trader = ({ loaderData }: Route.ComponentProps) => {
                   key={account.id}
                   className="flex items-center gap-3 border-line/60 border-b px-4 py-3 last:border-b-0"
                 >
-                  {/* The date sits under the plan rather than beside it. On a
-                      phone a single row wraps and leaves the amount stranded. */}
                   <span className="min-w-0 flex-1">
                     <span className="flex flex-wrap items-center gap-2">
                       <span className="text-ink text-sm">{account.plan}</span>
