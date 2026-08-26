@@ -1,4 +1,10 @@
-import { getDb, type Order as OrderRow, orders as ordersTable, UUIDv7 } from "@propsim/database";
+import {
+  fills as fillsTable,
+  getDb,
+  type Order as OrderRow,
+  orders as ordersTable,
+  UUIDv7,
+} from "@propsim/database";
 import {
   breachOf,
   equityOf,
@@ -209,6 +215,29 @@ export const cancelOrder = async (accountId: string, id: string, at: Date) => {
   const ended = { endedAt: at, endedReason: "cancelled" as const };
 
   await getDb().transaction(async (tx) => {
+    const [working] = await tx
+      .select({ id: ordersTable.id })
+      .from(ordersTable)
+      .where(stillWorking(accountId, id))
+      .limit(1)
+      .for("update");
+
+    if (!working) {
+      return;
+    }
+
+    // A fill leaves no mark on the order row. Without this a cancel that lost
+    // the race to the matcher would end the brackets guarding a live position.
+    const [printed] = await tx
+      .select({ id: fillsTable.id })
+      .from(fillsTable)
+      .where(eq(fillsTable.orderId, id))
+      .limit(1);
+
+    if (printed) {
+      return;
+    }
+
     await tx.update(ordersTable).set(ended).where(stillWorking(accountId, id));
 
     await tx
