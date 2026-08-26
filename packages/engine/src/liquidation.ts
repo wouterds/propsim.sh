@@ -7,7 +7,11 @@ import { priceUnits } from "./money";
 const adverseOf = (side: Side, bar: Bar) =>
   side === "buy" ? priceUnits(bar.low) : priceUnits(bar.high);
 
-type Edge = { open: number; adverse: number };
+/** The other end, which is where the same position stood at its best. */
+const favourableOf = (side: Side, bar: Bar) =>
+  side === "buy" ? priceUnits(bar.high) : priceUnits(bar.low);
+
+type Edge = { open: number; adverse: number; favourable: number };
 
 const edgesOf = (ledger: Ledger, bars: Map<string, Bar>) => {
   const edges = new Map<string, Edge>();
@@ -19,12 +23,16 @@ const edgesOf = (ledger: Ledger, bars: Map<string, Bar>) => {
       edges.set(position.instrument, {
         open: priceUnits(bar.open),
         adverse: adverseOf(position.side, bar),
+        favourable: favourableOf(position.side, bar),
       });
     }
   }
 
   return edges;
 };
+
+const extremesOf = (edges: Map<string, Edge>, end: "adverse" | "favourable") =>
+  new Map([...edges].map(([code, edge]): [string, number] => [code, edge[end]]));
 
 /** Every open contract taken the same distance into its own bar. */
 const marksAt = (edges: Map<string, Edge>, travelled: number) =>
@@ -41,7 +49,15 @@ const marksAt = (edges: Map<string, Edge>, travelled: number) =>
  * crossed and left behind before the next print.
  */
 export const lowEquityOf = (ledger: Ledger, bars: Map<string, Bar>) =>
-  equityOf(ledger, marksAt(edgesOf(ledger, bars), 1));
+  equityOf(ledger, extremesOf(edgesOf(ledger, bars), "adverse"));
+
+/**
+ * The best the account stood inside these bars. The trailing floor follows the
+ * peak, and the peak counts open trade profit, so a rally that happened between
+ * two prints raises the floor exactly as a banked one does.
+ */
+export const highEquityOf = (ledger: Ledger, bars: Map<string, Bar>) =>
+  equityOf(ledger, extremesOf(edgesOf(ledger, bars), "favourable"));
 
 /**
  * Where every open contract stood when the account met the floor. Equity is
@@ -78,6 +94,8 @@ export type Liquidation = {
 export type Marking = {
   /** The worst the account stood across every bar read. */
   lowEquityCents: number;
+  /** The best it stood, which the caller has to store or the floor forgets it. */
+  peakEquityCents: number;
   liquidation: Liquidation | null;
 };
 
@@ -125,22 +143,32 @@ export const markingOf = (
   peakEquityCents: number,
 ): Marking => {
   let lowEquityCents = equityOf(ledger);
+  let peak = peakEquityCents;
 
   for (const time of minutesOf(tape)) {
     const bars = barsAt(tape, time);
+    const low = lowEquityOf(ledger, bars);
 
-    lowEquityCents = Math.min(lowEquityCents, lowEquityOf(ledger, bars));
+    lowEquityCents = Math.min(lowEquityCents, low);
 
-    if (failedOf(rules, { lowEquityCents, peakEquityCents })) {
+    // This bar's own low, never the running one. An earlier low was safe against
+    // the floor of its own moment, and reading it again under a floor a later
+    // peak dragged up ends the account for a dip it already survived.
+    if (failedOf(rules, { lowEquityCents: low, peakEquityCents: peak })) {
       return {
         lowEquityCents,
+        peakEquityCents: peak,
         liquidation: {
           at: new Date(time),
-          marks: liquidationMarksOf(ledger, bars, trailingFloorOf(rules, peakEquityCents)),
+          marks: liquidationMarksOf(ledger, bars, trailingFloorOf(rules, peak)),
         },
       };
     }
+
+    // After the breach check. A bar does not say which end printed first, so its
+    // own high must not raise the floor over its own low.
+    peak = Math.max(peak, highEquityOf(ledger, bars));
   }
 
-  return { lowEquityCents, liquidation: null };
+  return { lowEquityCents, peakEquityCents: peak, liquidation: null };
 };

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { type Fill, ledgerOf, type Side } from "./fills";
 import type { AccountRules } from "./floors";
-import { liquidationMarksOf, lowEquityOf, markingOf } from "./liquidation";
+import { highEquityOf, liquidationMarksOf, lowEquityOf, markingOf } from "./liquidation";
 import type { Bar } from "./matching";
 import { priceUnits, toPrice } from "./money";
 
@@ -116,9 +116,10 @@ describe("markingOf", () => {
     // when the tape is read
     const { liquidation } = markingOf(ledger, tape, rules, START);
 
-    // then the second bar ended it, at the price that met the floor inside it
+    // then the second bar ended it, at the price that met the floor inside it,
+    // one point above the entry floor because the first bar's high raised it
     expect(liquidation?.at.getTime()).toBe(Date.UTC(2026, 7, 26, 15, 1));
-    expect(toPrice(liquidation?.marks.get("MES") ?? 0)).toBe(4_990);
+    expect(toPrice(liquidation?.marks.get("MES") ?? 0)).toBe(4_991);
   });
 
   it("should report the low without a liquidation when no bar reached the floor", () => {
@@ -172,5 +173,63 @@ describe("markingOf", () => {
     // then the day is over and the position is untouched, because only the
     // floor that ends the account flattens anything
     expect(liquidation).toBeNull();
+  });
+});
+
+describe("highEquityOf", () => {
+  it("should read a long at the high of the bar and a short at the low", () => {
+    // given one contract held each way, each with ten points for it
+    const ledger = ledgerOf([fill("MES", "buy", 1, 5000), fill("MNQ", "sell", 1, 20000)], START);
+
+    // when the bars are read at their favourable end
+    const bars = new Map([
+      ["MES", bar(5000, 5010, 4990)],
+      ["MNQ", bar(20000, 20010, 19990)],
+    ]);
+
+    // then the long counts the high and the short counts the low
+    expect(highEquityOf(ledger, bars)).toBe(START + 5_000 + 2_000);
+  });
+});
+
+describe("markingOf, the peak between two prints", () => {
+  it("should raise the floor on a rally that never printed a fill", () => {
+    // given one long, and a peak that only ever saw the entry
+    const ledger = ledgerOf([fill("MES", "buy", 1, 5000)], START);
+
+    // when the tape rallies twenty points and then gives back twenty five
+    const tape = new Map([["MES", [at(1, 5000, 5020, 5000), at(2, 5020, 5020, 4995)]]]);
+
+    const marking = markingOf(ledger, tape, rules, START);
+
+    // then the rally moved the floor with it, and the give back went under it
+    expect(marking.peakEquityCents).toBe(START + 10_000);
+    expect(marking.liquidation).not.toBeNull();
+  });
+
+  it("should not re-judge an earlier low against a floor a later bar raised", () => {
+    // given one long, and a dip that was safe against the floor of its moment
+    const ledger = ledgerOf([fill("MES", "buy", 1, 5000)], START);
+
+    // when the dip comes first and the rally after it
+    const tape = new Map([["MES", [at(1, 5000, 5000, 4985), at(2, 4985, 5040, 4985)]]]);
+
+    const marking = markingOf(ledger, tape, rules, START);
+
+    // then the account survives, and only the peak moved
+    expect(marking.lowEquityCents).toBe(START - 7_500);
+    expect(marking.peakEquityCents).toBe(START + 20_000);
+    expect(marking.liquidation).toBeNull();
+  });
+
+  it("should not let one bar's own high drag the floor over its own low", () => {
+    // given one long, and a single bar that ran both ways
+    const ledger = ledgerOf([fill("MES", "buy", 1, 5000)], START);
+
+    // when the high would have moved the floor above the low of the same bar
+    const tape = new Map([["MES", [at(1, 5000, 5040, 4995)]]]);
+
+    // then the bar does not say which end printed first, so it is left alone
+    expect(markingOf(ledger, tape, rules, START).liquidation).toBeNull();
   });
 });
