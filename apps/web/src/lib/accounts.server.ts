@@ -353,5 +353,18 @@ export const loadAccountDay = async (
       ? { reason: loaded.row.endedReason, at: loaded.row.endedAt.getTime() }
       : null;
 
-  return { account: loaded.account, day, trades, fills, placed, session, ended };
+  // Newest first. A session is read back from what just happened, not forward
+  // from where it started.
+  const newestFirst = <T>(rows: T[], at: (row: T) => number) =>
+    [...rows].sort((one, two) => at(two) - at(one));
+
+  return {
+    account: loaded.account,
+    day,
+    trades: newestFirst(trades, (trade) => trade.at),
+    fills: newestFirst(fills, (fill) => fill.at),
+    placed: newestFirst(placed, (order) => order.at),
+    session,
+    ended,
+  };
 };
