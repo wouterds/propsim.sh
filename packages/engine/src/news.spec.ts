@@ -214,6 +214,36 @@ describe("heldThroughOf", () => {
     expect(heldThroughOf(fills, windows, NFP + 10 * minute)).not.toBeNull();
   });
 
+  it("should not breach an open position on a release the tape has not carried", () => {
+    // given a position still open, and a release the wall clock has passed but
+    // a feed running ten minutes behind has not reached
+    const fills = [fill("buy", 1, NFP - 60 * minute)];
+    const wallClock = NFP + 3 * minute;
+    const tape = NFP - 10 * minute;
+
+    // then judging on the wall clock ends an account for a window whose bars
+    // the trader has not been shown, which is the whole reason `asOf` exists
+    expect(heldThroughOf(fills, windows, wallClock)).not.toBeNull();
+    expect(heldThroughOf(fills, windows, tape)).toBeNull();
+  });
+
+  it("should breach once the tape reaches the release", () => {
+    // given the same open position, and a tape that has now carried the window
+    const fills = [fill("buy", 1, NFP - 60 * minute)];
+
+    // then
+    expect(heldThroughOf(fills, windows, NFP - minute)).not.toBeNull();
+  });
+
+  it("should let a close that the tape stamped before the window off", () => {
+    // given a trade closed at a tape instant ahead of the blackout, which on a
+    // delayed feed is what a click ten minutes after the release produces
+    const fills = [fill("buy", 1, NFP - 20 * minute), fill("sell", 1, NFP - 9 * minute)];
+
+    // then the span never reaches the window, whatever the wall clock says
+    expect(heldThroughOf(fills, windows, NFP + 30 * minute)).toBeNull();
+  });
+
   it("should not breach on a window that has not happened yet", () => {
     // given a position open now, and a release still to come
     const fills = [fill("buy", 1, NFP - 60 * minute)];

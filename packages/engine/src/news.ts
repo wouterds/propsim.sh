@@ -92,19 +92,25 @@ export const heldSpansOf = (fills: Fill[]): Held[] => {
  * account ends it. A position opened and closed inside one still counts: the
  * rule is to be flat, not to avoid finishing the window in a trade.
  *
- * A position still open runs to `now`, so a window that has not opened yet
- * cannot be breached by it.
+ * `asOf` is the tape's own clock and never the wall clock. The feed runs about
+ * ten minutes behind, so a release that has happened in the world has not
+ * reached the trader yet, and judging an open position against the wall clock
+ * breaches it for a window it could not see. A silent tape reads as 0, which
+ * reaches no window at all.
+ *
+ * A position still open runs to `asOf`, so a release the tape has not carried
+ * yet cannot be breached by it.
  */
 export const heldThroughOf = (
   fills: Fill[],
   windows: NewsWindow[],
-  now: number,
+  asOf: number,
 ): NewsWindow | null => {
   const spans = heldSpansOf(fills);
 
   return (
     windows.find((window) =>
-      spans.some((span) => span.from <= window.to && (span.to ?? now) >= window.from),
+      spans.some((span) => span.from <= window.to && (span.to ?? asOf) >= window.from),
     ) ?? null
   );
 };

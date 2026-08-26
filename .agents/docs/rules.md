@@ -119,6 +119,30 @@ Listed so nobody assumes otherwise. Each is published on `/rules` and does nothi
 | **Position limits** | Only `maxMicros` is checked. `maxMinis` is unenforced, which is currently equivalent because the contract catalog is micros only |
 | **Daily profit ceiling** | Lucid moves a trader to live on hitting it. There is nothing to be moved to here |
 
+## One Clock: The Tape's
+
+The feed runs about **ten to twelve minutes behind**. Every rule is read on the
+tape's clock and never on the wall clock, because the tape is the only thing the
+trader can see.
+
+A manual fill is stamped at the **open of the bar its price came from**, which is
+where the matcher stamps its own fills, so a click and a filled resting order
+speak the same instant. Stamping a click at `Date.now()` puts a ten minute old
+price under a fresh timestamp, and then:
+
+- A blackout window judged on the wall clock covers bars the trader has not been
+  shown. They are ended for a release that, on their chart, has not happened,
+  and are then free to trade the spike when it arrives ten minutes later. The
+  rule is inverted rather than merely offset.
+- A resting order cannot be filled by any bar for ten minutes, because every bar
+  the feed still owes is older than the order's own `placed_at`.
+- A trade near 17:00 CT is stamped into the next session while carrying the
+  previous session's price.
+
+`heldThroughOf` takes `asOf`, which is the tape's frontier: the newest bar the
+sweep actually read. A silent tape reads as 0 and reaches no window, so a feed
+outage never breaches anybody.
+
 ## Known Fidelity Limits
 
 - **Bars, not ticks.** The floors are read against one minute bars from a delayed feed, so a floor
@@ -126,6 +150,11 @@ Listed so nobody assumes otherwise. Each is published on `/rules` and does nothi
   known. `/rules` says "every tick"; the truth is every bar.
 - **The calendar reaches back a week.** A release older than the news feed's window cannot be
   judged, so a news breach is only ever caught close to live.
+- **A cancel lands on the wall clock's terms.** Cancelling ends the order at
+  once, including against bars the feed has not delivered yet, so an order the
+  tape would already have filled can still be pulled. The trader cannot see
+  those bars either, so it is symmetric ignorance rather than an edge, but the
+  timestamps are not.
 - **Marks stop at the last fill.** The sweep reads the bars since an account's last print, and only
   within the current session. A previous session's floors hung off an anchor that has closed.
 

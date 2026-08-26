@@ -66,10 +66,21 @@ export const meta: Route.MetaFunction = ({ loaderData }) => {
   ];
 };
 
+/**
+ * The last price the tape has printed, and the bar it printed on. Both come off
+ * the same bar on purpose. The feed runs about ten minutes behind, so a fill
+ * stamped with the wall clock carries a price from ten minutes before its own
+ * timestamp, and every rule read against it is read on the wrong clock: a
+ * blackout window judged there covers bars the trader has not been shown.
+ *
+ * The bar's open, which is where the matcher stamps its own fills, so a manual
+ * trade and a filled resting order speak the same instant.
+ */
 const lastTraded = async (symbol: string) => {
   const candles = await getCandles({ symbol, interval: "1m", range: "1d" });
+  const bar = candles.at(-1);
 
-  return candles.at(-1)?.close ?? null;
+  return bar ? { price: bar.close, at: new Date(bar.time) } : null;
 };
 
 const number = (form: FormData, key: string) => {
@@ -179,7 +190,18 @@ export const action = async ({ params, request }: Route.ActionArgs) => {
 
   const form = await request.formData();
   const intent = String(form.get("intent") ?? "");
-  const at = new Date();
+
+  // Named, never guessed. A fallback here would fill the wrong contract.
+  const instrument = findInstrument(String(form.get("instrument") ?? ""));
+
+  if (!instrument) {
+    return { error: "That is not something this terminal can do." };
+  }
+
+  const tape = await lastTraded(instrument.symbol);
+  // A cancel or a modify is a decision rather than a print, so a quiet feed
+  // must not refuse one. Only a fill needs a price, and that is checked below.
+  const at = tape?.at ?? new Date();
 
   if (intent === "cancel") {
     await cancelOrder(loaded.row.id, String(form.get("id") ?? ""), at);
@@ -206,18 +228,15 @@ export const action = async ({ params, request }: Route.ActionArgs) => {
     };
   }
 
-  // Named, never guessed. A fallback here would fill the wrong contract.
-  const instrument = findInstrument(String(form.get("instrument") ?? ""));
-
-  if (!instrument || (intent !== "submit" && intent !== "close")) {
+  if (intent !== "submit" && intent !== "close") {
     return { error: "That is not something this terminal can do." };
   }
 
-  const mark = await lastTraded(instrument.symbol);
-
-  if (mark === null) {
+  if (!tape) {
     return { error: "No price to fill against. The feed is not answering." };
   }
+
+  const mark = tape.price;
 
   if (intent === "close") {
     return { error: await closePosition(loaded.row, instrument.code, priceUnits(mark), at) };

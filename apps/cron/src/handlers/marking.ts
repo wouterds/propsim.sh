@@ -100,6 +100,15 @@ export const marking = async () => {
     }
   }
 
+  // The tape's own frontier, which is where an open position has actually been
+  // marked to. Real time runs about ten minutes ahead of it, and judging a
+  // release there ends an account for a window it has not been shown. A tape
+  // that said nothing reads as 0 and so reaches no window at all.
+  const tapeNow = [...tape.values()].reduce(
+    (latest, bars) => Math.max(latest, bars.at(-1)?.time ?? 0),
+    0,
+  );
+
   let liquidated = 0;
   let failed = 0;
 
@@ -107,7 +116,7 @@ export const marking = async () => {
   // through a release is a breach the account keeps after it is closed.
   for (const one of watched) {
     try {
-      const through = heldThroughOf(one.fills, windows, now.getTime());
+      const through = heldThroughOf(one.fills, windows, tapeNow);
 
       if (through) {
         await failForNews(one.account.id, through.titles.join(", "), through.at);
