@@ -1,10 +1,8 @@
 import { href, Link } from "react-router";
 import AccountCard from "~/components/account/account-card";
-import StatCard from "~/components/ui/stat-card";
 import { totalsOf } from "~/lib/accounts";
 import { loadAccounts } from "~/lib/accounts.server";
 import { requireUserId } from "~/lib/auth.server";
-import { formatMoney, formatSigned, toneOf } from "~/lib/format";
 import { PRIVATE } from "~/lib/seo";
 import type { Route } from "./+types/accounts";
 
@@ -37,22 +35,7 @@ const Accounts = ({ loaderData }: Route.ComponentProps) => {
         </Link>
       </div>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        <StatCard label="Balance" value={formatMoney(totals.balance)} hint="Every account" />
-        <StatCard
-          label="Net P&L"
-          value={formatSigned(totals.netPnl)}
-          tone={toneOf(totals.netPnl)}
-          hint={`${totals.trades} trades logged`}
-        />
-        <StatCard
-          label="Simulated"
-          value={formatMoney(totals.allocated)}
-          hint="Starting balances added up"
-        />
-      </div>
-
-      <div className="mt-3 grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
+      <div className="mt-6 grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
         {accounts.map((account) => (
           <AccountCard key={account.id} account={account} />
         ))}
