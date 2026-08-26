@@ -34,3 +34,20 @@ export const usernameError = (value: string) => {
 
 export const RESET_TTL_MINUTES = 60;
 export const EMAIL_CHANGE_TTL_MINUTES = 60;
+
+export const MAX_HANDLE = 40;
+
+/**
+ * A handle, never a URL. Anything a site would not accept in one is refused
+ * here, so what is stored can only ever be pasted onto the end of an address we
+ * chose rather than one somebody else did.
+ */
+export const handleError = (handle: string) => {
+  if (handle.length > MAX_HANDLE) {
+    return `Use at most ${MAX_HANDLE} characters.`;
+  }
+
+  return /^[A-Za-z0-9._-]+$/.test(handle)
+    ? null
+    : "Use the handle on its own, letters, numbers, dots, dashes and underscores.";
+};
