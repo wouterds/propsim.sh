@@ -1,7 +1,8 @@
-import { type Candle, getCandles } from "@propsim/datasources";
+import type { Candle } from "@propsim/datasources";
 import {
   activeWindow,
   findInstrument,
+  type Instrument,
   instrumentOr,
   isWorking,
   priceUnits,
@@ -40,7 +41,8 @@ import {
   placeOrder,
 } from "~/lib/orders.server";
 import { PRIVATE } from "~/lib/seo";
-import { useLivePrice } from "~/lib/use-live-price";
+import { tapeOf } from "~/lib/tape.server";
+import { useLiveCandle } from "~/lib/use-live-candle";
 import type { Route } from "./+types/terminal";
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -75,20 +77,22 @@ export const meta: Route.MetaFunction = ({ loaderData }) => {
 };
 
 /**
- * The last price the tape has printed, and the bar it printed on. Both come off
- * the same bar on purpose. The feed runs about ten minutes behind, so a fill
- * stamped with the wall clock carries a price from ten minutes before its own
- * timestamp, and every rule read against it is read on the wrong clock: a
- * blackout window judged there covers bars the trader has not been shown.
+ * The step of the dance the trader is looking at, and the instant it opened.
+ * Both come off the same step on purpose. The feed runs about ten minutes
+ * behind, so a fill stamped with the wall clock carries a price from ten
+ * minutes before its own timestamp, and every rule read against it is read on
+ * the wrong clock: a blackout window judged there covers bars the trader has
+ * not been shown.
  *
- * The bar's open, which is where the matcher stamps its own fills, so a manual
- * trade and a filled resting order speak the same instant.
+ * The step's own open, which is where the matcher stamps its fills too, so a
+ * manual trade and a filled resting order speak the same instant. Stamping it
+ * at the bar's open would put the click before every step it watched go by, and
+ * a resting order placed on one could not fill until the next minute.
  */
-const lastTraded = async (symbol: string) => {
-  const candles = await getCandles({ symbol, interval: "1m", range: "1d" });
-  const bar = candles.at(-1);
+const lastTraded = async (instrument: Instrument) => {
+  const { step } = await tapeOf(instrument, "1m");
 
-  return bar ? { price: bar.close, at: new Date(bar.time) } : null;
+  return step ? { price: step.close, at: new Date(step.time) } : null;
 };
 
 const number = (form: FormData, key: string) => {
@@ -150,12 +154,7 @@ export const loader = async ({ url, params, request }: Route.LoaderArgs) => {
   const book = { orders, positions, realised: loaded.account.balance - loaded.account.plan.size };
 
   try {
-    // The bar still printing is included here and nowhere else. It is what
-    // makes the chart move between one closed bar and the next.
-    const candles = await getCandles(
-      { symbol: instrument.symbol, interval: timeframe, range: rangeFor(timeframe) },
-      { forming: true },
-    );
+    const { candles } = await tapeOf(instrument, timeframe);
 
     return data(
       {
@@ -215,7 +214,7 @@ export const action = async ({ params, request }: Route.ActionArgs) => {
     return { error: "That is not something this terminal can do." };
   }
 
-  const tape = await lastTraded(instrument.symbol);
+  const tape = await lastTraded(instrument);
   // A cancel or a modify is a decision rather than a print, so a quiet feed
   // must not refuse one. Only a fill needs a price, and that is checked below.
   const at = tape?.at ?? new Date();
@@ -323,27 +322,23 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
 
   const blackout = now === null ? null : activeWindow(windows, now);
 
-  // Null, not a stand-in. Closing marks to this price and banks it for good.
-  // Pushed, not polled. The bar still printing is carried forward to it, so
-  // the last candle moves between one closed bar and the next.
-  const live = useLivePrice(instrument.code);
+  // Pushed, not polled, and the same candle the server fills against. The bar
+  // it carries is one the tape already held complete, revealed a step at a time.
+  const live = useLiveCandle(instrument.code, timeframe);
 
   const bars = useMemo(() => {
-    const settled = candles.at(-1);
+    const newest = candles.at(-1);
 
-    if (live === null || !settled) {
+    if (live === null || !newest || live.time < newest.time) {
       return candles;
     }
 
-    return [
-      ...candles.slice(0, -1),
-      {
-        ...settled,
-        close: live,
-        high: Math.max(settled.high, live),
-        low: Math.min(settled.low, live),
-      },
-    ];
+    // The dance has crossed into a candle the loader was not asked for yet.
+    if (live.time > newest.time) {
+      return [...candles, live];
+    }
+
+    return [...candles.slice(0, -1), live];
   }, [candles, live]);
 
   const last = bars.at(-1)?.close ?? null;

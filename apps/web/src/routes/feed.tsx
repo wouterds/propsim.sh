@@ -1,6 +1,7 @@
-import { getCandles } from "@propsim/datasources";
 import { instrumentOr } from "@propsim/engine";
+import { parseTimeframe } from "~/components/trading/timeframes";
 import { requireUserId } from "~/lib/auth.server";
+import { tapeOf } from "~/lib/tape.server";
 import type { Route } from "./+types/feed";
 
 /** Often enough to feel continuous, and never an upstream request of its own. */
@@ -10,18 +11,20 @@ const TICK = 5_000;
 const HEARTBEAT = 20_000;
 
 /**
- * The tape, pushed. Every connection reads the same shared answer, so a hundred
- * terminals on one contract cost the upstream exactly what one does.
+ * The candle being danced, pushed. Every connection reads the same shared
+ * answer, so a hundred terminals on one contract cost the upstream exactly what
+ * one does, and every one of them is shown the same step.
  */
 export const loader = async ({ request, url }: Route.LoaderArgs) => {
   await requireUserId(request);
 
   const instrument = instrumentOr(url.searchParams.get("s"));
+  const timeframe = parseTimeframe(url.searchParams.get("tf"));
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream({
     start(controller) {
-      let sent: number | null = null;
+      let sent: string | null = null;
       let closed = false;
 
       const push = (chunk: string) => {
@@ -34,15 +37,13 @@ export const loader = async ({ request, url }: Route.LoaderArgs) => {
 
       const read = async () => {
         try {
-          const candles = await getCandles(
-            { symbol: instrument.symbol, interval: "1m", range: "1d" },
-            { forming: true },
-          );
-          const price = candles.at(-1)?.close ?? null;
+          const { candles } = await tapeOf(instrument, timeframe);
+          const newest = candles.at(-1);
+          const chunk = newest ? JSON.stringify(newest) : null;
 
-          if (price !== null && price !== sent) {
-            sent = price;
-            push(`data: ${JSON.stringify({ price, at: Date.now() })}\n\n`);
+          if (chunk !== null && chunk !== sent) {
+            sent = chunk;
+            push(`data: ${chunk}\n\n`);
           }
         } catch {
           // A feed that is down is not a stream that should end. The next read

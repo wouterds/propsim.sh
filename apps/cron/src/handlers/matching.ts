@@ -1,5 +1,5 @@
-import { getCandles } from "@propsim/datasources";
-import { contractOf, matchesOf } from "@propsim/engine";
+import { getTape } from "@propsim/datasources";
+import { contractOf, matchesOf, type Printed, settledOf } from "@propsim/engine";
 import { fillResting, listResting } from "@propsim/orders";
 
 /**
@@ -13,17 +13,18 @@ export const matching = async () => {
 
   for (const instrument of new Set(resting.map((order) => order.instrument))) {
     const orders = resting.filter((order) => order.instrument === instrument);
+    const contract = contractOf(instrument);
 
-    let candles: Awaited<ReturnType<typeof getCandles>>;
+    let steps: Printed[];
 
     try {
       // Five days, not one. A sweep that was down over a weekend still finds
       // the bar that reached the order, and a shut market still answers.
-      candles = await getCandles({
-        symbol: contractOf(instrument).symbol,
-        interval: "1m",
-        range: "5d",
-      });
+      const tape = await getTape({ symbol: contract.symbol, interval: "1m", range: "5d" });
+
+      // Steps, never whole bars. A bar is only offered once the chart has shown
+      // every step of it, so a fill can never land where the dance has not been.
+      steps = settledOf(tape.candles, tape.at, contract.tick);
     } catch (error) {
       // One contract must not stop the sweep reaching the rest.
       console.error(`matching skipped ${instrument}`, error);
@@ -33,7 +34,7 @@ export const matching = async () => {
     // Written one at a time. Each is its own transaction, so a fill that lands
     // is kept whatever the next one does, including a duplicate key from a
     // second sweep that reached the same bar.
-    for (const match of matchesOf(orders, candles)) {
+    for (const match of matchesOf(orders, steps)) {
       try {
         if (await fillResting(match)) {
           filled += 1;

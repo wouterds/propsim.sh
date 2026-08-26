@@ -13,10 +13,11 @@ const AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)";
 const TIMEOUT = 10_000;
 
 /**
- * How long one answer serves everybody. The feed is delayed by minutes and its
- * finest bar is a minute, so this costs no freshness anyone could observe.
+ * How long one answer serves everybody, and the clock the dance runs on. The
+ * feed's own time comes back with the bars, so a longer hold moves the newest
+ * candle in jumps of several steps instead of one.
  */
-const FRESH_SECONDS = 15;
+const FRESH_SECONDS = 5;
 
 export type ChartResult = {
   meta: { regularMarketTime: number };

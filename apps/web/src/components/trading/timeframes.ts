@@ -30,5 +30,7 @@ const SECONDS: Record<Timeframe, number> = {
 
 export const barsPerDay = (timeframe: Timeframe) => Math.round(86_400 / SECONDS[timeframe]);
 
+export const spanOf = (timeframe: Timeframe) => SECONDS[timeframe] * 1000;
+
 export const parseTimeframe = (value: string | null): Timeframe =>
   TIMEFRAMES.find((timeframe) => timeframe === value) ?? DEFAULT_TIMEFRAME;
