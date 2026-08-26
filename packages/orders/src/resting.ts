@@ -1,4 +1,4 @@
-import { accounts, fills, getDb, orders } from "@propsim/database";
+import { accounts, fills, getDb, orders, users } from "@propsim/database";
 import type { Match, Resting } from "@propsim/engine";
 import { and, eq, isNull, ne } from "drizzle-orm";
 import { alias } from "drizzle-orm/mysql-core";
@@ -9,7 +9,8 @@ export type RestingOrder = Resting & { accountId: string; instrument: string; qu
 
 /**
  * Every order a bar could still fill. A closed account keeps the orders it was
- * holding, and none of them may print again.
+ * holding, and none of them may print again. Nor may an emptied account: the
+ * person is gone, so nothing may go on trading in their name.
  */
 export const listResting = async (): Promise<RestingOrder[]> => {
   const entries = alias(fills, "entry_fills");
@@ -30,12 +31,14 @@ export const listResting = async (): Promise<RestingOrder[]> => {
     })
     .from(orders)
     .innerJoin(accounts, eq(accounts.id, orders.accountId))
+    .innerJoin(users, eq(users.id, accounts.userId))
     .leftJoin(fills, eq(fills.orderId, orders.id))
     .leftJoin(entries, eq(entries.orderId, orders.parentOrderId))
     .where(
       and(
         isNull(orders.endedAt),
         isNull(accounts.endedAt),
+        isNull(users.deletedAt),
         // The status of an order is what its fills say. One that has printed is
         // finished whether or not anything marked the row.
         isNull(fills.id),
