@@ -71,7 +71,7 @@ export const action = async ({ request }: Route.ActionArgs) => {
 const LABEL = "mb-1.5 block text-[11px] text-faint uppercase tracking-wider";
 
 const CONTROL =
-  "w-full rounded border border-line bg-sunken px-3 text-ink text-sm outline-hidden transition-colors placeholder:text-faint focus-visible:border-accent focus-visible:ring-[0.5px] focus-visible:ring-accent";
+  "w-full rounded border border-line bg-sunken px-3 text-[16px] text-ink outline-hidden transition-colors placeholder:text-faint focus-visible:border-accent focus-visible:ring-[0.5px] focus-visible:ring-accent sm:text-sm";
 
 const Contact = ({ loaderData, actionData }: Route.ComponentProps) => {
   const navigation = useNavigation();

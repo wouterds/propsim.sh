@@ -4,7 +4,7 @@ import { Form, useNavigation } from "react-router";
 import { type AuthMode, COPY } from "./mode";
 
 const CONTROL =
-  "h-10 w-full rounded border border-line bg-sunken px-3 text-ink text-sm outline-hidden transition-colors placeholder:text-faint focus-visible:border-accent focus-visible:ring-[0.5px] focus-visible:ring-accent";
+  "h-10 w-full rounded border border-line bg-sunken px-3 text-[16px] text-ink outline-hidden transition-colors placeholder:text-faint focus-visible:border-accent focus-visible:ring-[0.5px] focus-visible:ring-accent sm:text-sm";
 
 const LABEL = "mb-1.5 block text-[11px] text-faint uppercase tracking-wider";
 

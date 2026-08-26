@@ -15,7 +15,7 @@ type Props = {
 };
 
 const CONTROL =
-  "w-full resize-y rounded-lg border border-line bg-sunken px-3 py-2.5 text-ink text-sm outline-hidden transition-colors placeholder:text-faint focus-visible:border-accent focus-visible:ring-[0.5px] focus-visible:ring-accent";
+  "w-full resize-y rounded-lg border border-line bg-sunken px-3 py-2.5 text-[16px] text-ink outline-hidden transition-colors placeholder:text-faint focus-visible:border-accent focus-visible:ring-[0.5px] focus-visible:ring-accent sm:text-sm";
 
 const CommentForm = ({ parentId, label, placeholder, submit, limit, busy, cancelTo }: Props) => {
   const field = useId();

@@ -9,7 +9,7 @@ type Props = {
 };
 
 const FIELD =
-  "h-9 w-full rounded border border-line bg-sunken px-3 text-ink text-sm outline-hidden transition-colors placeholder:text-faint focus-visible:border-down focus-visible:ring-1 focus-visible:ring-down";
+  "h-9 w-full rounded border border-line bg-sunken px-3 text-[16px] text-ink outline-hidden transition-colors placeholder:text-faint focus-visible:border-down focus-visible:ring-1 focus-visible:ring-down sm:text-sm";
 
 const DeleteAccount = ({ email, busy }: Props) => {
   const [typed, setTyped] = useState("");

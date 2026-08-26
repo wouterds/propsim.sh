@@ -4,8 +4,10 @@ import { cn } from "~/lib/utils";
 // box-shadow, and only the former leaves an outline to repaint.
 export const FOCUS_RING = "outline-hidden focus-visible:ring-1 focus-visible:ring-accent";
 
+// Sixteen pixels on a phone. Safari zooms the page in on any field smaller
+// than that, and leaves it zoomed and scrolled sideways afterwards.
 export const FIELD = cn(
-  "h-8 w-full rounded border border-line bg-sunken px-2 text-ink text-sm tabular",
+  "h-8 w-full rounded border border-line bg-sunken px-2 text-[16px] text-ink tabular sm:text-sm",
   // The ring lives here rather than in FOCUS_RING: a field also lights its
   // border, and a whole pixel of ring on top of that reads as two.
   "placeholder:text-faint focus-visible:border-accent",

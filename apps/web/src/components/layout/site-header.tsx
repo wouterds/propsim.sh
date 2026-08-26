@@ -82,7 +82,7 @@ const SiteHeader = ({ signedIn }: { signedIn: boolean }) => {
                       onClick={() => setOpen(false)}
                       className={({ isActive }) =>
                         cn(
-                          "flex h-11 items-center rounded px-3 text-base transition-colors",
+                          "flex h-11 items-center rounded px-3 text-[16px] transition-colors",
                           FOCUS,
                           isActive ? "bg-overlay text-ink" : "text-muted hover:text-ink",
                         )

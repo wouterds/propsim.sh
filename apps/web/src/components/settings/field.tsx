@@ -43,7 +43,7 @@ const Field = ({
       data-1p-ignore={keptPrivate || undefined}
       data-lpignore={keptPrivate ? "true" : undefined}
       data-form-type={keptPrivate ? "other" : undefined}
-      className="h-10 w-full rounded border border-line bg-sunken px-3 text-ink text-sm outline-hidden transition-colors focus-visible:border-accent focus-visible:ring-[0.5px] focus-visible:ring-accent"
+      className="h-10 w-full rounded border border-line bg-sunken px-3 text-[16px] text-ink outline-hidden sm:text-sm transition-colors focus-visible:border-accent focus-visible:ring-[0.5px] focus-visible:ring-accent"
     />
   </div>
 );
