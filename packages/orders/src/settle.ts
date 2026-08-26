@@ -20,7 +20,7 @@ import { flatten } from "./marking";
 import { notifyBreach, notifyNews } from "./notify";
 
 /** Only ever rises, so a fold that proposes less than the stored mark loses. */
-const raisePeak = (id: string, peakEquityCents: number) =>
+export const raisePeak = (id: string, peakEquityCents: number) =>
   getDb()
     .update(accounts)
     .set({ peakEquityCents: sql`GREATEST(${accounts.peakEquityCents}, ${peakEquityCents})` })

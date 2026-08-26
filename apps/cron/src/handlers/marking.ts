@@ -18,6 +18,7 @@ import {
   flatten,
   listFills,
   listLive,
+  raisePeak,
   rulesOf,
   settle,
   touchTradingDay,
@@ -138,19 +139,24 @@ export const marking = async () => {
 
       const day = await findTradingDay(one.account.id, tradeDate);
       const sessionOpenCents = day?.openEquityCents ?? carriedInOf(one.ledger, tradeDate);
-      const peakEquityCents = Math.max(one.account.peakEquityCents, peakOf(one.ledger));
+      const peakBefore = Math.max(one.account.peakEquityCents, peakOf(one.ledger));
 
-      const { lowEquityCents, liquidation } = markingOf(
+      const { lowEquityCents, peakEquityCents, liquidation } = markingOf(
         one.ledger,
         bars,
         rulesOf(one.account),
-        peakEquityCents,
+        peakBefore,
       );
 
       await touchTradingDay(one.account.id, tradeDate, now, {
         openEquityCents: sessionOpenCents,
         lowEquityCents,
       });
+
+      // A rally between two prints raises the floor, so the mark has to survive
+      // the sweep that read it. Left here, the next sweep starts from the last
+      // fill again and the floor forgets every high the position ever saw.
+      await raisePeak(one.account.id, peakEquityCents);
 
       if (!liquidation) {
         continue;
