@@ -14,6 +14,7 @@ import {
   type Ledger,
   ledgerOf,
   lockedOutOf,
+  statusOf as orderStatusOf,
   peakOf,
   summariseDays,
   toDollars,
@@ -253,9 +254,28 @@ export const loadAccountDay = async (
       seconds: Math.round((trip.closedAt.getTime() - trip.openedAt.getTime()) / 1000),
     }));
 
-  const orders = new Map(
-    (await listOrders(loaded.row.id)).map((order) => [order.id, order] as const),
-  );
+  const orderRows = await listOrders(loaded.row.id);
+  const orders = new Map(orderRows.map((order) => [order.id, order] as const));
+
+  const placed = orderRows
+    .filter((order) => order.tradeDate === tradeDate)
+    .map((order) => {
+      const taken = loaded.fills.filter((fill) => fill.orderId === order.id);
+      const filled = taken.reduce((total, fill) => total + fill.quantity, 0);
+
+      return {
+        id: order.id,
+        at: order.placedAt.getTime(),
+        instrument: order.instrument,
+        side: order.side,
+        quantity: order.quantity,
+        filled,
+        // A market order has no price of its own until a fill gives it one.
+        price: order.price === null ? null : toPrice(order.price),
+        kind: kindOf(order.type, order.intent),
+        status: orderStatusOf(order, filled),
+      };
+    });
 
   const fills = loaded.fills
     .filter((fill) => fill.tradeDate === tradeDate)
@@ -295,5 +315,5 @@ export const loadAccountDay = async (
       ? { reason: loaded.row.endedReason, at: loaded.row.endedAt.getTime() }
       : null;
 
-  return { account: loaded.account, day, trades, fills, session, ended };
+  return { account: loaded.account, day, trades, fills, placed, session, ended };
 };
