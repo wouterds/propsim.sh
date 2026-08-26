@@ -42,6 +42,8 @@ const CandleChart = ({ candles, priceLines, bands, tick, visibleBars, onHover }:
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
   const themeRef = useRef<ChartTheme | null>(null);
+  /** The tape the window was framed for, so a refresh does not re-frame it. */
+  const framed = useRef<string | null>(null);
   const tickRef = useRef(tick);
   const hoverRef = useRef(onHover);
 
@@ -113,6 +115,16 @@ const CandleChart = ({ candles, priceLines, bands, tick, visibleBars, onHover }:
     }));
 
     series.setData(bars);
+
+    // Only a new tape gets framed. A refresh must not throw away where the
+    // trader scrolled to, and the oldest bar is what says the tape changed.
+    const tape = `${visibleBars}:${bars[0]?.time ?? 0}`;
+
+    if (framed.current === tape) {
+      return;
+    }
+
+    framed.current = tape;
 
     // The fetch reaches back further than the view. Anything else makes a month
     // of bars unreadable and ties the window to the range asked for.
