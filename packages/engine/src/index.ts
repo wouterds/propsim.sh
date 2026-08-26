@@ -8,4 +8,5 @@ export * from "./matching";
 export * from "./money";
 export * from "./news";
 export * from "./orders";
+export * from "./outcome";
 export * from "./session";
