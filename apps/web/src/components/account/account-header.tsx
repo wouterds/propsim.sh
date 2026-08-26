@@ -21,10 +21,12 @@ const ENDING: Record<Ending, string> = {
 const AccountHeader = ({ account }: Props) => {
   const plan = planOf(account);
 
+  // Only the summary matches exactly. The others stay lit on a page under them,
+  // so opening one session does not read as having left the journal.
   const tabs = [
-    { to: href("/accounts/:id", { id: account.id }), label: "Summary" },
-    { to: href("/accounts/:id/journal", { id: account.id }), label: "Journal" },
-    { to: href("/accounts/:id/terminal", { id: account.id }), label: "Terminal" },
+    { to: href("/accounts/:id", { id: account.id }), label: "Summary", end: true },
+    { to: href("/accounts/:id/journal", { id: account.id }), label: "Journal", end: false },
+    { to: href("/accounts/:id/terminal", { id: account.id }), label: "Terminal", end: false },
   ];
 
   return (
@@ -60,7 +62,7 @@ const AccountHeader = ({ account }: Props) => {
             <NavLink
               key={tab.to}
               to={tab.to}
-              end
+              end={tab.end}
               className={({ isActive }) =>
                 cn(
                   "inline-flex h-8 items-center rounded px-2.5 text-sm transition-colors",
