@@ -21,35 +21,39 @@ const Board = ({ title, hint, empty, rows }: Props) => (
     {rows.length === 0 ? (
       <p className="px-5 py-8 text-center text-faint text-sm">{empty}</p>
     ) : (
-      <ol className="divide-y divide-line/70">
+      <ol>
         {rows.map((row) => (
-          <li key={row.id} className="group relative flex items-center gap-3 px-5 py-3">
-            <span className="w-4 shrink-0 text-right text-faint text-xs tabular">{row.rank}</span>
+          <li key={row.id} className="group/row relative p-1.5">
+            <span className="flex items-center gap-3 rounded px-3 py-2 transition-colors group-hover/row:bg-overlay">
+              <span className="w-4 shrink-0 text-right text-faint text-xs tabular">{row.rank}</span>
 
-            <Avatar persona={row} size={28} />
+              <Avatar persona={row} size={28} />
 
-            <div className="min-w-0 flex-1">
-              {/* Stretched over the row, so the whole of it opens the profile
-                  and still opens in a tab like any other link. */}
-              <Link
-                to={href("/traders/:id", { id: row.id })}
-                className="truncate rounded-sm text-ink text-sm after:absolute after:inset-0 group-hover:text-accent focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
-              >
-                {row.name}
-              </Link>
-              <p className="text-[11px] text-faint">
-                {row.accounts === 1 ? "1 account" : `${row.accounts} accounts`}
-              </p>
-            </div>
+              <span className="min-w-0 flex-1">
+                {/* Stretched over the row, so the whole of it opens the profile
+                    and still opens in a tab like any other link. */}
+                <Link
+                  to={href("/traders/:id", { id: row.id })}
+                  className="block truncate rounded-sm text-ink text-sm after:absolute after:inset-0 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
+                >
+                  {row.name}
+                </Link>
+                <span className="block text-[11px] text-faint">
+                  {row.accounts === 1 ? "1 account" : `${row.accounts} accounts`}
+                </span>
+              </span>
 
-            <div className="shrink-0 text-right">
-              <p className={cn("font-medium text-sm tabular", TONE_TEXT[toneOf(row.pnl)])}>
-                {formatSigned(row.pnl)}
-              </p>
-              <p className="text-[11px] text-faint tabular">
-                {row.target === null ? "–" : `${formatPercent(row.target)} of target`}
-              </p>
-            </div>
+              <span className="shrink-0 text-right">
+                <span
+                  className={cn("block font-medium text-sm tabular", TONE_TEXT[toneOf(row.pnl)])}
+                >
+                  {formatSigned(row.pnl)}
+                </span>
+                <span className="block text-[11px] text-faint tabular">
+                  {row.target === null ? "\u2013" : `${formatPercent(row.target)} of target`}
+                </span>
+              </span>
+            </span>
           </li>
         ))}
       </ol>
