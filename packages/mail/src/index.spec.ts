@@ -95,6 +95,7 @@ describe("sendAccountBreached", () => {
     await sendAccountBreached({
       to: "trader@example.com",
       account: "50K Daily",
+      href: "https://propsim.sh/accounts/01a",
       equity: "$48,000.00",
       floor: "$48,000.00",
     });

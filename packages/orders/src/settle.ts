@@ -3,6 +3,7 @@ import {
   balanceOf,
   carriedInOf,
   equityOf,
+  failedDuringOf,
   failedOf,
   ledgerOf,
   peakOf,
@@ -13,7 +14,7 @@ import {
 } from "@propsim/engine";
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { findAccount, rulesOf } from "./accounts";
-import { findTradingDay, touchTradingDay } from "./days";
+import { touchTradingDay } from "./days";
 import { listFills } from "./fills";
 import { flatten } from "./marking";
 import { notifyBreach, notifyNews } from "./notify";
@@ -66,20 +67,28 @@ export const settle = async (accountId: string, at: Date) => {
   });
 
   const peakEquityCents = Math.max(row.peakEquityCents, peakOf(ledger));
-  const day = await findTradingDay(accountId, tradeDate);
 
   await raisePeak(accountId, peakEquityCents);
 
   const rules = rulesOf(row);
-  // The deepest the account went, which is what both floors are read at. A
-  // session that went through one and recovered has still been through it.
-  const lowEquityCents = Math.min(day?.lowEquityCents ?? equityCents, equityCents);
 
-  // The daily floor is judged nowhere: it shuts the session rather than the
+  // Now against now, and the fill history against the floor as it stood at each
+  // print. Never the session's stored low against the floor as it stands today:
+  // that low belongs to a moment when the peak, and so the floor, was lower, and
+  // reading the two together ends an account on a trade that made money.
+  //
+  // Nothing re-reads the stored low for this. The sweep judged it against the
+  // peak of its own moment and ended the account there if it had to.
+  //
+  // The daily floor is judged nowhere here: it shuts the session rather than the
   // account, and `lockedFor` reads that straight off the day's own low.
-  if (failedOf(rules, { lowEquityCents, peakEquityCents })) {
+  const failed =
+    failedOf(rules, { lowEquityCents: equityCents, peakEquityCents }) ||
+    failedDuringOf(rules, ledger.path, row.startingBalanceCents);
+
+  if (failed) {
     if (await endAccount(accountId, "trailing_drawdown", at)) {
-      await notifyBreach(accountId, lowEquityCents, trailingFloorOf(rules, peakEquityCents));
+      await notifyBreach(accountId, equityCents, trailingFloorOf(rules, peakEquityCents));
     }
 
     return;

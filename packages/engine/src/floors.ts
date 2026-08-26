@@ -45,3 +45,32 @@ export const failedOf = (
   rules: AccountRules,
   marks: { lowEquityCents: number; peakEquityCents: number },
 ) => marks.lowEquityCents <= trailingFloorOf(rules, marks.peakEquityCents);
+
+/**
+ * Walks the equity in order against a floor that rises with it.
+ *
+ * A low is only ever a breach against the floor that stood at the moment it
+ * happened. The floor follows the peak up, so taking a session's low water mark
+ * and reading it against the floor a later peak dragged up ends an account for
+ * a dip that was safe when it printed: a winning trade raises the peak, the
+ * floor goes with it, and the morning's drawdown is suddenly under it.
+ *
+ * `from` is the peak before any of this path, never the peak now.
+ */
+export const failedDuringOf = (
+  rules: AccountRules,
+  path: { equityCents: number }[],
+  from: number,
+) => {
+  let peak = from;
+
+  for (const point of path) {
+    peak = Math.max(peak, point.equityCents);
+
+    if (point.equityCents <= trailingFloorOf(rules, peak)) {
+      return true;
+    }
+  }
+
+  return false;
+};

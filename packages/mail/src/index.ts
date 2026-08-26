@@ -81,37 +81,41 @@ export const sendPasswordChanged = ({ to }: { to: string }) =>
 export const sendAccountBreached = ({
   to,
   account,
+  href,
   equity,
   floor,
 }: {
   to: string;
   account: string;
+  href: string;
   equity: string;
   floor: string;
 }) =>
   deliver(
     "account-breached",
     to,
-    `${account} is closed`,
-    createElement(AccountBreached, { to, account, equity, floor }),
+    `${account} is breached`,
+    createElement(AccountBreached, { to, account, href, equity, floor }),
   );
 
 export const sendAccountNews = ({
   to,
   account,
+  href,
   release,
   at,
 }: {
   to: string;
   account: string;
+  href: string;
   release: string;
   at: string;
 }) =>
   deliver(
     "account-news",
     to,
-    `${account} is closed`,
-    createElement(AccountNews, { to, account, release, at }),
+    `${account} is breached`,
+    createElement(AccountNews, { to, account, href, release, at }),
   );
 
 export const sendAccountDeleted = ({ to }: { to: string }) =>

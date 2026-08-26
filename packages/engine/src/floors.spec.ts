@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { type AccountRules, failedOf, lockedOutOf, trailingFloorOf } from "./floors";
+import {
+  type AccountRules,
+  failedDuringOf,
+  failedOf,
+  lockedOutOf,
+  trailingFloorOf,
+} from "./floors";
 
 const rules: AccountRules = {
   startingBalanceCents: 5_000_000,
@@ -98,5 +104,39 @@ describe("failedOf", () => {
     // then the floor is the locked one, not nine million less the drawdown
     expect(failedOf(rules, locked)).toBe(true);
     expect(failedOf(rules, { ...locked, lowEquityCents: 5_010_001 })).toBe(false);
+  });
+});
+
+describe("failedDuringOf", () => {
+  const path = (...equities: number[]) => equities.map((equityCents) => ({ equityCents }));
+
+  it("should not end an account whose own profit dragged the floor over an old dip", () => {
+    // given a session that dipped to 4,948,250 while the peak was still the
+    // opening 5,000,000, then closed a winner at 5,238,250
+    const walked = path(4_948_250, 5_238_250);
+
+    // when the floor is read at each point rather than once at the end
+    // then the dip was 51,750 clear of the 4,800,000 floor that stood over it,
+    // and the winner is what lifted the floor to its locked 5,010,000
+    expect(failedDuringOf(rules, walked, 5_000_000)).toBe(false);
+    expect(failedOf(rules, { lowEquityCents: 4_948_250, peakEquityCents: 5_238_250 })).toBe(true);
+  });
+
+  it("should end an account that went under the floor standing over it", () => {
+    // given a run up to 5,100,000, which carries the floor to 4,900,000, and a
+    // give back through it
+    expect(failedDuringOf(rules, path(5_100_000, 4_899_999), 5_000_000)).toBe(true);
+  });
+
+  it("should leave a give back that stopped a cent short", () => {
+    // given the same run up and one cent more room
+    expect(failedDuringOf(rules, path(5_100_000, 4_900_001), 5_000_000)).toBe(false);
+  });
+
+  it("should start from the peak it is given rather than from the first point", () => {
+    // given an account that had already run up before this stream
+    // then the floor is already at the locked one and a dip to it counts
+    expect(failedDuringOf(rules, path(5_010_000), 9_000_000)).toBe(true);
+    expect(failedDuringOf(rules, path(5_010_000), 5_000_000)).toBe(false);
   });
 });

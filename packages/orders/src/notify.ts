@@ -3,6 +3,8 @@ import { sendAccountBreached, sendAccountNews } from "@propsim/mail";
 import { eq } from "drizzle-orm";
 import { chicagoTime, money, utcClock, utcDate } from "./format";
 
+const accountUrl = (id: string) => `https://propsim.sh/accounts/${id}`;
+
 const owner = async (accountId: string) => {
   const [row] = await getDb()
     .select({ email: users.email, name: accounts.name, deletedAt: users.deletedAt })
@@ -36,6 +38,7 @@ export const notifyBreach = async (accountId: string, equityCents: number, floor
     sendAccountBreached({
       to: row.email,
       account: row.name,
+      href: accountUrl(accountId),
       equity: money(equityCents),
       floor: money(floorCents),
     }),
@@ -54,6 +57,7 @@ export const notifyNews = async (accountId: string, release: string, at: number)
     sendAccountNews({
       to: row.email,
       account: row.name,
+      href: accountUrl(accountId),
       release,
       at: `${utcDate(at)}, ${utcClock(at)} UTC (${chicagoTime(at)})`,
     }),
