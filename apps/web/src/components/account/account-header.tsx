@@ -1,7 +1,7 @@
 import { href, NavLink } from "react-router";
 import Badge from "~/components/ui/badge";
-import { type Account, planOf, STATUS_LABEL, STATUS_TONE } from "~/lib/accounts";
-import { formatDate } from "~/lib/format";
+import { type Account, type Ending, planOf, STATUS_LABEL, STATUS_TONE } from "~/lib/accounts";
+import { formatDate, formatMoment } from "~/lib/format";
 import { cn } from "~/lib/utils";
 
 type Props = {
@@ -9,6 +9,14 @@ type Props = {
 };
 
 const FOCUS = "focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent";
+
+/** Named for the rule, because "breached" alone sends people looking for which. */
+const ENDING: Record<Ending, string> = {
+  trailing_drawdown: "Closed by the trailing drawdown",
+  daily_loss: "Closed by the daily loss limit",
+  news: "Closed by a red folder release",
+  target_met: "Passed on the profit target",
+};
 
 const AccountHeader = ({ account }: Props) => {
   const plan = planOf(account);
@@ -32,6 +40,20 @@ const AccountHeader = ({ account }: Props) => {
         <p className="mt-1 text-faint text-xs tabular">
           {plan.label} · up to {plan.maxMicros} micros · opened {formatDate(account.openedOn)}
         </p>
+
+        {/* No box around it. The badge above has already said something is
+            wrong, and this is the sentence that says what. */}
+        {account.endedReason && account.endedAt && (
+          <p
+            className={cn(
+              "mt-2 text-sm",
+              account.endedReason === "target_met" ? "text-accent" : "text-down",
+            )}
+          >
+            {ENDING[account.endedReason]}
+            <span className="text-faint"> · {formatMoment(new Date(account.endedAt))}</span>
+          </p>
+        )}
 
         <nav className="-mx-2.5 mt-4 flex items-center gap-1">
           {tabs.map((tab) => (

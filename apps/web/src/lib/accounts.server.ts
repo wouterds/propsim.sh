@@ -167,6 +167,9 @@ const viewOf = (row: AccountRow, ledger: Ledger, anchors: DayAnchor[], now: Date
     balance: toDollars(balanceOf(ledger)),
     equity: toDollars(equityCents),
     peakEquity: toDollars(peakEquityCents),
+    feesPaid: toDollars(ledger.feesCents),
+    endedAt: row.endedAt ? row.endedAt.toISOString() : null,
+    endedReason: row.endedReason,
     // No session row yet. The anchor is where the previous session left the
     // equity, not where it stands now, or a position carried in moves the floor.
     sessionOpenEquity: toDollars(today?.openEquityCents ?? carriedInCents(ledger, tradeDate)),

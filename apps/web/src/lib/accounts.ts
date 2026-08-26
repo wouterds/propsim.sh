@@ -20,6 +20,9 @@ export const isOpen = (status: AccountStatus) => status === "live" || status ===
  * Read only, and in dollars. Every amount on it was added up in cents first,
  * and the plan is the copy the account carries rather than the current catalog.
  */
+/** Why an account stopped. `null` while it has not. */
+export type Ending = "daily_loss" | "trailing_drawdown" | "news" | "target_met";
+
 export type Account = {
   id: string;
   name: string;
@@ -30,6 +33,10 @@ export type Account = {
   equity: number;
   peakEquity: number;
   sessionOpenEquity: number;
+  /** Commission taken out of the balance so far. */
+  feesPaid: number;
+  endedAt: string | null;
+  endedReason: Ending | null;
   journal: JournalDay[];
 };
 
@@ -71,6 +78,17 @@ export const trailingFloorOf = (account: Account) =>
 export const targetOf = (account: Account) => toDollars(targetCents(rulesOf(account)));
 
 export const netPnlOf = (account: Account) => account.balance - account.plan.size;
+
+/**
+ * The equity at which the trailing floor stops following the peak. One of the
+ * three numbers a trailing drawdown is made of, and the only one a trader can
+ * do anything about: past it the floor never moves again.
+ */
+export const lockAtOf = (account: Account) =>
+  account.plan.size + account.plan.lockAboveStart + account.plan.trailingDrawdown;
+
+/** How much further the peak has to reach before the floor is fixed for good. */
+export const toLockOf = (account: Account) => Math.max(0, lockAtOf(account) - account.peakEquity);
 
 /** Equity, not balance: an open position counts against the session as it moves. */
 export const dayPnlOf = (account: Account) => account.equity - account.sessionOpenEquity;

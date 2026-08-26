@@ -18,8 +18,13 @@ export type Rule = {
   state: Verdict;
 };
 
-const breachedOr = (account: Account, state: Verdict): Verdict =>
-  account.status === "breached" ? "breached" : state;
+/**
+ * Only the rule that actually ended it. Painting every rule red because the
+ * account is over sends a trader looking for a drawdown that never happened,
+ * which is what a release or a target does to this list.
+ */
+const endedOn = (account: Account, reason: Account["endedReason"]): boolean =>
+  account.endedReason === reason;
 
 export const rulesOf = (account: Account): Rule[] => {
   const plan = planOf(account);
@@ -35,7 +40,7 @@ export const rulesOf = (account: Account): Rule[] => {
         account.status === "locked"
           ? `Hit. Trading is shut until the next session opens at 17:00 CT, and the account itself is untouched.`
           : `${formatMoney(plan.dailyLossLimit)} from the session open, reset at 17:00 CT. Floor at ${formatMoney(dailyFloorOf(account))}.`,
-      state: account.status === "locked" ? "breached" : "clean",
+      state: account.status === "locked" || endedOn(account, "daily_loss") ? "breached" : "clean",
     },
     {
       id: "trailing",
@@ -44,7 +49,15 @@ export const rulesOf = (account: Account): Rule[] => {
         trailingFloorOf(account) >= lockedFloorOf(plan)
           ? `Locked at ${formatMoney(lockedFloorOf(plan))}. It stopped following the peak and cannot move again.`
           : `${formatMoney(plan.trailingDrawdown)} from a peak of ${formatMoney(account.peakEquity)}. Floor at ${formatMoney(trailingFloorOf(account))}, and it never comes back down.`,
-      state: breachedOr(account, "clean"),
+      state: endedOn(account, "trailing_drawdown") ? "breached" : "clean",
+    },
+    {
+      id: "news",
+      label: "Red folder news",
+      detail: endedOn(account, "news")
+        ? "Hit. A position was open through a high impact release, which ends the account whether the trade won or lost."
+        : "Be flat from a minute before a high impact release until a minute after it.",
+      state: endedOn(account, "news") ? "breached" : "clean",
     },
     {
       id: "target",
@@ -53,7 +66,7 @@ export const rulesOf = (account: Account): Rule[] => {
         left <= 0
           ? `Met. ${formatMoney(netPnlOf(account))} against a target of ${formatMoney(plan.profitTarget)}.`
           : `${formatMoney(left)} left to reach ${formatMoney(targetOf(account))}.`,
-      state: left <= 0 ? "clean" : "watch",
+      state: left <= 0 || endedOn(account, "target_met") ? "clean" : "watch",
     },
     {
       id: "consistency",

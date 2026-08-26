@@ -68,6 +68,9 @@ const account = (journal: JournalDay[]): Account => ({
   equity: plan.size,
   peakEquity: plan.size,
   sessionOpenEquity: plan.size,
+  feesPaid: 0,
+  endedAt: null,
+  endedReason: null,
   journal,
 });
 
