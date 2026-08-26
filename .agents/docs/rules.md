@@ -83,7 +83,8 @@ So the sweep ratchets it. `markingOf` takes each bar at its **favourable** end, 
 and the low of a short, and returns the peak it reached. The caller has to store that, or the next
 sweep starts from the last fill again and the floor forgets every high the position ever saw.
 
-Two orderings inside one bar, and the bar does not say which happened:
+Two orderings inside one bar, and the bar does not say which happened. The bar here is a five second
+step of [the dance](#the-dancing-candle), which does say what order its steps came in:
 
 - The **low is read first**, against the floor as it stood before this bar. A bar's own high never
   drags the floor over that bar's own low, because nothing says the high came first
@@ -97,7 +98,8 @@ Two orderings inside one bar, and the bar does not say which happened:
 Only the trailing floor flattens anything. The floor is crossed somewhere inside a bar, and a bar
 says nothing about the order its range printed in, so `liquidationMarksOf` takes every open contract
 the same fraction of the way to its own worst price and solves for the point where equity meets the
-floor. One contract open on its own gives exactly the price that puts equity on the floor.
+floor. One contract open on its own gives exactly the price that puts equity on the floor. The bar
+it reads is a five second step of [the dance](#the-dancing-candle), which is as fine as this gets.
 
 Filling at the bar's extreme would be harsher than the trigger. Filling at the close would let a
 spike through the floor survive. Neither is a reading of what happened.
@@ -184,15 +186,78 @@ price under a fresh timestamp, and then:
 - A trade near 17:00 CT is stamped into the next session while carrying the
   previous session's price.
 
-`heldThroughOf` takes `asOf`, which is the tape's frontier: the newest bar the
+`heldThroughOf` takes `asOf`, which is the tape's frontier: the newest step the
 sweep actually read. A silent tape reads as 0 and reaches no window, so a feed
 outage never breaches anybody.
 
+## The Dancing Candle
+
+The tape publishes a bar a minute and the trader watches it for a minute, so the newest candle used
+to hold still between arrivals. A chart that does not move reads as a dead feed.
+
+So the feed **holds one extra bar back**. The newest bar the upstream calls closed is not drawn
+finished. It is revealed in `STEPS` steps of five seconds each, and everything the feed printed
+after it is not shown at all. The bar being danced is one the tape already held complete, so its
+open, high, low and close are facts before the first step is drawn.
+
+### The path is invented. The prices are not
+
+`stepsOf` cuts a bar into steps along a seeded walk. Every step lies inside the bar's own range and
+the steps together reach both of its extremes, so no price is shown or filled that the minute did
+not print. What is invented is the **order** they printed in, and this is the first place the
+simulator invents anything at all.
+
+The seed is the bar itself, so the same bar always dances the same way, on every process and after
+every restart. Nothing about the position in the dance is stored, so there is nothing to reload.
+
+A shape anybody can read is why it is a walk and not a polygon. A path that always ran against the
+close before turning would give away the colour of the bar five seconds in, and **any** path whose
+first leg can be identified promises a retrace to the open, because the high of a bar is never under
+its open and the low is never over it. That is a free trade every minute. The walk does not remove
+the leak. It makes it depend on prices that have not been shown yet.
+
+### One path, read by everything
+
+`shownOf` says which steps the tape has shown by an instant. `settledOf` gives every step of every
+bar it has finished showing, and the chart, the matcher and the floor sweep all read that, so no
+part of the system holds a reading of a bar that another part does not.
+
+A bar is shown in full **exactly** when its successor closes, because the dance runs on the
+successor's own elapsed time: `ran = (at - (bar.time + MINUTE)) / MINUTE`. The feed publishes a bar
+as closed at that same instant, so "every bar but the newest" and "every bar shown in full" are the
+same set. That is what makes the fill and the screen provably one thing.
+
+`at` is the feed's own clock, `meta.regularMarketTime`, never `Date.now()`. A feed that stopped and
+a market that shut both leave it where it was, so the candle finishes its steps and then holds
+still. A candle dancing forever on a dead market is a worse lie than a frozen one.
+
+### What it changed
+
+- A manual fill is stamped at the open of **the step** its price came from rather than the bar's.
+  The click and the tape agree to five seconds instead of to a minute, and a resting order placed
+  part way through a bar can now fill on a later step of that same bar. It could not before, because
+  `matchesOf` skips a bar that opened before the order was placed, which put a whole minute of price
+  action out of reach.
+- The floor sweep reads the same steps, so a liquidation lands on the five seconds the trader
+  watched and `liquidationMarksOf` solves inside a step rather than inside a minute.
+- The peak ratchet now has an order to follow inside a minute. Within one step nothing says which
+  end printed first and the old rule holds. Across the steps of a minute the dance does say, and the
+  trader watched it say so, so a minute that went up before it came down raises the floor before the
+  fall is read against it. That is harsher than the old reading, and it is what the screen showed.
+- Every timeframe dances. The newest candle of a 15m or 1h chart is rebuilt out of the minutes up to
+  the danced one, because the upstream's own coarse bar carries the minutes being held back and
+  would draw a high the dance has not reached.
+
 ## Known Fidelity Limits
 
-- **Bars, not ticks.** The floors are read against one minute bars from a delayed feed, so a floor
-  crossed and recovered inside a single bar is caught by the bar's low, but the exact instant is not
-  known. `/rules` says "every tick"; the truth is every bar.
+- **Bars, not ticks.** The floors are read against five second steps cut out of one minute bars from
+  a delayed feed, so a floor crossed and recovered inside a single minute is caught by the minute's
+  low, but the instant inside it is the dance's and not the exchange's. `/rules` says "every tick";
+  the truth is every step of an invented path through a real bar.
+- **The dance is exploitable in principle.** Someone who works out the walk still cannot predict it
+  without the high, low and close of a bar that has not been drawn. Someone who worked those out
+  could trade the rest of the minute for nothing. Nothing here defends against that beyond the walk
+  itself.
 - **The calendar reaches back a week.** A release older than the news feed's window cannot be
   judged, so a news breach is only ever caught close to live.
 - **A cancel lands on the wall clock's terms.** Cancelling ends the order at
