@@ -140,6 +140,17 @@ export const ledgerOf = (fills: Fill[], startingCents = 0): Ledger => {
   return { books, marks, trips, path, realisedCents, startingCents };
 };
 
+/**
+ * Where the previous session left the equity, which is what the next one opens
+ * on. Taking where the account stands now instead lets a position carried
+ * across the roll move the floor under itself.
+ */
+export const carriedInOf = (ledger: Ledger, tradeDate: string) => {
+  const earlier = ledger.path.filter((point) => point.tradeDate < tradeDate);
+
+  return earlier.at(-1)?.equityCents ?? ledger.startingCents;
+};
+
 export const balanceOf = (ledger: Ledger) => ledger.startingCents + ledger.realisedCents;
 
 /** Marks given here win, and a contract left out falls back to its last print. */

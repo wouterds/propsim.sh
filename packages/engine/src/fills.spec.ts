@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { balanceOf, type Fill, ledgerOf, peakOf, positionsOf, type Side } from "./fills";
+import {
+  balanceOf,
+  carriedInOf,
+  type Fill,
+  ledgerOf,
+  peakOf,
+  positionsOf,
+  type Side,
+} from "./fills";
 import { priceUnits } from "./money";
 
 const START = 5_000_000;
@@ -18,6 +26,11 @@ const fill = (side: Side, quantity: number, price: number): Fill => {
     tradeDate: "2026-08-25",
   };
 };
+
+const dated = (tradeDate: string, side: Side, quantity: number, price: number): Fill => ({
+  ...fill(side, quantity, price),
+  tradeDate,
+});
 
 describe("ledgerOf", () => {
   it("should bank a profit when a short is covered lower", () => {
@@ -83,5 +96,32 @@ describe("ledgerOf", () => {
 
     // then
     expect(peakOf(ledgerOf(fills, START))).toBe(START);
+  });
+});
+
+describe("carriedInOf", () => {
+  it("should open on the starting balance when nothing printed before the session", () => {
+    // given a stream whose every print belongs to the session being asked about
+    const ledger = ledgerOf([dated("2026-08-26", "buy", 1, 20_000)], START);
+
+    // then
+    expect(carriedInOf(ledger, "2026-08-26")).toBe(START);
+  });
+
+  it("should open where the previous session left the equity, not where it stands now", () => {
+    // given a session that banked twenty points and a later one that gave forty back
+    const ledger = ledgerOf(
+      [
+        dated("2026-08-25", "buy", 1, 20_000),
+        dated("2026-08-25", "sell", 1, 20_010),
+        dated("2026-08-26", "buy", 1, 20_010),
+        dated("2026-08-26", "sell", 1, 19_990),
+      ],
+      START,
+    );
+
+    // then the anchor is where the earlier session closed, not the latest point
+    expect(carriedInOf(ledger, "2026-08-26")).toBe(START + 2_000);
+    expect(balanceOf(ledger)).toBe(START - 2_000);
   });
 });
