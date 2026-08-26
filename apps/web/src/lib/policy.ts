@@ -11,7 +11,9 @@ export const asCode = (value: string | null) =>
 export const MIN_USERNAME = 3;
 export const MAX_USERNAME = 20;
 
-const USERNAME = /^[a-zA-Z0-9][a-zA-Z0-9_-]*$/;
+// Letters of any script, so a name is not an English-only privilege. Marks are
+// in for accents, and the first character must be a letter or a number.
+const USERNAME = /^[\p{L}\p{N}][\p{L}\p{M}\p{N} _-]*$/u;
 
 /** Null when the name is allowed, otherwise what to tell the person. */
 export const usernameError = (value: string) => {
@@ -24,7 +26,7 @@ export const usernameError = (value: string) => {
   }
 
   if (!USERNAME.test(value)) {
-    return "Letters, numbers, hyphens and underscores only, starting with a letter or a number.";
+    return "Letters, numbers, spaces, hyphens and underscores, starting with a letter or a number.";
   }
 
   return null;

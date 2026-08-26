@@ -29,11 +29,19 @@ describe("usernameError", () => {
     expect(usernameError("_wouter")).not.toBeNull();
   });
 
-  it("should refuse anything outside letters, numbers, hyphens and underscores", () => {
+  it("should refuse punctuation and symbols", () => {
     // then
-    expect(usernameError("wouter ds")).not.toBeNull();
     expect(usernameError("wouter.ds")).not.toBeNull();
     expect(usernameError("wouter@ds")).not.toBeNull();
+    expect(usernameError("wouter/ds")).not.toBeNull();
+  });
+
+  it("should allow letters of any script, and a space between words", () => {
+    // then
+    expect(usernameError("Jinx ジンクス")).toBeNull();
+    expect(usernameError("Wouter De Schuyter")).toBeNull();
+    expect(usernameError("José")).toBeNull();
+    expect(usernameError("Ольга")).toBeNull();
   });
 
   it("should hold both ends of the length", () => {
