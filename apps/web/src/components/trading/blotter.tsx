@@ -8,7 +8,7 @@ import PositionsTable from "./positions-table";
 import { FOCUS_RING } from "./styles";
 import type { Order, Position } from "./trading-state";
 
-type Tab = "positions" | "orders";
+type Tab = "positions" | "orders" | "history";
 
 type Props = {
   point: number;
@@ -23,15 +23,22 @@ type Props = {
 const Blotter = ({ positions, orders, last, point, className, onClose, onCancel }: Props) => {
   const [tab, setTab] = useState<Tab>("positions");
 
-  const working = orders.filter((order) => isWorking(order.status)).length;
-  const counts: Record<Tab, number> = { positions: positions.length, orders: working };
+  const newestFirst = (rows: Order[]) => [...rows].sort((a, b) => b.placedAt - a.placedAt);
+  const working = newestFirst(orders.filter((order) => isWorking(order.status)));
+  const settled = newestFirst(orders.filter((order) => !isWorking(order.status)));
+
+  // History is unbounded, so a count on it says nothing worth the room.
+  const counts: Partial<Record<Tab, number>> = {
+    positions: positions.length,
+    orders: working.length,
+  };
 
   const tabs = (
     // Pulled back by the tab's own padding, so the label sits on the same rail
     // as a panel title and the column headings under it. The fill bleeds into
     // the header padding instead, which is the half nobody reads down a column.
     <Tabs.List className="-ml-2 flex items-center gap-0.5">
-      {(["positions", "orders"] as const).map((name) => (
+      {(["positions", "orders", "history"] as const).map((name) => (
         <Tabs.Tab
           key={name}
           value={name}
@@ -41,7 +48,7 @@ const Blotter = ({ positions, orders, last, point, className, onClose, onCancel 
             FOCUS_RING,
           )}
         >
-          {counts[name] > 0 ? `${name} ${counts[name]}` : name}
+          {counts[name] ? `${name} ${counts[name]}` : name}
         </Tabs.Tab>
       ))}
     </Tabs.List>
@@ -64,7 +71,10 @@ const Blotter = ({ positions, orders, last, point, className, onClose, onCancel 
           <PositionsTable positions={positions} last={last} point={point} onClose={onClose} />
         </Tabs.Panel>
         <Tabs.Panel value="orders">
-          <OrdersTable orders={orders} onCancel={onCancel} />
+          <OrdersTable orders={working} empty="Nothing working." onCancel={onCancel} />
+        </Tabs.Panel>
+        <Tabs.Panel value="history">
+          <OrdersTable orders={settled} empty="Nothing settled yet." onCancel={onCancel} />
         </Tabs.Panel>
       </Panel>
     </Tabs.Root>

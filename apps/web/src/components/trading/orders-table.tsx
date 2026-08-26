@@ -15,12 +15,15 @@ const STATUS_TONE: Record<OrderStatus, "up" | "warn" | "muted"> = {
   expired: "muted",
 };
 
-type Props = { orders: Order[]; onCancel: (id: string) => void };
+type Props = { orders: Order[]; empty: string; onCancel: (id: string) => void };
 
-const OrdersTable = ({ orders, onCancel }: Props) => {
+const OrdersTable = ({ orders, empty, onCancel }: Props) => {
   if (orders.length === 0) {
-    return <p className="px-3 py-6 text-center text-faint text-xs">No orders yet.</p>;
+    return <p className="px-3 py-6 text-center text-faint text-xs">{empty}</p>;
   }
+
+  // A settled order can never be cancelled, so the column would be dead width.
+  const actionable = orders.some((order) => isWorking(order.status));
 
   return (
     <table className="w-full border-collapse">
@@ -32,7 +35,7 @@ const OrdersTable = ({ orders, onCancel }: Props) => {
           <th className={TH}>Qty</th>
           <th className={TH}>Price</th>
           <th className={TH}>Status</th>
-          <th className={TH} />
+          {actionable && <th className={TH} />}
         </tr>
       </thead>
       <tbody>
@@ -50,13 +53,15 @@ const OrdersTable = ({ orders, onCancel }: Props) => {
             <td className={TD}>
               <Badge tone={STATUS_TONE[order.status]}>{order.status}</Badge>
             </td>
-            <td className={cn(TD, "text-right")}>
-              {isWorking(order.status) && (
-                <Button className="h-6 px-2" onClick={() => onCancel(order.id)}>
-                  Cancel
-                </Button>
-              )}
-            </td>
+            {actionable && (
+              <td className={cn(TD, "text-right")}>
+                {isWorking(order.status) && (
+                  <Button className="h-6 px-2" onClick={() => onCancel(order.id)}>
+                    Cancel
+                  </Button>
+                )}
+              </td>
+            )}
           </tr>
         ))}
       </tbody>
