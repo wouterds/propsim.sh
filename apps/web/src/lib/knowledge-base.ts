@@ -109,9 +109,11 @@ export const CATEGORIES: Category[] = [
       {
         slug: "what-you-can-trade",
         title: "What can I trade?",
-        summary: "The Micro E-mini Nasdaq today. The rest of the CME micros are what comes next.",
+        summary:
+          "Nine CME micros: the four equity index contracts, gold, silver, copper, crude and natural gas.",
         body: [
-          "The terminal runs MNQ for now. The contract catalog behind it already holds the other micros, including the S&P, Russell, Dow, gold, silver, copper, crude and natural gas, and they are being brought through one at a time.",
+          "Micro E-mini S&P, Nasdaq, Russell and Dow, plus micro gold, silver, copper, crude oil and natural gas. Pick one from the contract menu above the chart.",
+          "Micros only for now. The full size and mini contracts are not offered, so the mini position cap on each plan is not reachable yet.",
           "Position limits are counted in micros. The mini limits published on each plan are not reachable yet, because there are no minis to trade.",
         ],
         related: ["position-limits", "commission"],
