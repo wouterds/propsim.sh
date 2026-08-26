@@ -32,10 +32,16 @@
      body copy wants, so it fills buttons and tints rows rather than setting
      small text on a dark ground.
 
-     Filled, `up` and `down` take a dark label and never a light one. Teal
-     carries white at 2.49:1 and rose at 3.67:1, both under the 4.5:1 a button
-     label is text enough to need, while `sunken` on them reads 8.09:1 and
-     5.49:1.
+     One rule for every filled surface, and it follows the fill's luminance: a
+     light fill takes `sunken`, a dark fill takes `ink`, and both clear 4.5:1.
+     `up` and `down` are the light ones. Teal carries white at 2.49:1 and rose
+     at 3.67:1, both under what a label needs, while `sunken` on them reads
+     8.09:1 and 5.49:1.
+
+     The chart cannot be told this. Its own last value label picks a text colour
+     by YIQ brightness against a threshold of 160, and teal scores 133, so it
+     sets white. That label is off, and the price is drawn as a price line
+     instead, which is the only axis label whose text colour can be set.
 
      Such a button brightens on hover rather than fading toward the page. Fading
      lowers the fill's own luminance, which lifts a white label and drops a dark
@@ -44,10 +50,12 @@
   --color-up: #14b8a6;
   --color-down: #f43f5e;
   --color-accent: #3b82f6;
-  /* blue-600, the fill a primary button carries. Deeper than the accent, so a
-     button reads as the one thing to press rather than as another tinted row,
-     and it takes `ink` on top: black on it is under 4:1. */
-  --color-accent-strong: #2563eb;
+  /* blue-700, the fill a primary button carries. Deeper than the accent, so a
+     button reads as the one thing to press rather than as another tinted row.
+     It is the dark fill, so it takes `ink` at 5.55:1. blue-600 was half a step
+     lighter and held `ink` at only 4.28:1, which is the one place the rule
+     above was nearly rather than exactly true. */
+  --color-accent-strong: #1d4ed8;
   --color-warn: #ffb020;
 
   --animate-fade-in: fade-in 150ms ease-out;
