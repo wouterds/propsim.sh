@@ -1,5 +1,4 @@
 import type { Plan } from "@propsim/plans";
-import { href, Link } from "react-router";
 import AccountHeader from "~/components/account/account-header";
 import FloorMeter from "~/components/account/floor-meter";
 import RulesList from "~/components/account/rules-list";
@@ -116,13 +115,6 @@ const AccountSummary = ({ account, plan, rules }: Props) => {
             title="Recent sessions"
             accountId={account.id}
           />
-
-          <Link
-            to={href("/accounts/:id/journal", { id: account.id })}
-            className="w-fit rounded-sm text-muted text-xs transition-colors hover:text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
-          >
-            Open the full journal
-          </Link>
         </div>
 
         <RulesList rules={rules} />
