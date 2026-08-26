@@ -106,8 +106,10 @@ const SidebarNav = ({ accounts, email, onNavigate }: Props) => (
         to={href("/accounts/new")}
         onClick={onNavigate}
         className={cn(
-          "mt-2 flex h-9 items-center justify-center gap-1.5 rounded border border-line border-dashed text-muted text-sm transition-colors hover:border-line-strong",
-          HOVER,
+          // Tinted rather than lifted, so it reads as the accent without the
+          // dashed outline turning into a second solid card beside the accounts.
+          "mt-2 flex h-9 items-center justify-center gap-1.5 rounded border border-line border-dashed text-muted text-sm transition-colors",
+          "hover:border-accent/40 hover:bg-accent/10 hover:text-ink",
           FOCUS,
         )}
       >
