@@ -31,10 +31,7 @@ RUN npm run build -- --filter=@propsim/web
 FROM base AS runtime
 WORKDIR /code/apps/web
 
-# Alpine ships no fonts, and the profile card is rasterised here. Noto covers
-# the Latin the site is written in, WenQuanYi the kana and han a username can
-# carry: the full Noto CJK is 89MB against its 16 for the same glyphs.
-RUN apk add --no-cache libc6-compat dumb-init font-noto font-wqy-zenhei
+RUN apk add --no-cache libc6-compat dumb-init
 
 COPY --chown=node:node --from=prod-deps /code/node_modules /code/node_modules
 COPY --chown=node:node --from=prod-deps /code/apps/web/package.json ./package.json
