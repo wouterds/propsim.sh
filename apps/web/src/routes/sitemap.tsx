@@ -1,4 +1,5 @@
 import { href } from "react-router";
+import { ARTICLES } from "~/lib/knowledge-base";
 import { siteUrl } from "~/lib/site.server";
 
 // The pages worth landing on. Everything behind a login is left out, and so is
@@ -9,7 +10,8 @@ const PAGES = [
   href("/rules"),
   href("/leaderboards"),
   href("/red-folder-events"),
-  href("/faq"),
+  href("/knowledge-base"),
+  ...ARTICLES.map((article) => href("/knowledge-base/:slug", { slug: article.slug })),
   href("/feature-requests"),
   href("/contact"),
   href("/privacy"),

@@ -4,7 +4,7 @@ import PlanTable from "~/components/marketing/plan-table";
 import Questions from "~/components/marketing/questions";
 import Rules from "~/components/marketing/rules";
 import { getUserId } from "~/lib/auth.server";
-import { HOME_QUESTIONS } from "~/lib/faq";
+import { findArticle, HOME_SLUGS } from "~/lib/knowledge-base";
 import { pageMeta, SITE_URL } from "~/lib/seo";
 import type { Route } from "./+types/home";
 
@@ -53,7 +53,11 @@ const Home = () => (
     <Hero />
     <PlanTable />
     <Rules />
-    <Questions questions={HOME_QUESTIONS} title="Common questions" more />
+    <Questions
+      articles={HOME_SLUGS.flatMap((slug) => findArticle(slug) ?? [])}
+      title="Common questions"
+      more
+    />
   </>
 );
 

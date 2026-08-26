@@ -5,6 +5,8 @@ export default [
     index("routes/home.tsx"),
     route("plans", "routes/plans.tsx"),
     route("rules", "routes/rules.tsx"),
+    route("knowledge-base", "routes/knowledge-base.tsx"),
+    route("knowledge-base/:slug", "routes/knowledge-base-article.tsx"),
     route("faq", "routes/faq.tsx"),
     // The form is a child, so it opens over the board rather than in place of it.
     route("feature-requests", "routes/features.tsx", [route("new", "routes/feature-new.tsx")]),
