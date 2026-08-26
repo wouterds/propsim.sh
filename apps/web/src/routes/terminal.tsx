@@ -415,6 +415,14 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
   const send = (fields: Record<string, string>) =>
     fetcher.submit({ instrument: instrument.code, ...fields }, { method: "post" });
 
+  // Once the order is on the book it draws its own line. Leaving the ticket's
+  // draft up puts a second label at the same price for the same order.
+  useEffect(() => {
+    if (fetcher.state === "idle" && fetcher.data && !fetcher.data.error) {
+      setTicket(null);
+    }
+  }, [fetcher.state, fetcher.data]);
+
   const submit = (draft: OrderDraft) => {
     if (last === null) return;
 
@@ -484,7 +492,7 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
           id: "draft-entry",
           price: entry,
           tone: ticket.side === "buy" ? "up" : "down",
-          title: `${ticket.side} ${size} ${ticket.type}`,
+          title: `new ${ticket.side} ${size} ${ticket.type}`,
           draft: true,
         });
       }
@@ -494,7 +502,7 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
           id: "draft-sl",
           price: ticket.stopLoss,
           tone: "down",
-          title: `stop ${size}`,
+          title: `new stop ${size}`,
           draft: true,
         });
       }
@@ -504,7 +512,7 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
           id: "draft-tp",
           price: ticket.takeProfit,
           tone: "up",
-          title: `target ${size}`,
+          title: `new target ${size}`,
           draft: true,
         });
       }
