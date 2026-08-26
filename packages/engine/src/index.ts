@@ -4,6 +4,7 @@ export * from "./floors";
 export * from "./instruments";
 export * from "./journal";
 export * from "./liquidation";
+export * from "./marketable";
 export * from "./matching";
 export * from "./money";
 export * from "./news";
