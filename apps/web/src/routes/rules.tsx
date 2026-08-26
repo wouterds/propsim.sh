@@ -109,7 +109,7 @@ const GROUPS: Group[] = [
         body: [
           `You have to be flat from ${BEFORE_MINUTES} minute before a high impact US release through ${AFTER_MINUTES} minute after it. You may not hold a position through that window and you may not open one in it. High impact is the red folder on an economic calendar: payrolls, CPI, the FOMC rate decision.`,
           "On a daily payout account this is a hard breach. It ends the account rather than the day, and it does so whether the trade won or lost. On the slower plans the same firms sell, trading the news is allowed outright. Paying out every day is what buys the stricter rule.",
-          "The terminal shades the window on the chart and says so in a banner while it is open, so there is no calendar to keep in another tab. Nothing stops you trading into it. Being stopped would hide the rule, and the rule is the point.",
+          "The terminal warns you in a banner while the window is open and for fifteen minutes after it, and the whole calendar is on the red folder events page, so there is nothing to keep in another tab. Nothing stops you trading into it. Being stopped would hide the rule, and the rule is the point.",
         ],
       },
       {
@@ -150,7 +150,7 @@ const GROUPS: Group[] = [
         id: "hours",
         title: "The session closes, and closing it is not a breach",
         body: [
-          "Positions are flat by 16:45 New York time, Monday to Friday, and anything still open is closed for you. Being closed out this way does not fail the account. Trading reopens at 18:00 New York time, Sunday to Thursday, and on a holiday with an early close the early close is the deadline.",
+          "A real firm has you flat by 16:45 New York time, Monday to Friday, and reopens at 18:00 New York time, Sunday to Thursday. On a holiday with an early close, the early close is the deadline. Being flattened at the close does not fail the account at any firm, and nothing here closes your position for you, so this one is left to you.",
           "The simulator does not close you out yet. Your session still cuts at 17:00 Chicago time for every rule that resets, so the day a trade belongs to is right, but a position left open rides through the close instead of being flattened at it.",
         ],
       },
