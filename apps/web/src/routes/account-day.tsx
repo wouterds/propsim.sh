@@ -114,7 +114,7 @@ const Day = ({ loaderData }: Route.ComponentProps) => {
         {/* The header names the rule and the moment. What it cannot say is that
             it happened in the session being read. */}
         {ended && (
-          <Badge tone={ended.reason === "target_met" ? "accent" : "down"}>
+          <Badge tone={ended.reason === "target_met" ? "up" : "down"}>
             Account ended here, {ended.time} UTC
           </Badge>
         )}

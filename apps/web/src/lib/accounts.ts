@@ -58,7 +58,9 @@ export const STATUS_LABEL: Record<AccountStatus, string> = {
 export const STATUS_TONE = {
   live: "up",
   locked: "warn",
-  passed: "accent",
+  // Passing is the good outcome, same as trading well. Blue set it apart from
+  // the green it belongs with.
+  passed: "up",
   breached: "down",
 } as const;
 

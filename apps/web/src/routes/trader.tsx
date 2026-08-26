@@ -67,7 +67,7 @@ const held = (seconds: number | null) => {
 };
 
 const STATE_LABEL = { live: "Live", passed: "Passed", breached: "Breached" } as const;
-const STATE_TONE = { live: "up", passed: "accent", breached: "down" } as const;
+const STATE_TONE = { live: "up", passed: "up", breached: "down" } as const;
 
 const Detail = ({ term, value }: { term: string; value: string }) => (
   <div>
