@@ -2,7 +2,6 @@ import { href, Link } from "react-router";
 import AccountHeader from "~/components/account/account-header";
 import Badge from "~/components/ui/badge";
 import StatCard from "~/components/ui/stat-card";
-import { ENDING } from "~/lib/accounts";
 import { loadAccountDay } from "~/lib/accounts.server";
 import { requireUserId } from "~/lib/auth.server";
 import { formatDay, formatMoney, formatSigned, TONE_TEXT, toneOf } from "~/lib/format";
@@ -110,26 +109,21 @@ const Day = ({ loaderData }: Route.ComponentProps) => {
         <h2 className="font-medium text-ink">{day.label}</h2>
         <Badge tone={VERDICT_TONE[day.verdict]}>{VERDICT_LABEL[day.verdict]}</Badge>
         {session.lockedOut && <Badge tone="warn">Shut for the day</Badge>}
+        {/* The header names the rule and the moment. What it cannot say is that
+            it happened in the session being read. */}
+        {ended && (
+          <Badge tone={ended.reason === "target_met" ? "accent" : "down"}>
+            Account ended here, {ended.time} UTC
+          </Badge>
+        )}
       </div>
-
-      {ended && (
-        <p
-          className={cn(
-            "mt-3 text-sm",
-            ended.reason === "target_met" ? "text-accent" : "text-down",
-          )}
-        >
-          {ended.reason ? ENDING[ended.reason] : "Closed"} at {ended.time} UTC. The account ended in
-          this session.
-        </p>
-      )}
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="Session P&L"
           value={formatSigned(day.pnl)}
           tone={toneOf(day.pnl)}
-          hint={`${day.trades} trades, ${day.wins} won`}
+          hint={`${day.trades} ${day.trades === 1 ? "trade" : "trades"}, ${day.wins} won`}
         />
         <StatCard label="Won" value={formatSigned(won)} tone="up" hint="Before the losers" />
         <StatCard label="Given back" value={formatSigned(given)} tone="down" hint="The losers" />
@@ -170,8 +164,7 @@ const Day = ({ loaderData }: Route.ComponentProps) => {
 
           <p className="border-line/70 border-t px-4 py-3 text-muted text-xs leading-relaxed">
             The daily floor resets with the session and only shuts it. The trailing floor follows
-            peak equity, never resets, and is the one that ends the account. The deepest this
-            session went was {formatMoney(day.worstDrawdown)} under where it opened.
+            peak equity, never resets, and is the one that ends the account.
           </p>
         </Panel>
       </div>
