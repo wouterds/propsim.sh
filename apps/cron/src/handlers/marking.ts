@@ -20,25 +20,33 @@ import {
   touchTradingDay,
 } from "@propsim/orders";
 
-type Held = { id: string; ledger: Ledger; positions: NetPosition[]; opened: number };
+type LiveAccount = Awaited<ReturnType<typeof listLive>>[number];
+
+type Held = {
+  account: LiveAccount;
+  ledger: Ledger;
+  positions: NetPosition[];
+  /** The last print, after which the book stopped changing. */
+  opened: number;
+};
 
 /**
  * The book only holds still between two prints, so a bar from before the last
  * fill belongs to a position that no longer exists. Earlier sessions are left
  * alone as well: their floors were measured from an anchor that has closed.
  */
-const readable = (bars: Candle[], held: Held, tradeDate: string) =>
-  bars.filter((bar) => bar.time >= held.opened && tradeDateOf(new Date(bar.time)) === tradeDate);
+const readable = (bars: Candle[], opened: number, tradeDate: string) =>
+  bars.filter((bar) => bar.time >= opened && tradeDateOf(new Date(bar.time)) === tradeDate);
 
-const holdingsOf = async (row: Awaited<ReturnType<typeof listLive>>[number]) => {
-  const ledger = ledgerOf(await listFills(row.id), row.startingBalanceCents);
+const holdingsOf = async (account: LiveAccount): Promise<Held | null> => {
+  const ledger = ledgerOf(await listFills(account.id), account.startingBalanceCents);
   const positions = positionsOf(ledger);
 
   if (positions.length === 0) {
     return null;
   }
 
-  return { id: row.id, ledger, positions, opened: ledger.path.at(-1)?.at.getTime() ?? 0 };
+  return { account, ledger, positions, opened: ledger.path.at(-1)?.at.getTime() ?? 0 };
 };
 
 /**
@@ -77,30 +85,24 @@ export const marking = async () => {
 
   for (const one of held) {
     try {
-      const row = rows.find((account) => account.id === one.id);
-
-      if (!row) {
-        continue;
-      }
-
       const bars = new Map(
         one.positions.flatMap((open) => {
           const found = tape.get(open.instrument);
 
-          return found ? [[open.instrument, readable(found, one, tradeDate)] as const] : [];
+          return found ? [[open.instrument, readable(found, one.opened, tradeDate)] as const] : [];
         }),
       );
 
-      const day = await findTradingDay(one.id, tradeDate);
+      const day = await findTradingDay(one.account.id, tradeDate);
       const sessionOpenCents = day?.openEquityCents ?? carriedInOf(one.ledger, tradeDate);
-      const peakEquityCents = Math.max(row.peakEquityCents, peakOf(one.ledger));
+      const peakEquityCents = Math.max(one.account.peakEquityCents, peakOf(one.ledger));
 
-      const { lowEquityCents, liquidation } = markingOf(one.ledger, bars, rulesOf(row), {
+      const { lowEquityCents, liquidation } = markingOf(one.ledger, bars, rulesOf(one.account), {
         peakEquityCents,
         sessionOpenCents,
       });
 
-      await touchTradingDay(one.id, tradeDate, now, {
+      await touchTradingDay(one.account.id, tradeDate, now, {
         openEquityCents: sessionOpenCents,
         lowEquityCents,
       });
@@ -113,11 +115,11 @@ export const marking = async () => {
       // which is the mark the breach was read at.
       const marks = new Map([...one.ledger.marks, ...liquidation.marks]);
 
-      await flatten(one.id, one.positions, marks, liquidation.at);
-      await settle(one.id, liquidation.at);
+      await flatten(one.account.id, one.positions, marks, liquidation.at);
+      await settle(one.account.id, liquidation.at);
       liquidated += 1;
     } catch (error) {
-      console.error(`marking skipped account ${one.id}`, error);
+      console.error(`marking skipped account ${one.account.id}`, error);
     }
   }
 
