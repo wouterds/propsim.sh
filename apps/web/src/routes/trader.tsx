@@ -1,5 +1,7 @@
+import { faTwitch, faXTwitter, faYoutube } from "@fortawesome/free-brands-svg-icons";
 import { useState } from "react";
 import { Avatar } from "~/components/identity/avatar";
+import BrandIcon from "~/components/identity/brand-icon";
 import { personaOf } from "~/components/identity/persona";
 import Badge from "~/components/ui/badge";
 import StatCard from "~/components/ui/stat-card";
@@ -42,9 +44,9 @@ export const loader = async ({ params }: Route.LoaderArgs) => {
 };
 
 const LINKS = [
-  { key: "twitter", label: "X" },
-  { key: "youtube", label: "YouTube" },
-  { key: "twitch", label: "Twitch" },
+  { key: "twitter", label: "X", icon: faXTwitter },
+  { key: "youtube", label: "YouTube", icon: faYoutube },
+  { key: "twitch", label: "Twitch", icon: faTwitch },
 ] as const;
 
 const FILTERS = [
@@ -103,9 +105,11 @@ const Trader = ({ loaderData }: Route.ComponentProps) => {
                 href={linkTo(link.key, links[link.key] as string)}
                 rel="me noopener noreferrer nofollow"
                 target="_blank"
-                className="inline-flex h-8 items-center rounded border border-line px-3 text-muted text-sm transition-colors hover:text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
+                title={`${link.label}: ${links[link.key]}`}
+                aria-label={`${name} on ${link.label}`}
+                className="inline-flex size-8 items-center justify-center rounded border border-line text-muted transition-colors hover:border-line-strong hover:text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
               >
-                {link.label}
+                <BrandIcon icon={link.icon} className="size-3.5" />
               </a>
             ) : null,
           )}
