@@ -437,25 +437,26 @@ const CandleChart = ({
       {pending && pendingY !== null && (
         <div
           style={{ top: pendingY }}
-          className="-translate-y-1/2 pointer-events-none absolute right-20 z-10 flex items-center gap-1"
+          className="-translate-y-1/2 pointer-events-none absolute right-20 z-10 flex items-stretch overflow-hidden rounded border border-line bg-raised/95 shadow-[0_2px_8px_-2px_rgb(0_0_0/0.6)] backdrop-blur-sm"
         >
           <button
             type="button"
-            aria-label="Cancel the move"
+            aria-label="Leave the order where it was"
             disabled={busy}
             onClick={onCancelMove}
-            className="pointer-events-auto flex size-6 items-center justify-center rounded border border-line bg-raised text-faint transition-colors hover:text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent disabled:opacity-50"
+            className="pointer-events-auto flex h-5 w-6 items-center justify-center text-faint transition-colors hover:bg-overlay hover:text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent disabled:opacity-50"
           >
-            <X aria-hidden="true" className="size-3.5" strokeWidth={2} />
+            <X aria-hidden="true" className="size-3" strokeWidth={2.5} />
           </button>
+          <span aria-hidden className="w-px shrink-0 bg-line" />
           <button
             type="button"
             aria-label="Move the order here"
             disabled={busy}
             onClick={onConfirmMove}
-            className="pointer-events-auto flex size-6 items-center justify-center rounded bg-accent-strong text-white transition-colors hover:bg-accent-strong/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent disabled:opacity-50"
+            className="pointer-events-auto flex h-5 w-6 items-center justify-center text-up transition-colors hover:bg-up/15 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent disabled:opacity-50"
           >
-            <Check aria-hidden="true" className="size-3.5" strokeWidth={2} />
+            <Check aria-hidden="true" className="size-3" strokeWidth={2.5} />
           </button>
         </div>
       )}
