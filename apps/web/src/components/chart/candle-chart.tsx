@@ -14,7 +14,7 @@ import {
   type UTCTimestamp,
 } from "lightweight-charts";
 import { Check, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { type RefObject, useEffect, useRef, useState } from "react";
 import {
   type ChartTheme,
   type ChartTone,
@@ -43,6 +43,8 @@ export type ChartPriceLine = {
   draggable?: boolean;
   /** A ticket nobody has sent. Drawn faint and broken, so it reads as intent. */
   draft?: boolean;
+  /** Picked out by the trader, drawn heavier so it is obvious which one is meant. */
+  selected?: boolean;
 };
 
 type Props = {
@@ -60,8 +62,44 @@ type Props = {
   pending?: { id: string; price: number } | null;
   onConfirmMove?: () => void;
   onCancelMove?: () => void;
+  /** The working order the trader has picked out, so it can be cancelled. */
+  selected?: { id: string; price: number } | null;
+  onSelect?: (id: string | null) => void;
+  onCancelOrder?: () => void;
   busy?: boolean;
   onHover: (bar: ChartBar | null) => void;
+};
+
+/**
+ * Where a price sits on screen, followed each frame. The scale moves on its own
+ * as bars arrive and lightweight-charts says nothing when it does, so anything
+ * pinned to a price has to keep asking. The state only changes when it moves.
+ */
+const useLineY = (series: RefObject<ISeriesApi<"Candlestick"> | null>, price: number | null) => {
+  const [y, setY] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (price === null) {
+      setY(null);
+
+      return;
+    }
+
+    let frame = 0;
+
+    const place = () => {
+      const next = series.current?.priceToCoordinate(price) ?? null;
+
+      setY((was) => (was === next ? was : next));
+      frame = requestAnimationFrame(place);
+    };
+
+    place();
+
+    return () => cancelAnimationFrame(frame);
+  }, [series, price]);
+
+  return y;
 };
 
 /** How near the cursor has to be to a line, in pixels, before it can take hold of it. */
@@ -81,14 +119,17 @@ const CandleChart = ({
   pending,
   onConfirmMove,
   onCancelMove,
+  selected,
+  onSelect,
+  onCancelOrder,
   busy = false,
 }: Props) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  /** Where the waiting line sits, so the answer follows it as the scale moves. */
-  const [pendingY, setPendingY] = useState<number | null>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
   const markersRef = useRef<ISeriesMarkersPluginApi<Time> | null>(null);
+  /** Read through a ref, so the drag handler is bound once and never rebound. */
+  const pick = useRef(onSelect);
   const themeRef = useRef<ChartTheme | null>(null);
   /** The tape the window was framed for, so a refresh does not re-frame it. */
   const framed = useRef<string | null>(null);
@@ -272,7 +313,7 @@ const CandleChart = ({
         // A draft is the same colour half faded and broken up, so it reads as a
         // level being chosen rather than one the account is holding.
         color: line.draft ? withAlpha(theme[line.tone], 0.5) : theme[line.tone],
-        lineWidth: 1,
+        lineWidth: line.selected ? 2 : 1,
         lineStyle: line.draft ? LineStyle.SparseDotted : LineStyle.Dashed,
         lineVisible: true,
         axisLabelVisible: true,
@@ -352,7 +393,11 @@ const CandleChart = ({
     const down = (event: PointerEvent) => {
       const found = event.button === 0 ? lineAt(event.clientY) : null;
 
-      if (!found) return;
+      if (!found) {
+        if (event.button === 0) pick.current?.(null);
+
+        return;
+      }
 
       held = { id: found.line.id, price: found.line.price, api: found.api };
       container.setPointerCapture(event.pointerId);
@@ -384,9 +429,15 @@ const CandleChart = ({
       // what draws it at the new one, so a cancel needs nothing put back.
       api.applyOptions({ price: was });
 
-      if (price !== null && snap(price) !== was) {
-        onMove(id, snap(price));
+      // A press that moved nothing is a pick, not a drag. Anywhere else on the
+      // chart clears it, so the control never outlives what it belongs to.
+      if (price === null || snap(price) === was) {
+        pick.current?.(id);
+
+        return;
       }
+
+      onMove(id, snap(price));
     };
 
     const leave = () => {
@@ -407,35 +458,35 @@ const CandleChart = ({
     };
   }, [onMove]);
 
-  /**
-   * The price scale moves on its own as bars arrive, and lightweight-charts
-   * says nothing when it does, so the answer is placed each frame while it is
-   * waiting. The state only changes when the coordinate does.
-   */
   useEffect(() => {
-    if (!pending) {
-      setPendingY(null);
+    pick.current = onSelect;
+  }, [onSelect]);
 
-      return;
-    }
-
-    let frame = 0;
-
-    const place = () => {
-      const y = seriesRef.current?.priceToCoordinate(pending.price) ?? null;
-
-      setPendingY((was) => (was === y ? was : y));
-      frame = requestAnimationFrame(place);
-    };
-
-    place();
-
-    return () => cancelAnimationFrame(frame);
-  }, [pending]);
+  const pendingY = useLineY(seriesRef, pending?.price ?? null);
+  const selectedY = useLineY(seriesRef, selected?.price ?? null);
 
   return (
     <div className="relative h-full w-full">
       <div ref={containerRef} className="h-full w-full" />
+
+      {/* Nothing is waiting on an answer, so the pick is what gets a control. */}
+      {!pending && selected && selectedY !== null && (
+        <div
+          style={{ top: selectedY }}
+          className="-translate-y-1/2 pointer-events-none absolute right-20 z-10 flex items-stretch overflow-hidden rounded border border-line bg-raised/95 shadow-[0_2px_8px_-2px_rgb(0_0_0/0.6)] backdrop-blur-sm"
+        >
+          <button
+            type="button"
+            aria-label="Cancel this order"
+            disabled={busy}
+            onClick={onCancelOrder}
+            className="pointer-events-auto flex h-5 items-center gap-1 px-1.5 text-[11px] text-faint transition-colors hover:bg-down/15 hover:text-down focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent disabled:opacity-50"
+          >
+            <X aria-hidden="true" className="size-3" strokeWidth={2.5} />
+            Cancel
+          </button>
+        </div>
+      )}
 
       {pending && pendingY !== null && (
         <div
