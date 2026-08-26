@@ -378,7 +378,12 @@ const CandleChart = ({
       return near[0]?.one ?? null;
     };
 
-    let held: { id: string; price: number; api: IPriceLine } | null = null;
+    let held: { id: string; price: number } | null = null;
+
+    // Looked up each time rather than kept from the press. The lines are redrawn
+    // whenever the book or the tape moves, and the handle taken at the start of
+    // a drag is disposed by the next redraw.
+    const lineFor = (id: string) => drawnRef.current.find((one) => one.line.id === id)?.api ?? null;
     let armed = false;
 
     const arm = (on: boolean) => {
@@ -399,7 +404,7 @@ const CandleChart = ({
         return;
       }
 
-      held = { id: found.line.id, price: found.line.price, api: found.api };
+      held = { id: found.line.id, price: found.line.price };
       container.setPointerCapture(event.pointerId);
     };
 
@@ -413,7 +418,7 @@ const CandleChart = ({
       const price = priceAt(event.clientY);
 
       if (price !== null) {
-        held.api.applyOptions({ price: snap(price) });
+        lineFor(held.id)?.applyOptions({ price: snap(price) });
       }
     };
 
@@ -421,13 +426,13 @@ const CandleChart = ({
       if (!held) return;
 
       const price = priceAt(event.clientY);
-      const { id, api, price: was } = held;
+      const { id, price: was } = held;
 
       held = null;
       container.releasePointerCapture(event.pointerId);
       // Back to the price the order really has. The answer being waited on is
       // what draws it at the new one, so a cancel needs nothing put back.
-      api.applyOptions({ price: was });
+      lineFor(id)?.applyOptions({ price: was });
 
       // A press that moved nothing is a pick, not a drag. Anywhere else on the
       // chart clears it, so the control never outlives what it belongs to.
