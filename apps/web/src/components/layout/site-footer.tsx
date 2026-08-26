@@ -45,11 +45,19 @@ const BOTTOM =
  */
 const RAIL = "mx-auto w-full max-w-6xl";
 
-/** Boxed, it is a panel in the app's own content column rather than a band under it. */
+/**
+ * Boxed, it is a panel in the app's own content column rather than a band under
+ * it, but only once there is a column to sit in. On a phone the panels above it
+ * are the full width of the screen, so a second border around this one only
+ * draws a box around a box. It runs full width there and carries no rule of its
+ * own, since the panel above already ends in one, and takes a margin instead.
+ */
 const SiteFooter = ({ boxed = false }: { boxed?: boolean }) => (
   <footer
     className={
-      boxed ? "overflow-hidden rounded-lg border border-line bg-raised" : "border-line/70 border-t"
+      boxed
+        ? "mt-6 lg:mt-0 lg:overflow-hidden lg:rounded-lg lg:border lg:border-line lg:bg-raised"
+        : "border-line/70 border-t"
     }
   >
     <div className={cn(COLUMNS_GRID, !boxed && RAIL)}>
