@@ -50,10 +50,20 @@ export const loader = async ({ params, request }: Route.LoaderArgs) => {
       duration: held(trade.seconds),
     })),
     fills: session.fills.map((fill) => ({ ...fill, time: CLOCK.format(new Date(fill.at)) })),
+    placed: session.placed.map((order) => ({ ...order, time: CLOCK.format(new Date(order.at)) })),
   };
 };
 
 const HEAD = "h-8 px-4 text-left font-normal text-[11px] text-faint uppercase tracking-wider";
+
+const STATUS_TONE = {
+  filled: "up",
+  partial: "warn",
+  working: "accent",
+  cancelled: "muted",
+  replaced: "muted",
+  expired: "muted",
+} as const;
 const CELL = "h-11 px-4 text-xs tabular";
 
 type PanelProps = { title: string; note?: string; children: React.ReactNode };
@@ -81,7 +91,7 @@ const Side = ({ side }: { side: "buy" | "sell" }) => (
 );
 
 const Day = ({ loaderData }: Route.ComponentProps) => {
-  const { account, day, session, ended, trades, fills } = loaderData;
+  const { account, day, session, ended, trades, fills, placed } = loaderData;
   const won = trades.filter((trade) => trade.pnl > 0).reduce((sum, one) => sum + one.pnl, 0);
   const given = trades.filter((trade) => trade.pnl < 0).reduce((sum, one) => sum + one.pnl, 0);
 
@@ -266,6 +276,55 @@ const Day = ({ loaderData }: Route.ComponentProps) => {
                       </td>
                       <td className={cn(CELL, "text-right text-faint")}>
                         {fill.fee === 0 ? "–" : `-${formatMoney(fill.fee)}`}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Panel>
+      </div>
+      <div className="mt-3">
+        <Panel title="Orders" note={`${placed.length} placed`}>
+          {placed.length === 0 ? (
+            <Empty>No order was placed in this session.</Empty>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[38rem] border-collapse">
+                <thead>
+                  <tr className="border-line/60 border-b">
+                    <th className={HEAD}>Placed</th>
+                    <th className={HEAD}>Contract</th>
+                    <th className={HEAD}>Side</th>
+                    <th className={HEAD}>Kind</th>
+                    <th className={cn(HEAD, "text-right")}>Qty</th>
+                    <th className={cn(HEAD, "text-right")}>Price</th>
+                    <th className={cn(HEAD, "text-right")}>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {placed.map((order) => (
+                    <tr
+                      key={order.id}
+                      className="border-line/60 border-b last:border-b-0 hover:bg-overlay"
+                    >
+                      <td className={cn(CELL, "text-ink")}>{order.time}</td>
+                      <td className={cn(CELL, "text-muted")}>{order.instrument}</td>
+                      <td className="h-11 px-4">
+                        <Side side={order.side} />
+                      </td>
+                      <td className={cn(CELL, "text-faint")}>{order.kind}</td>
+                      <td className={cn(CELL, "text-right text-ink")}>
+                        {order.filled > 0 && order.filled < order.quantity
+                          ? `${order.filled} of ${order.quantity}`
+                          : order.quantity}
+                      </td>
+                      <td className={cn(CELL, "text-right text-muted")}>
+                        {order.price === null ? "market" : formatMoney(order.price)}
+                      </td>
+                      <td className="h-11 px-4 text-right">
+                        <Badge tone={STATUS_TONE[order.status]}>{order.status}</Badge>
                       </td>
                     </tr>
                   ))}
