@@ -12,13 +12,14 @@ import {
   equityOf,
   type Ledger,
   ledgerOf,
+  lockedOutOf,
   peakOf,
   summariseDays,
   toDollars,
   toPrice,
   tradeDateOf,
 } from "@propsim/engine";
-import { listFills } from "@propsim/orders";
+import { listFills, rulesOf } from "@propsim/orders";
 import type { Plan } from "@propsim/plans";
 import { findPlan } from "@propsim/plans";
 import { and, desc, eq } from "drizzle-orm";
@@ -27,10 +28,30 @@ import type { JournalDay } from "./journal";
 
 export type { AccountRow };
 
-const statusOf = (row: AccountRow): AccountStatus => {
-  if (!row.endedAt) return "live";
+/**
+ * A session shut by the daily floor reads as locked, not as breached. The live
+ * equity is folded into the day's stored low, so the lock shows the moment the
+ * floor is crossed rather than at the next write.
+ */
+const statusOf = (
+  row: AccountRow,
+  today: DayAnchor | undefined,
+  equityCents: number,
+): AccountStatus => {
+  if (row.endedAt) {
+    return row.endedReason === "target_met" ? "passed" : "breached";
+  }
 
-  return row.endedReason === "target_met" ? "passed" : "breached";
+  if (!today) {
+    return "live";
+  }
+
+  const day = {
+    openEquityCents: today.openEquityCents,
+    lowEquityCents: Math.min(today.lowEquityCents, equityCents),
+  };
+
+  return lockedOutOf(rulesOf(row), day) ? "locked" : "live";
 };
 
 /** The label is cosmetic, so a plan dropped from the catalog degrades to its id. */
@@ -141,7 +162,7 @@ const viewOf = (row: AccountRow, ledger: Ledger, anchors: DayAnchor[], now: Date
     id: row.id,
     name: row.name,
     openedOn: row.openedOn,
-    status: statusOf(row),
+    status: statusOf(row, today, equityCents),
     plan: planFrom(row),
     balance: toDollars(balanceOf(ledger)),
     equity: toDollars(equityCents),

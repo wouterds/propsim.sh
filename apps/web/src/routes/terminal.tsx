@@ -427,6 +427,13 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
         positions={book.positions.length}
       />
 
+      {account.status === "locked" && (
+        <p className="rounded border border-warn/40 bg-warn/10 px-3 py-2 text-warn text-xs">
+          This session hit the daily loss limit. You can still close what is open, and the next
+          session opens at 17:00 CT.
+        </p>
+      )}
+
       {fetcher.data?.error && (
         <p
           role="alert"

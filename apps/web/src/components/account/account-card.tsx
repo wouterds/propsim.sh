@@ -5,6 +5,7 @@ import {
   type Account,
   dailyFloorOf,
   floorToneOf,
+  isOpen,
   netPnlOf,
   planOf,
   roomLeftOf,
@@ -110,7 +111,7 @@ const AccountCard = ({ account }: Props) => {
         >
           Journal
         </Link>
-        {account.status === "live" && (
+        {isOpen(account.status) && (
           <Link
             to={href("/accounts/:id/terminal", { id: account.id })}
             className="ml-auto inline-flex h-8 items-center rounded bg-accent-strong px-3 font-medium text-ink text-xs transition-colors hover:bg-accent-strong/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"

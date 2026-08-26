@@ -11,7 +11,10 @@ import type { Plan } from "@propsim/plans";
 import type { FloorTone } from "./format";
 import type { JournalDay } from "./journal";
 
-export type AccountStatus = "live" | "passed" | "breached";
+export type AccountStatus = "live" | "locked" | "passed" | "breached";
+
+/** Locked is still open for business: the position can be closed, and the next session reopens it. */
+export const isOpen = (status: AccountStatus) => status === "live" || status === "locked";
 
 /**
  * Read only, and in dollars. Every amount on it was added up in cents first,
@@ -32,11 +35,17 @@ export type Account = {
 
 export const STATUS_LABEL: Record<AccountStatus, string> = {
   live: "Live",
+  locked: "Locked",
   passed: "Passed",
   breached: "Breached",
 };
 
-export const STATUS_TONE = { live: "up", passed: "accent", breached: "down" } as const;
+export const STATUS_TONE = {
+  live: "up",
+  locked: "warn",
+  passed: "accent",
+  breached: "down",
+} as const;
 
 export const planOf = (account: Account): Plan => account.plan;
 
@@ -78,12 +87,12 @@ export const floorToneOf = (left: number): FloorTone => {
 
 export const totalsOf = (accounts: Account[]) => ({
   accounts: accounts.length,
-  live: accounts.filter((account) => account.status === "live").length,
+  live: accounts.filter((account) => isOpen(account.status)).length,
   balance: accounts.reduce((total, account) => total + account.balance, 0),
   allocated: accounts.reduce((total, account) => total + account.plan.size, 0),
   netPnl: accounts.reduce((total, account) => total + netPnlOf(account), 0),
   dayPnl: accounts
-    .filter((account) => account.status === "live")
+    .filter((account) => isOpen(account.status))
     .reduce((total, account) => total + dayPnlOf(account), 0),
   trades: accounts.reduce(
     (total, account) => total + account.journal.reduce((sum, entry) => sum + entry.trades, 0),

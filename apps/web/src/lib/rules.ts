@@ -31,8 +31,11 @@ export const rulesOf = (account: Account): Rule[] => {
     {
       id: "daily",
       label: "Daily loss limit",
-      detail: `${formatMoney(plan.dailyLossLimit)} from the session open, reset at 17:00 CT. Floor at ${formatMoney(dailyFloorOf(account))}.`,
-      state: breachedOr(account, "clean"),
+      detail:
+        account.status === "locked"
+          ? `Hit. Trading is shut until the next session opens at 17:00 CT, and the account itself is untouched.`
+          : `${formatMoney(plan.dailyLossLimit)} from the session open, reset at 17:00 CT. Floor at ${formatMoney(dailyFloorOf(account))}.`,
+      state: account.status === "locked" ? "breached" : "clean",
     },
     {
       id: "trailing",

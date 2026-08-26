@@ -2,6 +2,7 @@ import { accounts, fills, getDb, orders, users } from "@propsim/database";
 import type { Match, Resting } from "@propsim/engine";
 import { and, eq, isNull, ne } from "drizzle-orm";
 import { alias } from "drizzle-orm/mysql-core";
+import { findAccount, lockedFor } from "./accounts";
 import { writeFill } from "./fills";
 import { settle } from "./settle";
 
@@ -68,6 +69,16 @@ export const listResting = async (): Promise<RestingOrder[]> => {
  * past a limit it has already broken.
  */
 export const fillResting = async ({ order, price, at }: Match<RestingOrder>) => {
+  // A session shut by the daily floor takes no new exposure. A bracket only
+  // reduces a position the account already holds, so it still prints.
+  if (order.parentOrderId === null) {
+    const account = await findAccount(order.accountId);
+
+    if (!account || (await lockedFor(account, at))) {
+      return false;
+    }
+  }
+
   const filled = await getDb().transaction(async (tx) => {
     // The match was decided from a snapshot taken before the upstream request.
     const [working] = await tx

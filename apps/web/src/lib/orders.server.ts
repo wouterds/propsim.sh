@@ -6,7 +6,7 @@ import {
   UUIDv7,
 } from "@propsim/database";
 import { type Fill, ledgerOf, positionsOf, type Side, tradeDateOf } from "@propsim/engine";
-import { listFills, settle, writeFill } from "@propsim/orders";
+import { listFills, lockedFor, settle, writeFill } from "@propsim/orders";
 import { and, asc, eq, isNull, ne } from "drizzle-orm";
 import type { AccountRow } from "./accounts.server";
 
@@ -47,7 +47,7 @@ const netOf = (fills: Fill[], instrument: string) => {
   return position.side === "buy" ? position.quantity : -position.quantity;
 };
 
-const refuseTicket = (row: AccountRow, ticket: Ticket, held: number): Refusal => {
+const refuseTicket = (row: AccountRow, ticket: Ticket, held: number, locked: boolean): Refusal => {
   if (row.endedAt) {
     return "This account is closed. Open a new one to keep trading.";
   }
@@ -65,6 +65,12 @@ const refuseTicket = (row: AccountRow, ticket: Ticket, held: number): Refusal =>
   }
 
   const signed = ticket.side === "buy" ? ticket.quantity : -ticket.quantity;
+
+  // A shut session takes nothing that grows the position. Closing stays open to
+  // the trader, because refusing it traps them in the trade that shut them.
+  if (locked && Math.abs(held + signed) > Math.abs(held)) {
+    return "This session hit the daily loss limit. You can still close what is open.";
+  }
 
   if (Math.abs(held + signed) > row.maxMicros) {
     return `This plan holds at most ${row.maxMicros} micros at once.`;
@@ -86,7 +92,12 @@ export const placeOrder = async (
   at: Date,
 ): Promise<Refusal> => {
   const fills = await listFills(row.id);
-  const refusal = refuseTicket(row, ticket, netOf(fills, ticket.instrument));
+  const refusal = refuseTicket(
+    row,
+    ticket,
+    netOf(fills, ticket.instrument),
+    await lockedFor(row, at),
+  );
 
   if (refusal) {
     return refusal;
