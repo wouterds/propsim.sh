@@ -257,6 +257,7 @@ export const action = async ({ params, request }: Route.ActionArgs) => {
         priceUnits(price),
         quantity,
         at,
+        tape ? priceUnits(tape.price) : null,
       ),
     };
   }

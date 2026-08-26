@@ -5,7 +5,14 @@ import {
   orders as ordersTable,
   UUIDv7,
 } from "@propsim/database";
-import { type Fill, ledgerOf, positionsOf, type Side, tradeDateOf } from "@propsim/engine";
+import {
+  type Fill,
+  ledgerOf,
+  marketableAt,
+  positionsOf,
+  type Side,
+  tradeDateOf,
+} from "@propsim/engine";
 import { listFills, lockedFor, settle, writeFill } from "@propsim/orders";
 import { and, asc, eq, isNull, ne } from "drizzle-orm";
 import type { AccountRow } from "./accounts.server";
@@ -146,14 +153,23 @@ export const placeOrder = async (
       price: ticket.type === "market" ? null : ticket.price,
     });
 
-    if (ticket.type === "market") {
+    // A market order, and a resting one priced where the tape already is. The
+    // sweep would take the second a few seconds later, which leaves the trader
+    // watching an order rest at a level the price has gone by.
+    const resting =
+      ticket.type === "market" || ticket.price === null
+        ? null
+        : marketableAt({ side: ticket.side, type: ticket.type, price: ticket.price }, mark);
+    const taken = ticket.type === "market" ? mark : resting;
+
+    if (taken !== null) {
       await writeFill(tx, {
         accountId: row.id,
         orderId: id,
         instrument: ticket.instrument,
         side: ticket.side,
         quantity: ticket.quantity,
-        price: mark,
+        price: taken,
         at,
       });
     }
@@ -225,6 +241,8 @@ export const modifyOrder = async (
   price: number,
   quantity: number,
   at: Date,
+  /** Null on a quiet feed, which leaves the replacement for the sweep. */
+  mark: number | null,
 ): Promise<Refusal> => {
   const [order] = await getDb()
     .select()
@@ -267,7 +285,29 @@ export const modifyOrder = async (
       .update(ordersTable)
       .set({ parentOrderId: replacementId })
       .where(and(eq(ordersTable.parentOrderId, order.id), isNull(ordersTable.endedAt)));
+
+    // Moved onto a level the tape has already passed, so it is taken here
+    // rather than a few seconds later by the sweep. A bracket is left alone:
+    // it may only ever print behind the position it guards.
+    const taken =
+      mark === null || order.parentOrderId !== null || order.type === "market"
+        ? null
+        : marketableAt({ side: order.side, type: order.type, price }, mark);
+
+    if (taken !== null) {
+      await writeFill(tx, {
+        accountId: order.accountId,
+        orderId: replacementId,
+        instrument: order.instrument,
+        side: order.side,
+        quantity,
+        price: taken,
+        at,
+      });
+    }
   });
+
+  await settle(accountId, at);
 
   return null;
 };
