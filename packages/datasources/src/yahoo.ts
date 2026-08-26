@@ -1,4 +1,5 @@
 import type { CandleRequest } from "./candles";
+import { shared } from "./shared";
 
 const CHART = "https://query1.finance.yahoo.com/v8/finance/chart";
 
@@ -10,6 +11,12 @@ const CHART = "https://query1.finance.yahoo.com/v8/finance/chart";
 const AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)";
 
 const TIMEOUT = 10_000;
+
+/**
+ * How long one answer serves everybody. The feed is delayed by minutes and its
+ * finest bar is a minute, so this costs no freshness anyone could observe.
+ */
+const FRESH_SECONDS = 15;
 
 export type ChartResult = {
   meta: { regularMarketTime: number };
@@ -29,7 +36,7 @@ type ChartPayload = {
   chart: { result?: ChartResult[]; error?: { description?: string } | null };
 };
 
-export const fetchChart = async (request: CandleRequest): Promise<ChartResult> => {
+const load = async (request: CandleRequest): Promise<ChartResult> => {
   const { symbol, interval, range } = request;
   const url = `${CHART}/${encodeURIComponent(symbol)}?range=${range}&interval=${interval}`;
   const response = await fetch(url, {
@@ -56,3 +63,12 @@ export const fetchChart = async (request: CandleRequest): Promise<ChartResult> =
 
   return result;
 };
+
+/**
+ * One request per contract and shape, whoever asks. A hundred terminals on one
+ * chart and the matcher behind them all read the same answer.
+ */
+export const fetchChart = (request: CandleRequest) =>
+  shared(`chart:${request.symbol}:${request.interval}:${request.range}`, FRESH_SECONDS, () =>
+    load(request),
+  );

@@ -63,3 +63,27 @@ export const writeCache = async (key: string, value: unknown, seconds: number) =
 
   memory.set(key, { value, until: Date.now() + seconds * 1000 });
 };
+
+/**
+ * True for the one caller that took it, false for everyone else until it runs
+ * out. Redis makes it hold across containers, memory only inside this process.
+ */
+export const claim = async (key: string, seconds: number) => {
+  const store = redis();
+
+  if (store) {
+    const won = await store.set(key, "1", "EX", seconds, "NX").catch(() => null);
+
+    return won === "OK";
+  }
+
+  const held = memory.get(key);
+
+  if (held && held.until > Date.now()) {
+    return false;
+  }
+
+  memory.set(key, { value: "1", until: Date.now() + seconds * 1000 });
+
+  return true;
+};
