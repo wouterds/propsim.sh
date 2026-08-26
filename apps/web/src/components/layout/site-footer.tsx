@@ -1,5 +1,6 @@
 import { href, Link } from "react-router";
 import Brand from "~/components/layout/brand";
+import { cn } from "~/lib/utils";
 
 const FOCUS = "focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent";
 
@@ -33,7 +34,16 @@ const COLUMNS = [
 // edge. Equal fractions gave each one more room than it used, which left the
 // last column stranded short of the edge.
 const COLUMNS_GRID =
-  "mx-auto grid max-w-6xl gap-10 px-5 py-12 sm:grid-cols-2 sm:px-8 lg:grid-cols-[1fr_auto_auto_auto] lg:gap-x-16";
+  "grid gap-10 px-5 py-12 sm:grid-cols-2 sm:px-8 lg:grid-cols-[1fr_auto_auto_auto] lg:gap-x-16";
+
+const BOTTOM =
+  "flex flex-col gap-2 px-5 py-5 text-faint text-xs sm:flex-row sm:items-center sm:justify-between sm:px-8";
+
+/**
+ * A band under the page has to line its content up with the page above it. The
+ * panel is already that column, so inside one the same rail only insets it.
+ */
+const RAIL = "mx-auto w-full max-w-6xl";
 
 /** Boxed, it is a panel in the app's own content column rather than a band under it. */
 const SiteFooter = ({ boxed = false }: { boxed?: boolean }) => (
@@ -42,7 +52,7 @@ const SiteFooter = ({ boxed = false }: { boxed?: boolean }) => (
       boxed ? "overflow-hidden rounded-lg border border-line bg-raised" : "border-line/70 border-t"
     }
   >
-    <div className={COLUMNS_GRID}>
+    <div className={cn(COLUMNS_GRID, !boxed && RAIL)}>
       <div>
         <Brand className="text-[15px] text-ink" />
         <p className="mt-3 max-w-sm text-faint text-sm leading-relaxed">
@@ -71,7 +81,7 @@ const SiteFooter = ({ boxed = false }: { boxed?: boolean }) => (
     </div>
 
     <div className="border-line/70 border-t">
-      <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-5 text-faint text-xs sm:flex-row sm:items-center sm:justify-between sm:px-8">
+      <div className={cn(BOTTOM, !boxed && RAIL)}>
         <p>Simulated fills against delayed market data. Not a broker and not investment advice.</p>
 
         <div className="flex items-center gap-4">
