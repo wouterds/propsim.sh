@@ -11,7 +11,7 @@ import {
   type Printed,
   peakOf,
   positionsOf,
-  settledOf,
+  revealedOf,
   tradeDateOf,
 } from "@propsim/engine";
 import {
@@ -98,7 +98,7 @@ export const marking = async () => {
 
       // The same steps the matcher reads and the chart drew, so a floor is only
       // ever crossed at a moment the trader watched go by.
-      tape.set(instrument, settledOf(read.candles, read.at, contract.tick));
+      tape.set(instrument, revealedOf(read.candles, read.at, contract.tick));
     } catch (error) {
       // One contract must not stop the sweep reaching the rest.
       console.error(`marking skipped ${instrument}`, error);

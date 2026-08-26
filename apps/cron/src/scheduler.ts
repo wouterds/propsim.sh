@@ -5,7 +5,7 @@ export type Handler = () => Promise<void>;
 export type Job = {
   /** Short, stable, and the name it is logged under. */
   name: string;
-  /** Five field cron, read in UTC. */
+  /** Cron read in UTC. Six fields when it has to run inside a minute. */
   schedule: string;
   run: Handler;
 };

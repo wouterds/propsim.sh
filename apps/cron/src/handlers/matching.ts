@@ -1,5 +1,5 @@
 import { getTape } from "@propsim/datasources";
-import { contractOf, matchesOf, type Printed, settledOf } from "@propsim/engine";
+import { contractOf, matchesOf, type Printed, revealedOf } from "@propsim/engine";
 import { fillResting, listResting } from "@propsim/orders";
 
 /**
@@ -24,7 +24,7 @@ export const matching = async () => {
 
       // Steps, never whole bars. A bar is only offered once the chart has shown
       // every step of it, so a fill can never land where the dance has not been.
-      steps = settledOf(tape.candles, tape.at, contract.tick);
+      steps = revealedOf(tape.candles, tape.at, contract.tick);
     } catch (error) {
       // One contract must not stop the sweep reaching the rest.
       console.error(`matching skipped ${instrument}`, error);
