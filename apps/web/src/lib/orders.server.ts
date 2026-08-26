@@ -1,10 +1,4 @@
-import {
-  fills as fillsTable,
-  getDb,
-  type Order as OrderRow,
-  orders as ordersTable,
-  UUIDv7,
-} from "@propsim/database";
+import { getDb, type Order as OrderRow, orders as ordersTable, UUIDv7 } from "@propsim/database";
 import {
   breachOf,
   equityOf,
@@ -16,6 +10,7 @@ import {
   targetOf,
   tradeDateOf,
 } from "@propsim/engine";
+import { writeFill } from "@propsim/orders";
 import { and, asc, eq, isNull, ne } from "drizzle-orm";
 import { type AccountRow, endAccount, listFills, raisePeak, rulesOfRow } from "./accounts.server";
 import { findTradingDay, touchTradingDay } from "./trading-days.server";
@@ -185,10 +180,9 @@ export const placeOrder = async (
     });
 
     if (ticket.type === "market") {
-      await tx.insert(fillsTable).values({
+      await writeFill(tx, {
         accountId: row.id,
         orderId: id,
-        tradeDate,
         instrument: ticket.instrument,
         side: ticket.side,
         quantity: ticket.quantity,
@@ -325,10 +319,9 @@ export const closePosition = async (
       placedAt: at,
     });
 
-    await tx.insert(fillsTable).values({
+    await writeFill(tx, {
       accountId: row.id,
       orderId: id,
-      tradeDate,
       instrument,
       side,
       quantity: Math.abs(held),
