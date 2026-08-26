@@ -1,5 +1,6 @@
-import { fills, type Tx } from "@propsim/database";
+import { fills, getDb, type Tx } from "@propsim/database";
 import { type Side, tradeDateOf } from "@propsim/engine";
+import { asc, eq } from "drizzle-orm";
 
 export type FillWrite = {
   accountId: string;
@@ -19,3 +20,12 @@ export type FillWrite = {
  */
 export const writeFill = (tx: Tx, fill: FillWrite) =>
   tx.insert(fills).values({ ...fill, tradeDate: tradeDateOf(fill.at) });
+
+/** The stream everything monetary is folded from, oldest print first. */
+export const listFills = (accountId: string) =>
+  getDb()
+    .select()
+    .from(fills)
+    .where(eq(fills.accountId, accountId))
+    // UUIDv7 breaks the tie, so two fills in the same millisecond keep their order.
+    .orderBy(asc(fills.at), asc(fills.id));

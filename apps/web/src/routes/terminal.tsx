@@ -7,6 +7,7 @@ import {
   type Side,
   tradeDateOf,
 } from "@propsim/engine";
+import { listFills } from "@propsim/orders";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { data, useFetcher, useNavigate, useRevalidator, useSearchParams } from "react-router";
 import NewsStrip from "~/components/app/news-strip";
@@ -23,7 +24,7 @@ import Panel from "~/components/trading/panel";
 import { barsPerDay, parseTimeframe, rangeFor } from "~/components/trading/timeframes";
 import TradePanel, { type TicketPick } from "~/components/trading/trade-panel";
 import { fillPriceFor, type OrderDraft } from "~/components/trading/trading-state";
-import { listFills, loadAccount } from "~/lib/accounts.server";
+import { loadAccount } from "~/lib/accounts.server";
 import { requireUserId } from "~/lib/auth.server";
 import { activeWindow, nextWindow } from "~/lib/blackout";
 import { ordersOf, positionsIn } from "~/lib/blotter.server";

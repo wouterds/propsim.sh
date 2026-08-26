@@ -16,10 +16,9 @@ import {
   targetOf,
   tradeDateOf,
 } from "@propsim/engine";
-import { writeFill } from "@propsim/orders";
+import { findTradingDay, listFills, touchTradingDay, writeFill } from "@propsim/orders";
 import { and, asc, eq, isNull, ne } from "drizzle-orm";
-import { type AccountRow, endAccount, listFills, raisePeak, rulesOfRow } from "./accounts.server";
-import { findTradingDay, touchTradingDay } from "./trading-days.server";
+import { type AccountRow, endAccount, raisePeak, rulesOfRow } from "./accounts.server";
 
 type OrderType = OrderRow["type"];
 

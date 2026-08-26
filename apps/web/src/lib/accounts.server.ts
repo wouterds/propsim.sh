@@ -1,7 +1,6 @@
 import {
   type Account as AccountRow,
   accounts as accountsTable,
-  fills as fillsTable,
   getDb,
   type TradingDay,
   tradingDays,
@@ -21,9 +20,10 @@ import {
   toPrice,
   tradeDateOf,
 } from "@propsim/engine";
+import { listFills } from "@propsim/orders";
 import type { Plan } from "@propsim/plans";
 import { findPlan } from "@propsim/plans";
-import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import type { Account, AccountStatus } from "./accounts";
 import type { JournalDay } from "./journal";
 
@@ -47,14 +47,6 @@ const planFrom = (row: AccountRow): Plan => ({
   maxMicros: row.maxMicros,
   lockAboveStart: toDollars(row.lockAboveStartCents),
 });
-
-export const listFills = (accountId: string) =>
-  getDb()
-    .select()
-    .from(fillsTable)
-    .where(eq(fillsTable.accountId, accountId))
-    // UUIDv7 breaks the tie, so two fills in the same millisecond keep their order.
-    .orderBy(asc(fillsTable.at), asc(fillsTable.id));
 
 const listTradingDays = (accountId: string) =>
   getDb()
