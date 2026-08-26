@@ -1,8 +1,10 @@
 import { type Candle, getCandles } from "@propsim/datasources";
 import {
+  activeWindow,
   findInstrument,
   instrumentOr,
   isWorking,
+  nextWindow,
   priceUnits,
   type Side,
   tradeDateOf,
@@ -26,7 +28,7 @@ import TradePanel, { type TicketPick } from "~/components/trading/trade-panel";
 import { fillPriceFor, type OrderDraft } from "~/components/trading/trading-state";
 import { loadAccount } from "~/lib/accounts.server";
 import { requireUserId } from "~/lib/auth.server";
-import { activeWindow, nextWindow } from "~/lib/blackout";
+
 import { ordersOf, positionsIn } from "~/lib/blotter.server";
 import { chartPrefs, readChartPrefs } from "~/lib/chart-prefs.server";
 import { redFolderWindows } from "~/lib/news.server";

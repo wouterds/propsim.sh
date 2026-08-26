@@ -1,6 +1,6 @@
+import { AFTER_MINUTES, BEFORE_MINUTES } from "@propsim/engine";
 import { CONSISTENCY_CAP, PLANS, planOr, trailStopsAt } from "@propsim/plans";
 import { href, Link } from "react-router";
-import { AFTER_MINUTES, BEFORE_MINUTES } from "~/lib/blackout";
 import { formatDollars } from "~/lib/format";
 import { pageMeta } from "~/lib/seo";
 import type { Route } from "./+types/rules";

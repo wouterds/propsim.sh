@@ -5,5 +5,6 @@ export * from "./journal";
 export * from "./liquidation";
 export * from "./matching";
 export * from "./money";
+export * from "./news";
 export * from "./orders";
 export * from "./session";

@@ -1,5 +1,5 @@
 import { getNewsEvents, isRedFolder } from "@propsim/datasources";
-import { AFTER_MINUTES, BEFORE_MINUTES } from "~/lib/blackout";
+import { AFTER_MINUTES, BEFORE_MINUTES } from "@propsim/engine";
 import { formatCountdown, formatDay, formatRelative } from "~/lib/format";
 import { pageMeta } from "~/lib/seo";
 import type { Route } from "./+types/red-folder-events";

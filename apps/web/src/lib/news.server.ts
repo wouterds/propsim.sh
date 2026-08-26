@@ -1,5 +1,5 @@
 import { getNewsEvents, isRedFolder } from "@propsim/datasources";
-import { type NewsWindow, windowsOf } from "./blackout";
+import { type NewsWindow, windowsOf } from "@propsim/engine";
 
 /** The red folder calendar, already folded into blackout windows. */
 export const redFolderWindows = async (): Promise<NewsWindow[]> => {
