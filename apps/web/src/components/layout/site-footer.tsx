@@ -23,7 +23,7 @@ const COLUMNS = [
   {
     title: "Help",
     links: [
-      { to: href("/knowledge-base"), label: "Help" },
+      { to: href("/knowledge-base"), label: "Knowledge base" },
       { to: href("/feature-requests"), label: "Feature requests" },
       { to: href("/contact"), label: "Contact" },
     ],

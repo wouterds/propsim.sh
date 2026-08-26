@@ -7,7 +7,7 @@ const FOCUS = "focus-visible:outline-hidden focus-visible:ring-1 focus-visible:r
 const LINKS = [
   { to: href("/plans"), label: "Plans" },
   { to: href("/rules"), label: "Rules" },
-  { to: href("/knowledge-base"), label: "Help" },
+  { to: href("/knowledge-base"), label: "Knowledge base" },
 ];
 
 const SiteHeader = ({ signedIn }: { signedIn: boolean }) => (
