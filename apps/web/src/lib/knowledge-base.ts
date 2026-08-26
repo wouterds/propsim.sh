@@ -90,9 +90,9 @@ export const CATEGORIES: Category[] = [
         summary: "Live CME futures, on a short delay. The bars you trade are the real ones.",
         body: [
           "The tape is genuine CME futures data, a few minutes behind the exchange. The bars you see are the bars that printed, at the prices they printed.",
-          "Nothing is generated, smoothed or replayed from a stored session.",
+          "Nothing is smoothed and nothing is replayed from a stored session. The one thing that is ours is the order prices are shown in inside the newest candle, which is explained under the dancing candle.",
         ],
-        related: ["why-the-tape-is-delayed", "is-this-a-replay"],
+        related: ["why-the-tape-is-delayed", "the-dancing-candle", "is-this-a-replay"],
       },
       {
         slug: "why-the-tape-is-delayed",
@@ -126,9 +126,28 @@ export const CATEGORIES: Category[] = [
         body: [
           "A market order fills at the price the tape is showing you. A resting order fills as soon as a bar reaches its price, with nothing in front of it in the queue.",
           "That is the one place this simulator is still kinder than a real broker. A real limit order sits behind everyone who got there first, and a real stop can fill well past its trigger in a fast market. Neither is modelled.",
-          "A manual fill is stamped at the open of the bar its price came from, not at the moment you clicked. Stamping it at your wall clock would put a ten minute old price under a fresh timestamp, and every rule read against that timestamp would be wrong.",
+          "A manual fill is stamped at the open of the five second step its price came from, not at the moment you clicked. Stamping it at your wall clock would put a ten minute old price under a fresh timestamp, and every rule read against that timestamp would be wrong.",
         ],
-        related: ["slippage-and-the-queue", "why-the-tape-is-delayed", "commission"],
+        related: [
+          "slippage-and-the-queue",
+          "the-dancing-candle",
+          "why-the-tape-is-delayed",
+          "commission",
+        ],
+      },
+      {
+        slug: "the-dancing-candle",
+        title: "Why does the newest candle keep moving?",
+        summary:
+          "It is a minute that has already printed, being revealed five seconds at a time. Every price in it really traded, and your fills are decided on the same reveal.",
+        body: [
+          "The feed publishes one bar a minute. Rather than freeze the chart between two of them, the newest candle you see is a minute the tape has already delivered in full, revealed a step at a time over the following minute. Everything printed after it is held back until its turn.",
+          "Every price the candle shows is a price that traded inside that minute, and the candle finishes as exactly the bar it came from. What is ours is the order the prices come out in, because a bar records its open, high, low and close and not the path between them.",
+          "That order is what your fills are decided on. If the candle sweeps through your resting order, it fills, at the price you watched it reach. Nothing fills at a level the candle has not been to, and nothing is left resting after it has been through.",
+          "It costs you one extra minute of delay on top of the feed's own, which is the price of the screen and the fill being the same thing.",
+          "When the market is shut or the feed stops answering, the candle finishes its steps and then holds still. A chart that kept dancing on a dead market would be the lie, not the frozen one.",
+        ],
+        related: ["how-fills-are-decided", "where-prices-come-from", "bars-not-ticks"],
       },
       {
         slug: "is-this-a-replay",
@@ -347,14 +366,18 @@ export const CATEGORIES: Category[] = [
         slug: "bars-not-ticks",
         title: "Are the limits checked on every tick?",
         summary:
-          "No. They are read against one minute bars from a delayed feed, so the bar that broke a floor is known and the exact second inside it is not.",
+          "No. They are read against five second steps of a delayed feed's one minute bars, so the minute that broke a floor is known and the exact second inside it is not.",
         body: [
-          "A real firm reads live ticks. This reads one minute bars, taking each open position at the worst price inside the bar, which is the low if you are long and the high if you are short.",
-          "A floor crossed and recovered inside a single bar is still caught, because the bar's extreme is what gets read. What is not known is the instant it happened.",
-          "Your peak is ratcheted from the same bars, at the favourable end. A bar does not say which end printed first, so its own high is never allowed to drag the floor over its own low.",
-          "A firm reading live ticks would have caught you at the same bar. The difference is precision within it, not outcome.",
+          "A real firm reads live ticks. This reads the steps the newest candle is revealed in, taking each open position at the worst price inside a step, which is the low if you are long and the high if you are short.",
+          "A floor crossed and recovered inside a single minute is still caught, because the minute's extreme is what gets read. What is not known is the instant it happened.",
+          "Your peak is ratcheted from the same steps, at the favourable end. A step does not say which end printed first, so its own high is never allowed to drag the floor over its own low.",
+          "A firm reading live ticks would have caught you in the same minute. The difference is precision within it, not outcome.",
         ],
-        related: ["open-positions-count", "why-the-trailing-drawdown-is-the-hard-one"],
+        related: [
+          "the-dancing-candle",
+          "open-positions-count",
+          "why-the-trailing-drawdown-is-the-hard-one",
+        ],
       },
       {
         slug: "slippage-and-the-queue",

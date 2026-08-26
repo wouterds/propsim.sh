@@ -66,7 +66,8 @@ const GROUPS: Group[] = [
         body: [
           "The floors are read at the deepest your equity went, not where it settled. A trade that went through the floor at 14:52 does not survive by finishing green at 15:10.",
           "This is the single biggest difference between a prop account and a brokerage account, and it is why a strategy with a good end-of-day record can still fail here.",
-          "Here it is read against one minute bars from a delayed feed rather than tick by tick, so the bar that broke the floor is known and the exact second inside it is not. A firm reading live ticks would have caught you at the same bar.",
+          "Here it is read against a delayed feed that publishes one minute bars rather than tick by tick, so the minute that broke the floor is known and the exact second inside it is not. A firm reading live ticks would have caught you in the same minute.",
+          "The newest candle on your chart moves inside a minute that has already printed in full, five seconds at a time. Every price it shows really traded in that minute, the order it shows them in is ours, and it is the same order your fills are decided in.",
         ],
       },
       {
