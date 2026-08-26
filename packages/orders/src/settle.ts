@@ -13,7 +13,7 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 import { findAccount, rulesOf } from "./accounts";
 import { findTradingDay, touchTradingDay } from "./days";
 import { listFills } from "./fills";
-import { notifyBreach } from "./notify";
+import { notifyBreach, notifyNews } from "./notify";
 
 /** Only ever rises, so a fold that proposes less than the stored mark loses. */
 const raisePeak = (id: string, peakEquityCents: number) =>
@@ -22,8 +22,8 @@ const raisePeak = (id: string, peakEquityCents: number) =>
     .set({ peakEquityCents: sql`GREATEST(${accounts.peakEquityCents}, ${peakEquityCents})` })
     .where(eq(accounts.id, id));
 
-/** Only the trailing floor ends an account. The daily one ends the session. */
-type EndedReason = "trailing_drawdown" | "target_met";
+/** The daily floor is absent on purpose: it shuts the session, never the account. */
+type EndedReason = "trailing_drawdown" | "news" | "target_met";
 
 /**
  * Ends the account and says whether this call was the one that did it. The
@@ -84,5 +84,16 @@ export const settle = async (accountId: string, at: Date) => {
 
   if (equityCents >= targetOf(rules)) {
     await endAccount(accountId, "target_met", at);
+  }
+};
+
+/**
+ * Ends an account that was not flat through a red folder release. Nothing is
+ * flattened: the position is the breach, and closing it now would rewrite what
+ * the account was holding when the release printed.
+ */
+export const failForNews = async (accountId: string, release: string, at: number) => {
+  if (await endAccount(accountId, "news", new Date(at))) {
+    await notifyNews(accountId, release, at);
   }
 };

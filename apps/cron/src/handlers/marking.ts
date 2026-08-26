@@ -1,7 +1,9 @@
-import { type Candle, getCandles } from "@propsim/datasources";
+import { type Candle, getCandles, getNewsEvents, isRedFolder } from "@propsim/datasources";
 import {
   carriedInOf,
   contractOf,
+  type Fill,
+  heldThroughOf,
   type Ledger,
   ledgerOf,
   markingOf,
@@ -9,8 +11,10 @@ import {
   peakOf,
   positionsOf,
   tradeDateOf,
+  windowsOf,
 } from "@propsim/engine";
 import {
+  failForNews,
   findTradingDay,
   flatten,
   listFills,
@@ -22,12 +26,22 @@ import {
 
 type LiveAccount = Awaited<ReturnType<typeof listLive>>[number];
 
-type Held = {
+type Watched = {
   account: LiveAccount;
+  fills: Fill[];
   ledger: Ledger;
   positions: NetPosition[];
   /** The last print, after which the book stopped changing. */
   opened: number;
+};
+
+/** The calendar the blackout windows are cut from, red folder releases only. */
+const redFolderWindows = async () => {
+  const events = await getNewsEvents();
+
+  return windowsOf(
+    events.filter(isRedFolder).map((event) => ({ time: event.time, title: event.title })),
+  );
 };
 
 /**
@@ -38,15 +52,17 @@ type Held = {
 const readable = (bars: Candle[], opened: number, tradeDate: string) =>
   bars.filter((bar) => bar.time >= opened && tradeDateOf(new Date(bar.time)) === tradeDate);
 
-const holdingsOf = async (account: LiveAccount): Promise<Held | null> => {
-  const ledger = ledgerOf(await listFills(account.id), account.startingBalanceCents);
-  const positions = positionsOf(ledger);
+const watchedOf = async (account: LiveAccount): Promise<Watched> => {
+  const fills = await listFills(account.id);
+  const ledger = ledgerOf(fills, account.startingBalanceCents);
 
-  if (positions.length === 0) {
-    return null;
-  }
-
-  return { account, ledger, positions, opened: ledger.path.at(-1)?.at.getTime() ?? 0 };
+  return {
+    account,
+    fills,
+    ledger,
+    positions: positionsOf(ledger),
+    opened: ledger.path.at(-1)?.at.getTime() ?? 0,
+  };
 };
 
 /**
@@ -57,14 +73,26 @@ const holdingsOf = async (account: LiveAccount): Promise<Held | null> => {
  */
 export const marking = async () => {
   const rows = await listLive();
-  const held = (await Promise.all(rows.map(holdingsOf))).filter((one) => one !== null);
 
-  if (held.length === 0) {
+  if (rows.length === 0) {
     return;
   }
 
+  const watched = await Promise.all(rows.map(watchedOf));
   const now = new Date();
   const tradeDate = tradeDateOf(now);
+
+  // One contract must not stop the sweep, and neither must the calendar. A
+  // feed that is down leaves the floors judged and the releases unjudged.
+  let windows: Awaited<ReturnType<typeof redFolderWindows>> = [];
+
+  try {
+    windows = await redFolderWindows();
+  } catch (error) {
+    console.error("marking read no calendar", error);
+  }
+
+  const held = watched.filter((one) => one.positions.length > 0);
   const wanted = new Set(held.flatMap((one) => one.positions.map((open) => open.instrument)));
   const tape = new Map<string, Candle[]>();
 
@@ -82,9 +110,24 @@ export const marking = async () => {
   }
 
   let liquidated = 0;
+  let failed = 0;
 
-  for (const one of held) {
+  // Every account, not only the ones holding something now. A position carried
+  // through a release is a breach the account keeps after it is closed.
+  for (const one of watched) {
     try {
+      const through = heldThroughOf(one.fills, windows, now.getTime());
+
+      if (through) {
+        await failForNews(one.account.id, through.titles.join(", "), through.at);
+        failed += 1;
+        continue;
+      }
+
+      if (one.positions.length === 0) {
+        continue;
+      }
+
       const bars = new Map(
         one.positions.flatMap((open) => {
           const found = tape.get(open.instrument);
@@ -125,7 +168,7 @@ export const marking = async () => {
     }
   }
 
-  if (liquidated) {
-    console.log(`marking liquidated ${liquidated} account${liquidated === 1 ? "" : "s"}`);
+  if (liquidated || failed) {
+    console.log(`marking liquidated ${liquidated} and failed ${failed} on the calendar`);
   }
 };

@@ -3,6 +3,7 @@ import { createElement, type ReactElement } from "react";
 
 import { AccountBreached } from "./emails/account-breached";
 import { AccountDeleted } from "./emails/account-deleted";
+import { AccountNews } from "./emails/account-news";
 import { ConfirmCode } from "./emails/confirm-code";
 import { ConfirmNewEmail } from "./emails/confirm-new-email";
 import { ContactMessage } from "./emails/contact-message";
@@ -91,6 +92,24 @@ export const sendAccountBreached = ({
     to,
     `${account} is closed`,
     createElement(AccountBreached, { to, account, equity, floor }),
+  );
+
+export const sendAccountNews = ({
+  to,
+  account,
+  release,
+  at,
+}: {
+  to: string;
+  account: string;
+  release: string;
+  at: string;
+}) =>
+  deliver(
+    "account-news",
+    to,
+    `${account} is closed`,
+    createElement(AccountNews, { to, account, release, at }),
   );
 
 export const sendAccountDeleted = ({ to }: { to: string }) =>
