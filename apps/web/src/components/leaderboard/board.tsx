@@ -46,7 +46,9 @@ const Board = ({ title, hint, empty, rows }: Props) => (
               <p className={cn("font-medium text-sm tabular", TONE_TEXT[toneOf(row.pnl)])}>
                 {formatSigned(row.pnl)}
               </p>
-              <p className="text-[11px] text-faint tabular">{formatPercent(row.return)}</p>
+              <p className="text-[11px] text-faint tabular">
+                {row.target === null ? "–" : `${formatPercent(row.target)} of target`}
+              </p>
             </div>
           </li>
         ))}

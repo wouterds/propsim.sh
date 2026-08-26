@@ -7,9 +7,9 @@ import {
   cutoffOf,
   medianPnlOf,
   profitableShare,
-  returnOf,
   type Span,
   type Standing,
+  targetShareOf,
 } from "./leaderboard";
 
 const BOARD = 10;
@@ -18,7 +18,7 @@ type Tally = {
   userId: string;
   username: string | null;
   accounts: number;
-  startingCents: number;
+  targetCents: number;
   pnlCents: number;
 };
 
@@ -31,7 +31,7 @@ const standingOf = (tally: Tally): Standing => {
     initials: persona.initials,
     hue: persona.hue,
     accounts: tally.accounts,
-    startingCents: tally.startingCents,
+    targetCents: tally.targetCents,
     pnlCents: tally.pnlCents,
   };
 };
@@ -45,7 +45,8 @@ export type Row = {
   hue: number;
   accounts: number;
   pnl: number;
-  return: number;
+  /** Share of the profit target reached. Null when there is no target behind it. */
+  target: number | null;
 };
 
 const toRow = (standing: Standing, index: number): Row => ({
@@ -56,7 +57,7 @@ const toRow = (standing: Standing, index: number): Row => ({
   hue: standing.hue,
   accounts: standing.accounts,
   pnl: toDollars(standing.pnlCents),
-  return: returnOf(standing),
+  target: targetShareOf(standing),
 });
 
 /**
@@ -76,6 +77,7 @@ export const loadLeaderboard = async (span: Span, now = new Date()) => {
       username: users.username,
       deletedAt: users.deletedAt,
       startingBalanceCents: accounts.startingBalanceCents,
+      profitTargetCents: accounts.profitTargetCents,
       endedReason: accounts.endedReason,
     })
     .from(accounts)
@@ -126,12 +128,12 @@ export const loadLeaderboard = async (span: Span, now = new Date()) => {
       userId: row.userId,
       username: row.deletedAt ? null : row.username,
       accounts: 0,
-      startingCents: 0,
+      targetCents: 0,
       pnlCents: 0,
     };
 
     tally.accounts += 1;
-    tally.startingCents += row.startingBalanceCents;
+    tally.targetCents += row.profitTargetCents;
     tally.pnlCents += bankedSince(ledger.trips, cutoff);
     byUser.set(row.userId, tally);
   }

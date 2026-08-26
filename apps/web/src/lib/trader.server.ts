@@ -48,7 +48,7 @@ export const loadTrader = async (id: string) => {
     openedOn: row.openedOn,
   }));
 
-  const started = rows.reduce((total, row) => total + row.startingBalanceCents, 0);
+  const target = rows.reduce((total, row) => total + row.profitTargetCents, 0);
   const stats = statsOf(ledgers.flatMap((ledger) => ledger.trips));
 
   return {
@@ -69,8 +69,9 @@ export const loadTrader = async (id: string) => {
       breached: accounts.filter((one) => one.state === "breached").length,
     },
     stats,
-    // What every account together started with, so a return means something.
-    startedWith: toDollars(started),
-    returnRate: started === 0 ? null : stats.pnlCents / started,
+    // The starting balance is not their money and was never at risk, so the
+    // only percentage worth printing is how far along the target they are.
+    targetWas: toDollars(target),
+    targetShare: target === 0 ? null : stats.pnlCents / target,
   };
 };

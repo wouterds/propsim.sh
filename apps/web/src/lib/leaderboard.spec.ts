@@ -7,6 +7,7 @@ import {
   profitableShare,
   type Standing,
   spanOr,
+  targetShareOf,
 } from "./leaderboard";
 
 const trip = (closedAt: string, pnlCents: number): RoundTrip => ({
@@ -28,7 +29,7 @@ const standing = (pnlCents: number): Standing => ({
   initials: "AB",
   hue: 12,
   accounts: 1,
-  startingCents: 5_000_000,
+  targetCents: 300_000,
   pnlCents,
 });
 
@@ -121,5 +122,33 @@ describe("medianPnlOf", () => {
   it("should average the two in the middle of an even count", () => {
     // then
     expect(medianPnlOf([standing(-100), standing(700), standing(50), standing(-50)])).toBe(0);
+  });
+});
+
+describe("targetShareOf", () => {
+  it("should say nothing rather than divide by a target nobody set", () => {
+    // given a trader whose accounts carry no target
+    const none = { ...standing(50_000), targetCents: 0 };
+
+    // when, then
+    expect(targetShareOf(none)).toBeNull();
+  });
+
+  it("should measure against the target rather than the starting balance", () => {
+    // given half of a three thousand dollar target
+    const half = standing(150_000);
+
+    // when, then
+    expect(targetShareOf(half)).toBe(0.5);
+  });
+
+  it("should go past one when the target is beaten", () => {
+    // given more than the target
+    expect(targetShareOf(standing(450_000))).toBe(1.5);
+  });
+
+  it("should read negative for a trader who is down", () => {
+    // given a loss
+    expect(targetShareOf(standing(-150_000))).toBe(-0.5);
   });
 });

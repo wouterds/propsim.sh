@@ -120,13 +120,13 @@ const Trader = ({ loaderData }: Route.ComponentProps) => {
           label="Total P&L"
           value={formatSigned(pnl)}
           tone={toneOf(pnl)}
-          hint={`Across ${counts.total} ${counts.total === 1 ? "account" : "accounts"}`}
+          hint={`Banked across ${counts.total} ${counts.total === 1 ? "account" : "accounts"}`}
         />
         <StatCard
-          label="Return"
-          value={loaderData.returnRate === null ? "–" : formatPercent(loaderData.returnRate)}
+          label="Toward target"
+          value={loaderData.targetShare === null ? "–" : formatPercent(loaderData.targetShare)}
           tone={toneOf(pnl)}
-          hint={`On ${formatMoney(loaderData.startedWith)} of starting balance`}
+          hint={`Of ${formatMoney(loaderData.targetWas)} in profit targets`}
         />
         <StatCard
           label="Accounts passed"

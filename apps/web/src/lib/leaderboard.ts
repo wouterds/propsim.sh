@@ -46,7 +46,8 @@ export type Standing = {
   initials: string;
   hue: number;
   accounts: number;
-  startingCents: number;
+  /** Every profit target they set out to reach, added up. */
+  targetCents: number;
   pnlCents: number;
 };
 
@@ -75,10 +76,18 @@ export const medianPnlOf = (standings: Standing[]) => {
 };
 
 /** Against the balance they started with, so a 25K and a 150K rank alike. */
-export const returnOf = (standing: Standing) => {
-  if (standing.startingCents === 0) {
-    return 0;
+/**
+ * How far along the profit target they are, which is the only percentage on a
+ * funded account that means anything. The starting balance is not their money
+ * and was never at risk, so a return measured against it is a number about
+ * capital nobody put up.
+ *
+ * Null when no target has been set out for yet.
+ */
+export const targetShareOf = (standing: Standing) => {
+  if (standing.targetCents === 0) {
+    return null;
   }
 
-  return standing.pnlCents / standing.startingCents;
+  return standing.pnlCents / standing.targetCents;
 };
