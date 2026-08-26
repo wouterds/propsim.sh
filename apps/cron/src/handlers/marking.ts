@@ -1,4 +1,4 @@
-import { type Candle, getCandles } from "@propsim/datasources";
+import { getTape } from "@propsim/datasources";
 import {
   carriedInOf,
   contractOf,
@@ -8,8 +8,10 @@ import {
   ledgerOf,
   markingOf,
   type NetPosition,
+  type Printed,
   peakOf,
   positionsOf,
+  settledOf,
   tradeDateOf,
 } from "@propsim/engine";
 import {
@@ -41,7 +43,7 @@ type Watched = {
  * fill belongs to a position that no longer exists. Earlier sessions are left
  * alone as well: their floors were measured from an anchor that has closed.
  */
-const readable = (bars: Candle[], opened: number, tradeDate: string) =>
+const readable = (bars: Printed[], opened: number, tradeDate: string) =>
   bars.filter((bar) => bar.time >= opened && tradeDateOf(new Date(bar.time)) === tradeDate);
 
 const watchedOf = async (account: LiveAccount): Promise<Watched> => {
@@ -86,15 +88,17 @@ export const marking = async () => {
 
   const held = watched.filter((one) => one.positions.length > 0);
   const wanted = new Set(held.flatMap((one) => one.positions.map((open) => open.instrument)));
-  const tape = new Map<string, Candle[]>();
+  const tape = new Map<string, Printed[]>();
 
   // Once per contract, however many accounts are holding it.
   for (const instrument of wanted) {
     try {
-      tape.set(
-        instrument,
-        await getCandles({ symbol: contractOf(instrument).symbol, interval: "1m", range: "5d" }),
-      );
+      const contract = contractOf(instrument);
+      const read = await getTape({ symbol: contract.symbol, interval: "1m", range: "5d" });
+
+      // The same steps the matcher reads and the chart drew, so a floor is only
+      // ever crossed at a moment the trader watched go by.
+      tape.set(instrument, settledOf(read.candles, read.at, contract.tick));
     } catch (error) {
       // One contract must not stop the sweep reaching the rest.
       console.error(`marking skipped ${instrument}`, error);

@@ -31,11 +31,7 @@ export type CandleRequest = { symbol: string; interval: Interval; range: Range }
 // Also rejects NaN. A floor measured against a NaN low never breaches.
 const finite = (value: number | null | undefined): value is number => Number.isFinite(value);
 
-export const toCandles = (
-  result: ChartResult,
-  request: CandleRequest,
-  forming = false,
-): Candle[] => {
+export const toCandles = (result: ChartResult, request: CandleRequest): Candle[] => {
   const { symbol, interval, range } = request;
   const length = SECONDS[interval];
   const stamps = result.timestamp ?? [];
@@ -63,29 +59,9 @@ export const toCandles = (
     throw new Error(`Yahoo served ${symbol} coarser than ${interval} over ${range}`);
   }
 
-  // The bar still printing, for a chart that has to look alive. Never for the
-  // matcher: its low can still fall, and a fill decided on it is invented.
-  //
-  // It has to sit a whole number of intervals after the last closed bar. Yahoo
-  // appends the live quote as a row of its own, stamped at the quote time
-  // rather than at a bar open, and that row is a price and not a bar.
-  const wanted = [...closed];
-  const settled = closed.at(-1);
-
-  if (forming && settled !== undefined) {
-    for (let i = settled + 1; i < stamps.length; i++) {
-      const aligned = (stamps[i] - stamps[settled]) % length === 0;
-
-      if (aligned && stamps[i] + length > result.meta.regularMarketTime) {
-        wanted.push(i);
-        break;
-      }
-    }
-  }
-
   const candles: Candle[] = [];
 
-  for (const i of wanted) {
+  for (const i of closed) {
     const open = bars?.open?.[i];
     const high = bars?.high?.[i];
     const low = bars?.low?.[i];
@@ -125,15 +101,23 @@ export const toCandles = (
   return candles;
 };
 
+export type Tape = {
+  /** The feed's own clock, in milliseconds. Never `Date.now()`, which runs minutes ahead of it. */
+  at: number;
+  candles: Candle[];
+};
+
 /**
- * Closed bars, oldest first. Throws rather than returning an empty array.
+ * Closed bars, oldest first, and the instant the feed vouches for them at.
+ * Throws rather than returning an empty array.
  *
  * `MES=F` and `MNQ=F` are not back-adjusted, so a range of `3mo` or more crosses
  * a quarterly roll and the gap reads as a real move. Yahoo also caps reach per
  * interval and answers past it with a 422: `1m` near 8 days, `2m` near 38,
  * `5m` to `30m` at 60, `1h` near two years.
  */
-export const getCandles = async (
-  request: CandleRequest,
-  options?: { forming?: boolean },
-): Promise<Candle[]> => toCandles(await fetchChart(request), request, options?.forming === true);
+export const getTape = async (request: CandleRequest): Promise<Tape> => {
+  const result = await fetchChart(request);
+
+  return { at: result.meta.regularMarketTime * 1000, candles: toCandles(result, request) };
+};

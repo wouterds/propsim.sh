@@ -1,3 +1,4 @@
+export * from "./dance";
 export * from "./fills";
 export * from "./floors";
 export * from "./instruments";

@@ -1,9 +1,10 @@
 export {
   type Candle,
   type CandleRequest,
-  getCandles,
+  getTape,
   type Interval,
   type Range,
+  type Tape,
 } from "./candles";
 export {
   getNewsEvents,
