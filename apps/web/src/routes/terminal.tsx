@@ -1,6 +1,13 @@
 import { type Candle, getCandles } from "@propsim/datasources";
-import { findInstrument, instrumentOr, isWorking, priceUnits, tradeDateOf } from "@propsim/engine";
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  findInstrument,
+  instrumentOr,
+  isWorking,
+  priceUnits,
+  type Side,
+  tradeDateOf,
+} from "@propsim/engine";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { data, useFetcher, useNavigate, useRevalidator, useSearchParams } from "react-router";
 import NewsStrip from "~/components/app/news-strip";
 import type { ChartBar, ChartPriceLine } from "~/components/chart/candle-chart";
@@ -9,11 +16,12 @@ import ChartHeader from "~/components/chart/chart-header";
 import TimeframeSwitcher from "~/components/chart/timeframe-switcher";
 import AccountStrip from "~/components/trading/account-strip";
 import Blotter from "~/components/trading/blotter";
+import ChartMenu from "~/components/trading/chart-menu";
 import { formatPrice } from "~/components/trading/format";
 import NewsBanner from "~/components/trading/news-banner";
 import Panel from "~/components/trading/panel";
 import { barsPerDay, parseTimeframe, rangeFor } from "~/components/trading/timeframes";
-import TradePanel from "~/components/trading/trade-panel";
+import TradePanel, { type TicketPick } from "~/components/trading/trade-panel";
 import { fillPriceFor, type OrderDraft } from "~/components/trading/trading-state";
 import { listFills, loadAccount } from "~/lib/accounts.server";
 import { requireUserId } from "~/lib/auth.server";
@@ -300,6 +308,27 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
 
   const last = bars.at(-1)?.close ?? null;
 
+  const [menu, setMenu] = useState<{ price: number; x: number; y: number } | null>(null);
+  const [pick, setPick] = useState<TicketPick | null>(null);
+
+  const openMenu = useCallback(
+    (price: number, x: number, y: number) => setMenu({ price, x, y }),
+    [],
+  );
+
+  // Buying under the market is a limit and over it is a stop, and selling is
+  // the same read upside down. The side and the level decide it, not a dropdown.
+  const take = (side: Side) => {
+    if (menu === null || last === null) {
+      return;
+    }
+
+    const reached = side === "buy" ? menu.price <= last : menu.price >= last;
+
+    setPick({ side, type: reached ? "limit" : "stop", price: menu.price });
+    setMenu(null);
+  };
+
   // `meta` only runs when the loader does. The tape moves in between, and the
   // tab has to move with it.
   useEffect(() => {
@@ -433,6 +462,7 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
                 tick={instrument.tick}
                 visibleBars={barsPerDay(timeframe)}
                 onHover={setHovered}
+                onPickPrice={openMenu}
               />
             )}
 
@@ -451,6 +481,7 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
             last={last}
             tick={instrument.tick}
             point={instrument.point}
+            pick={pick}
             onSubmit={submit}
           />
         </Panel>
@@ -465,6 +496,15 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
           onCancel={(id) => send({ intent: "cancel", id })}
         />
       </div>
+      {menu !== null && last !== null && (
+        <ChartMenu
+          price={menu.price}
+          x={menu.x}
+          y={menu.y}
+          onPick={take}
+          onClose={() => setMenu(null)}
+        />
+      )}
     </main>
   );
 };

@@ -1,7 +1,7 @@
 import { Select } from "@base-ui/react/select";
 import type { Side } from "@propsim/engine";
 import { ChevronDown } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { recall, remember } from "~/lib/remember";
 import { cn } from "~/lib/utils";
 import Button from "./button";
@@ -27,10 +27,14 @@ const TYPE_LABELS: Record<OrderType, string> = {
   stop: "STP",
 };
 
+/** A price taken off the chart. A new object each time, so picking twice re-applies. */
+export type TicketPick = { side: Side; type: OrderType; price: number };
+
 type Props = {
   last: number | null;
   tick: number;
   point: number;
+  pick: TicketPick | null;
   onSubmit: (draft: OrderDraft) => void;
 };
 
@@ -68,8 +72,9 @@ const keptFrom = (raw: string | null): Kept | null => {
   }
 };
 
-const TradePanel = ({ last, tick, point, onSubmit }: Props) => {
+const TradePanel = ({ last, tick, point, pick, onSubmit }: Props) => {
   const [draft, setDraft] = useState(EMPTY_DRAFT);
+  const quantity = useRef<HTMLInputElement>(null);
 
   // Taken after the first paint, so the server and the browser start the same.
   useEffect(() => {
@@ -79,6 +84,24 @@ const TradePanel = ({ last, tick, point, onSubmit }: Props) => {
       setDraft((current) => ({ ...current, ...kept }));
     }
   }, []);
+
+  // Everything but the size, which is what the trader still has to say.
+  useEffect(() => {
+    if (!pick) {
+      return;
+    }
+
+    setDraft((current) => {
+      const next = { ...current, side: pick.side, type: pick.type, limitPrice: pick.price };
+
+      remember(KEY, JSON.stringify({ side: next.side, type: next.type, quantity: next.quantity }));
+
+      return next;
+    });
+
+    quantity.current?.focus();
+    quantity.current?.select();
+  }, [pick]);
 
   const patch = (fields: Partial<OrderDraft>) => {
     setDraft((current) => {
@@ -118,11 +141,12 @@ const TradePanel = ({ last, tick, point, onSubmit }: Props) => {
         <NumberField
           label="Quantity"
           value={draft.quantity}
-          onChange={(quantity) => patch({ quantity: quantity ?? 1 })}
+          onChange={(value) => patch({ quantity: value ?? 1 })}
           step={1}
           min={1}
           disabled={stale}
           steppers
+          inputRef={quantity}
         />
 
         <Select.Root
