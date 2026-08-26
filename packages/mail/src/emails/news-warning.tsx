@@ -49,7 +49,10 @@ export const NewsWarning = ({ to, releases, at, date, opens, closes }: NewsWarni
     footnote="You are receiving this because you have an account open that a release can breach."
     to={to}
   >
-    <Heading style={heading}>Red folder news in an hour</Heading>
+    {/* Never a relative time. The notice goes out up to an hour ahead and as
+        little as ten minutes, and whatever it said would be wrong again by the
+        time somebody opened it. The clock times below do not go stale. */}
+    <Heading style={heading}>Red folder news is coming up</Heading>
 
     <Callout label="News trading is not permitted">
       Holding a position through a high impact release ends the account. So does opening one inside

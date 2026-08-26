@@ -37,9 +37,10 @@ const alreadyTold = (rows: Sent[]) => {
 };
 
 /**
- * Warns everyone holding an account that a red folder release is coming, an
- * hour ahead. The rule ends an account rather than a day, and the terminal only
- * says so to somebody who is looking at it.
+ * Warns everyone holding an account that a red folder release is coming, up to
+ * an hour ahead and never inside the last ten minutes. The rule ends an account
+ * rather than a day, and the terminal only says so to somebody who happens to
+ * be looking at it.
  *
  * One upstream read for the calendar, one query for the addresses, one for what
  * has already gone out, and one request per batch of fifty. The log is the
