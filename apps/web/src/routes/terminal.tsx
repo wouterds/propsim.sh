@@ -69,6 +69,9 @@ const AFTER_RELEASE = 15 * 60 * 1000;
  */
 const REFRESH = 30_000;
 
+/** How often to ask while a resting order is sitting where the tape has reached. */
+const CHASING = 2_000;
+
 /** The tape is the title. A tab among twenty is found by its price, not its name. */
 export const titleFor = (code: string, price: number | null) =>
   price === null ? `${code}, propsim.sh` : `${code} ${formatPrice(price)}`;
@@ -356,6 +359,40 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
   }, [candles, live]);
 
   const last = bars.at(-1)?.close ?? null;
+
+  /**
+   * A resting order the tape has already reached is one the sweep is about to
+   * fill, so the screen stops waiting on its own half minute and asks until the
+   * order is gone. A buy limit and a sell stop wait under the price, a sell
+   * limit and a buy stop over it.
+   */
+  const chasing = useMemo(() => {
+    if (last === null) return false;
+
+    return book.orders.some((order) => {
+      if (!isWorking(order.status) || order.type === "market") return false;
+
+      const under = (order.side === "buy") === (order.type === "limit");
+
+      return under ? last <= order.price : last >= order.price;
+    });
+  }, [book.orders, last]);
+
+  useEffect(() => {
+    if (!chasing) return;
+
+    const ask = () => {
+      if (!document.hidden && refresh.current.state === "idle") {
+        refresh.current.revalidate();
+      }
+    };
+
+    ask();
+
+    const tick = setInterval(ask, CHASING);
+
+    return () => clearInterval(tick);
+  }, [chasing]);
 
   const [menu, setMenu] = useState<{ price: number; x: number; y: number } | null>(null);
   const [pick, setPick] = useState<TicketPick | null>(null);
