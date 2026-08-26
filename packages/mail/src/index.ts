@@ -10,13 +10,15 @@ import { ContactMessage } from "./emails/contact-message";
 import { EmailChanging } from "./emails/email-changing";
 import { Inactivity } from "./emails/inactivity";
 import { NewDevice } from "./emails/new-device";
+import { NewsWarning, type NewsWarningProps } from "./emails/news-warning";
 import { PasswordChanged } from "./emails/password-changed";
 import { ResetPassword } from "./emails/reset-password";
 import { Welcome } from "./emails/welcome";
-import { logEmail } from "./log";
-import { send } from "./mailjet";
+import { logEmail, logEmails } from "./log";
+import { BATCH, type Refusal, send, sendBatch } from "./mailjet";
 
 export { scrubEmailLogs } from "./log";
+export { BATCH, type Refusal } from "./mailjet";
 
 const deliver = async (
   template: string,
@@ -185,3 +187,42 @@ export const sendContactMessage = ({
     createElement(ContactMessage, { to, name, email, subject, message }),
     { email, name },
   );
+
+/**
+ * One notice to a whole batch in one request, rather than one request each.
+ * Rendering is per address because the footer names it, but that is local work
+ * and the round trip is not.
+ *
+ * Only what Mailjet accepted is written to the log, so the sweep that reads the
+ * log back does not count a refused address as told. Hand it at most `BATCH`.
+ */
+export const sendNewsWarning = async (
+  recipients: string[],
+  notice: Omit<NewsWarningProps, "to">,
+  key: object,
+): Promise<Refusal[]> => {
+  const subject = `Red folder news at ${notice.at} Chicago time`;
+  const messages = await Promise.all(
+    recipients.slice(0, BATCH).map(async (to) => {
+      const html = await render(createElement(NewsWarning, { ...notice, to }));
+
+      return { to, subject, html, text: toPlainText(html) };
+    }),
+  );
+
+  const refused = await sendBatch(messages);
+  const failed = new Set(refused.map((one) => one.to));
+
+  await logEmails(
+    messages
+      .filter((message) => !failed.has(message.to))
+      .map((message) => ({
+        recipient: message.to,
+        subject,
+        template: "news-warning",
+        payload: { ...notice, ...key },
+      })),
+  );
+
+  return refused;
+};

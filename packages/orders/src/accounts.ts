@@ -1,6 +1,6 @@
-import { type Account, accounts, getDb } from "@propsim/database";
+import { type Account, accounts, getDb, users } from "@propsim/database";
 import { type AccountRules, lockedOutOf, tradeDateOf } from "@propsim/engine";
-import { eq } from "drizzle-orm";
+import { and, eq, isNotNull, isNull } from "drizzle-orm";
 import { findTradingDay } from "./days";
 
 /** The terms the account opened under, which is what every floor is measured from. */
@@ -30,4 +30,20 @@ export const lockedFor = async (row: Account, at: Date) => {
   const day = await findTradingDay(row.id, tradeDateOf(at));
 
   return day !== null && lockedOutOf(rulesOf(row), day);
+};
+
+/**
+ * Every address that could still be breached by a release: an account that has
+ * not ended, an owner who is still here, and an address they have confirmed.
+ */
+export const listAtRisk = async () => {
+  const rows = await getDb()
+    .selectDistinct({ email: users.email })
+    .from(accounts)
+    .innerJoin(users, eq(users.id, accounts.userId))
+    .where(
+      and(isNull(accounts.endedAt), isNull(users.deletedAt), isNotNull(users.verifiedEmailAt)),
+    );
+
+  return rows.map((row) => row.email);
 };
