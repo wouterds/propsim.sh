@@ -67,6 +67,7 @@ that couples the engine to where its input came from is the change to refuse.
 > `@` imports at the bottom of this file automatically. If yours does not, open each path yourself.
 > Rules in these files carry the same weight as the Critical Rules above.
 
+- [The Rules](.agents/docs/rules.md) - what the simulator enforces, and what each floor ends
 - [Code Standards](.agents/docs/code-standards.md) - style, TypeScript, comments, refactoring
 - [Testing](.agents/docs/testing.md) - what earns a spec, and proving it can fail
 - [Workflow](.agents/docs/workflow.md) - thinking, planning, verifying, fixing
@@ -83,6 +84,7 @@ that couples the engine to where its input came from is the change to refuse.
 
 Symlinked into `.claude/skills`, so they are live from either path.
 
+@.agents/docs/rules.md
 @.agents/docs/code-standards.md
 @.agents/docs/testing.md
 @.agents/docs/workflow.md

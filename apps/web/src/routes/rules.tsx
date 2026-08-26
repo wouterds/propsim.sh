@@ -38,9 +38,10 @@ const GROUPS: Group[] = [
         id: "two-floors",
         title: "There are two floors, and they behave differently",
         body: [
-          `The daily loss limit is measured from the balance you opened the session with, and it resets with the next session. On a ${PLAN.label} it is ${formatDollars(PLAN.dailyLossLimit)}. Hitting it stops you trading until the next session. The account survives.`,
+          `The daily loss limit is measured from the equity you opened the session with, and it resets with the next session. On a ${PLAN.label} it is ${formatDollars(PLAN.dailyLossLimit)}. Hitting it shuts the session and nothing else: you can still close what is open, you cannot add to it or start anything new, and the account is untouched.`,
           `The trailing drawdown is measured from the highest equity the account has ever reached, and it never resets. On a ${PLAN.label} it is ${formatDollars(PLAN.trailingDrawdown)}. Hitting it ends the account.`,
           "The daily limit is fixed. It does not climb with the trailing floor, so once the trailing floor has risen past it the trailing floor is the one that will get you first.",
+          "A session that went through its floor and climbed back stays shut. The mark it is judged against only ever falls, which is the same way the trailing floor only ever rises.",
         ],
       },
       {
@@ -63,8 +64,9 @@ const GROUPS: Group[] = [
         id: "continuous",
         title: "A breach is checked continuously, not at the close",
         body: [
-          "The floors are tested on every tick. A trade that went through the floor at 14:52 does not survive by finishing green at 15:10.",
+          "The floors are read at the deepest your equity went, not where it settled. A trade that went through the floor at 14:52 does not survive by finishing green at 15:10.",
           "This is the single biggest difference between a prop account and a brokerage account, and it is why a strategy with a good end-of-day record can still fail here.",
+          "Here it is read against one minute bars from a delayed feed rather than tick by tick, so the bar that broke the floor is known and the exact second inside it is not. A firm reading live ticks would have caught you at the same bar.",
         ],
       },
       {
@@ -98,7 +100,7 @@ const GROUPS: Group[] = [
         body: [
           `You have to be flat from ${BEFORE_MINUTES} minute before a high impact US release through ${AFTER_MINUTES} minute after it. You may not hold a position through that window and you may not open one in it. High impact is the red folder on an economic calendar: payrolls, CPI, the FOMC rate decision.`,
           "On a daily payout account this is a hard breach. It ends the account rather than the day, and it does so whether the trade won or lost. On the slower plans the same firms sell, trading the news is allowed outright. Paying out every day is what buys the stricter rule.",
-          "The terminal shades the window on the chart and says so in a banner while it is open, so there is no calendar to keep in another tab.",
+          "The terminal shades the window on the chart and says so in a banner while it is open, so there is no calendar to keep in another tab. Nothing stops you trading into it. Being stopped would hide the rule, and the rule is the point.",
         ],
       },
       {
@@ -140,7 +142,7 @@ const GROUPS: Group[] = [
         title: "The session closes, and closing it is not a breach",
         body: [
           "Positions are flat by 16:45 New York time, Monday to Friday, and anything still open is closed for you. Being closed out this way does not fail the account. Trading reopens at 18:00 New York time, Sunday to Thursday, and on a holiday with an early close the early close is the deadline.",
-          "The firms publish these times for their slower plans and say nothing about them for the daily ones. This is the simulator's reading, not a rule quoted from anybody.",
+          "The simulator does not close you out yet. Your session still cuts at 17:00 Chicago time for every rule that resets, so the day a trade belongs to is right, but a position left open rides through the close instead of being flattened at it.",
         ],
       },
       {
