@@ -21,7 +21,6 @@ const AppShell = ({ accounts, email, children }: Props) => {
   return (
     <div className="flex h-dvh flex-col">
       <div className="flex min-h-0 flex-1">
-        {/* A panel like the ones beside it, rather than a wall the page starts after. */}
         <aside className="hidden w-62 shrink-0 py-2 pl-2 lg:block">
           <div className="h-full overflow-hidden rounded-lg border border-line bg-raised">
             <SidebarNav accounts={accounts} email={email} />
@@ -29,8 +28,6 @@ const AppShell = ({ accounts, email, children }: Props) => {
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          {/* The same gutter every page under it uses, or the menu sits left of
-              everything it opens onto. */}
           <header className="flex h-14 shrink-0 items-center gap-3 border-line border-b bg-raised px-5 sm:px-8 lg:hidden">
             <Dialog.Root open={open} onOpenChange={setOpen}>
               <Dialog.Trigger
@@ -41,8 +38,6 @@ const AppShell = ({ accounts, email, children }: Props) => {
               </Dialog.Trigger>
 
               <Dialog.Portal>
-                {/* The whole screen, not a drawer. A phone has no room to spare
-                    for a page it cannot reach behind the menu. */}
                 <Dialog.Popup className="fixed inset-0 z-50 flex flex-col bg-raised outline-hidden">
                   <Dialog.Title className="sr-only">Navigation</Dialog.Title>
 
@@ -66,8 +61,6 @@ const AppShell = ({ accounts, email, children }: Props) => {
           <div className="min-h-0 flex-1 overflow-y-auto">
             <div className="flex min-h-full flex-col">{children}</div>
 
-            {/* The gutter the panels use, once there is a column. Full width
-                under them on a phone, where they take the whole screen too. */}
             <div className="pb-2 lg:px-2">
               <SiteFooter boxed />
             </div>

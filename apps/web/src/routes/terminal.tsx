@@ -133,8 +133,6 @@ export const loader = async ({ url, params, request }: Route.LoaderArgs) => {
     throw new Response("No such account", { status: 404 });
   }
 
-  // An account that has ended cannot take another order, so the ticket and the
-  // book behind it have nothing left to do. The summary is what is left to read.
   if (loaded.account.endedAt) {
     throw redirect(href("/accounts/:id", { id: params.id }));
   }
@@ -163,7 +161,6 @@ export const loader = async ({ url, params, request }: Route.LoaderArgs) => {
   const shown = shownWindow(windows, Date.now(), DAY, AFTER_RELEASE);
   const upcoming = shown ? { at: shown.at, titles: shown.titles } : null;
 
-  // Only this contract's, since the chart only ever draws one of them.
   const marks = fillRows
     .filter((fill) => fill.instrument === instrument.code)
     .map((fill) => ({ id: fill.id, time: fill.at.getTime(), side: fill.side }));
@@ -487,8 +484,6 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
   const priceLines = useMemo<ChartPriceLine[]>(() => {
     const openLines = book.positions.flatMap((position) => {
       const held = `${position.quantity}`;
-      // What the position is worth right now, on the line it was opened at, so
-      // the number and the level it is measured from are read together.
       const open = last === null ? null : unrealisedPnl(position, last, instrument.point);
       const lines: ChartPriceLine[] = [
         {

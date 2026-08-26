@@ -51,8 +51,6 @@ const OrdersTable = ({ orders, empty, onCancel }: Props) => {
             <td className={cn(TD, "text-muted uppercase")}>{order.type}</td>
             <td className={TD}>{order.quantity}</td>
             <td className={TD}>{formatPrice(order.price)}</td>
-            {/* Nothing rather than zero when it never printed: an order that
-                was cancelled was not a free one. */}
             <td className={cn(TD, "hidden text-right text-faint sm:table-cell")}>
               {order.fees === 0 ? "\u2013" : `-${formatMoney(order.fees)}`}
             </td>

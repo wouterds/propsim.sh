@@ -38,8 +38,6 @@ const AccountHeader = ({ account }: Props) => {
           </Badge>
         </div>
 
-        {/* What the account is, and then what became of it. A rule between them
-            rather than another dot, or the two run together as one list. */}
         <div className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-faint text-xs tabular">
           <span>
             {plan.label} · up to {plan.maxMicros} micros · opened {formatDate(account.openedOn)}

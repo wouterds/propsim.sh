@@ -354,8 +354,6 @@ const Settings = ({ loaderData, actionData }: Route.ComponentProps) => {
               <button type="submit" disabled={busy("profile")} className={PRIMARY_SM}>
                 {busy("profile") ? "One moment" : "Save profile"}
               </button>
-              {/* A new tab, because leaving the form would lose whatever is
-                  typed into it and not saved. */}
               <a
                 href={href("/traders/:id", { id })}
                 target="_blank"

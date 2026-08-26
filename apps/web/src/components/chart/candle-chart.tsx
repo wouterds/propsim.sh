@@ -266,8 +266,6 @@ const CandleChart = ({
             time,
             position: marker.side === "buy" ? "belowBar" : "aboveBar",
             shape: marker.side === "buy" ? "arrowUp" : "arrowDown",
-            // The same two tones the candles use, so a fill reads as the side it
-            // was rather than as a third thing the chart draws.
             color: marker.side === "buy" ? theme.up : theme.down,
           },
         ];
@@ -310,20 +308,13 @@ const CandleChart = ({
       line,
       api: series.createPriceLine({
         price: line.price,
-        // A draft is the same colour half faded and broken up, so it reads as a
-        // level being chosen rather than one the account is holding.
         color: line.draft ? withAlpha(theme[line.tone], 0.5) : theme[line.tone],
         lineWidth: line.selected ? 2 : 1,
         lineStyle: line.draft ? LineStyle.SparseDotted : LineStyle.Dashed,
         lineVisible: true,
         axisLabelVisible: true,
         title: line.title,
-        // A resting order is a filled badge. A draft is the same colour on the
-        // chart's own ground instead, so the two never read as the same thing
-        // sitting at the same price.
         axisLabelColor: line.draft ? theme.overlay : theme[line.tone],
-        // White on a filled badge, which is what the series picks for its own
-        // last value label, so every filled badge on the axis agrees.
         axisLabelTextColor: line.draft ? theme[line.tone] : "#ffffff",
       }),
     }));
@@ -430,8 +421,6 @@ const CandleChart = ({
 
       held = null;
       container.releasePointerCapture(event.pointerId);
-      // Back to the price the order really has. The answer being waited on is
-      // what draws it at the new one, so a cancel needs nothing put back.
       lineFor(id)?.applyOptions({ price: was });
 
       // A press that moved nothing is a pick, not a drag. Anywhere else on the
@@ -474,7 +463,6 @@ const CandleChart = ({
     <div className="relative h-full w-full">
       <div ref={containerRef} className="h-full w-full" />
 
-      {/* Nothing is waiting on an answer, so the pick is what gets a control. */}
       {!pending && selected && selectedY !== null && (
         <div
           style={{ top: selectedY }}

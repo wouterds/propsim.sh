@@ -30,8 +30,6 @@ const Board = ({ title, hint, empty, rows }: Props) => (
               <Avatar persona={row} size={28} />
 
               <span className="min-w-0 flex-1">
-                {/* Stretched over the row, so the whole of it opens the profile
-                    and still opens in a tab like any other link. */}
                 <Link
                   to={href("/traders/:id", { id: row.id })}
                   className="block truncate rounded-sm text-ink text-sm after:absolute after:inset-0 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
