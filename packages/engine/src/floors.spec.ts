@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { type AccountRules, breachOf, trailingFloorOf } from "./floors";
+import { type AccountRules, breachOf, floorOf, trailingFloorOf } from "./floors";
 
 const rules: AccountRules = {
   startingBalanceCents: 5_000_000,
@@ -61,5 +61,23 @@ describe("breachOf", () => {
 
     // then the floor that ends the account wins over the one that ends the day
     expect(breachOf(rules, reading)).toBe("trailing_drawdown");
+  });
+});
+
+describe("floorOf", () => {
+  it("should take the daily floor while it sits above the trailing one", () => {
+    // given a session that opened at the starting balance and never ran up
+    // then the daily limit is the shallower of the two, so it is met first
+    expect(floorOf(rules, { peakEquityCents: 5_000_000, sessionOpenCents: 5_000_000 })).toBe(
+      4_880_000,
+    );
+  });
+
+  it("should take the trailing floor once a losing session has fallen past it", () => {
+    // given a session that opened well down, dragging its daily floor under the drawdown
+    // then
+    expect(floorOf(rules, { peakEquityCents: 5_000_000, sessionOpenCents: 4_900_000 })).toBe(
+      4_800_000,
+    );
   });
 });

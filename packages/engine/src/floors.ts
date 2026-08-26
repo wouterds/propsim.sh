@@ -26,12 +26,26 @@ export const trailingFloorOf = (rules: AccountRules, peakEquityCents: number) =>
 export const targetOf = (rules: AccountRules) =>
   rules.startingBalanceCents + rules.profitTargetCents;
 
-type Reading = {
-  /** The deepest the equity went, not where it settled. */
-  lowEquityCents: number;
+type Marks = {
   peakEquityCents: number;
   sessionOpenCents: number;
 };
+
+type Reading = Marks & {
+  /** The deepest the equity went, not where it settled. */
+  lowEquityCents: number;
+};
+
+/**
+ * The floor equity meets first on the way down, which is the higher of the two.
+ * `breachOf` names the rule that ended the account, this is the price level it
+ * was ended at, and a liquidation fills there.
+ */
+export const floorOf = (rules: AccountRules, marks: Marks) =>
+  Math.max(
+    trailingFloorOf(rules, marks.peakEquityCents),
+    dailyFloorOf(rules, marks.sessionOpenCents),
+  );
 
 export const breachOf = (rules: AccountRules, reading: Reading): Breach | null => {
   if (reading.lowEquityCents <= trailingFloorOf(rules, reading.peakEquityCents)) {
