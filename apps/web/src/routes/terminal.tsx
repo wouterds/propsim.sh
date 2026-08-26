@@ -360,6 +360,7 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
   const [menu, setMenu] = useState<{ price: number; x: number; y: number } | null>(null);
   const [pick, setPick] = useState<TicketPick | null>(null);
   const [ticket, setTicket] = useState<OrderDraft | null>(null);
+  const [picked, setPicked] = useState<string | null>(null);
   const [move, setMove] = useState<{ id: string; price: number; quantity: number } | null>(null);
 
   const openMenu = useCallback(
@@ -415,6 +416,13 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
   const send = (fields: Record<string, string>) =>
     fetcher.submit({ instrument: instrument.code, ...fields }, { method: "post" });
 
+  // An order that filled or was cancelled has no line left to hang a control on.
+  useEffect(() => {
+    if (picked && !book.orders.some((one) => one.id === picked && isWorking(one.status))) {
+      setPicked(null);
+    }
+  }, [book.orders, picked]);
+
   // Once the order is on the book it draws its own line. Leaving the ticket's
   // draft up puts a second label at the same price for the same order.
   useEffect(() => {
@@ -440,8 +448,14 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
   // The chart redraws its price lines whenever this array changes identity.
   const priceLines = useMemo<ChartPriceLine[]>(() => {
     const openLines = book.positions.flatMap((position) => {
+      const held = `${position.quantity}`;
       const lines: ChartPriceLine[] = [
-        { id: position.id, price: position.entry, tone: "accent", title: "entry" },
+        {
+          id: position.id,
+          price: position.entry,
+          tone: "accent",
+          title: `entry ${held}`,
+        },
       ];
 
       if (position.stopLoss !== null) {
@@ -449,7 +463,7 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
           id: `${position.id}-sl`,
           price: position.stopLoss,
           tone: "down",
-          title: "stop",
+          title: `stop ${held}`,
         });
       }
 
@@ -458,7 +472,7 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
           id: `${position.id}-tp`,
           price: position.takeProfit,
           tone: "up",
-          title: "target",
+          title: `target ${held}`,
         });
       }
 
@@ -472,8 +486,11 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
         // A move waiting on an answer is drawn where it would land. Nothing has
         // changed on the order until it is confirmed.
         price: move?.id === order.id ? move.price : order.price,
+        selected: picked === order.id,
         tone: order.side === "buy" ? "up" : "down",
-        title: `${order.side} ${order.type}`,
+        // The size is on the line, because a level says nothing about how much
+        // is riding on it and the blotter is a tab away.
+        title: `${order.side} ${order.quantity} ${order.type}`,
         // The only lines that stand for something a trader can still change. A
         // position's entry is a fact, and the last price belongs to the tape.
         draggable: true,
@@ -519,7 +536,7 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
     }
 
     return [...openLines, ...restingLines, ...draftLines];
-  }, [book.positions, book.orders, move, ticket]);
+  }, [book.positions, book.orders, move, ticket, picked]);
 
   const goToInstrument = (code: string) =>
     navigate(`?${new URLSearchParams({ ...Object.fromEntries(params), s: code })}`, {
@@ -591,6 +608,22 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
                 onPickPrice={openMenu}
                 onMove={askToMove}
                 pending={move}
+                selected={
+                  picked
+                    ? (() => {
+                        const one = book.orders.find((order) => order.id === picked);
+
+                        return one ? { id: one.id, price: one.price } : null;
+                      })()
+                    : null
+                }
+                onSelect={setPicked}
+                onCancelOrder={() => {
+                  if (!picked) return;
+
+                  send({ intent: "cancel", id: picked });
+                  setPicked(null);
+                }}
                 busy={fetcher.state !== "idle"}
                 onCancelMove={() => setMove(null)}
                 onConfirmMove={() => {
