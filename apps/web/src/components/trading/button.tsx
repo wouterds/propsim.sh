@@ -6,8 +6,11 @@ type Variant = "primary" | "buy" | "sell" | "ghost" | "danger";
 
 const VARIANTS: Record<Variant, string> = {
   primary: "bg-accent-strong text-ink hover:bg-accent-strong/85",
-  buy: "bg-up text-white hover:bg-up/85",
-  sell: "bg-down text-white hover:bg-down/85",
+  // Dark label, and brighter on hover rather than faded. See tailwind.css: both
+  // fills are too light to carry a white one, and fading toward the page takes
+  // the rose one back under what the label needs.
+  buy: "bg-up text-sunken hover:brightness-110",
+  sell: "bg-down text-sunken hover:brightness-110",
   ghost: "border border-line text-muted hover:border-line-strong hover:text-ink",
   danger: "border border-down/40 text-down hover:bg-down/10",
 };

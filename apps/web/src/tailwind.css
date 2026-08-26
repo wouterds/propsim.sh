@@ -30,7 +30,17 @@
      `accent` is tailwind's blue-500. It carries roughly 4:1 against both
      `sunken` and white, which clears the 3:1 a control needs but not the 4.5:1
      body copy wants, so it fills buttons and tints rows rather than setting
-     small text on a dark ground. */
+     small text on a dark ground.
+
+     Filled, `up` and `down` take a dark label and never a light one. Teal
+     carries white at 2.49:1 and rose at 3.67:1, both under the 4.5:1 a button
+     label is text enough to need, while `sunken` on them reads 8.09:1 and
+     5.49:1.
+
+     Such a button brightens on hover rather than fading toward the page. Fading
+     lowers the fill's own luminance, which lifts a white label and drops a dark
+     one: rose at 85% takes `sunken` to 4.20:1 and puts white back over the
+     line, so the two states would want opposite labels. */
   --color-up: #14b8a6;
   --color-down: #f43f5e;
   --color-accent: #3b82f6;
