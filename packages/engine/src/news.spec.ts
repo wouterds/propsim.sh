@@ -193,6 +193,27 @@ describe("heldThroughOf", () => {
     expect(heldThroughOf(fills, windows, NFP + 10 * minute)).toBeNull();
   });
 
+  it("should name the window it actually traded through, not the first one", () => {
+    // given two releases and a position held only across the later one
+    const two = windowsOf([
+      { time: NFP, title: "Non-Farm Employment Change" },
+      { time: NFP + 60 * minute, title: "ISM Manufacturing PMI" },
+    ]);
+    const fills = [fill("buy", 1, NFP + 59 * minute), fill("sell", 1, NFP + 61 * minute)];
+
+    // then
+    expect(heldThroughOf(fills, two, NFP + 90 * minute)?.titles).toEqual(["ISM Manufacturing PMI"]);
+  });
+
+  it("should read a stream that arrived out of order", () => {
+    // given the closing fill listed before the opening one
+    const fills = [fill("sell", 1, NFP + 5 * minute), fill("buy", 1, NFP - 5 * minute)];
+
+    // then folding in the given order would open a short and never close it
+    expect(heldSpansOf(fills)).toEqual([{ from: NFP - 5 * minute, to: NFP + 5 * minute }]);
+    expect(heldThroughOf(fills, windows, NFP + 10 * minute)).not.toBeNull();
+  });
+
   it("should not breach on a window that has not happened yet", () => {
     // given a position open now, and a release still to come
     const fills = [fill("buy", 1, NFP - 60 * minute)];

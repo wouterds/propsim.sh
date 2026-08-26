@@ -145,6 +145,20 @@ describe("markingOf", () => {
     expect(lowEquityCents).toBe(START);
   });
 
+  it("should still flatten a session that was already shut for the day", () => {
+    // given a tape well past the daily floor and through the trailing one too
+    const ledger = ledgerOf([fill("MES", "buy", 2, 5_000)], START);
+    const tape = new Map([["MES", [at(0, 5_000, 5_001, 4_980)]]]);
+
+    // when
+    const { liquidation } = markingOf(ledger, tape, rules, START);
+
+    // then being shut for the day is no protection from the floor that ends it,
+    // and 4990 is where two contracts put the equity exactly on that floor
+    expect(liquidation).not.toBeNull();
+    expect(toPrice(liquidation?.marks.get("MES") ?? 0)).toBe(4_990);
+  });
+
   it("should leave a position that only broke the daily floor open", () => {
     // given a tape that spends the daily limit twice over but stops above the
     // trailing floor, which sits ten dollars under the peak
