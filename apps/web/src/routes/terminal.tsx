@@ -1,7 +1,7 @@
 import { type Candle, getCandles } from "@propsim/datasources";
 import { findInstrument, instrumentOr, isWorking, priceUnits, tradeDateOf } from "@propsim/engine";
-import { useEffect, useMemo, useState } from "react";
-import { data, useFetcher, useNavigate, useSearchParams } from "react-router";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { data, useFetcher, useNavigate, useRevalidator, useSearchParams } from "react-router";
 import NewsStrip from "~/components/app/news-strip";
 import type { ChartBar, ChartPriceLine } from "~/components/chart/candle-chart";
 import CandleChart from "~/components/chart/candle-chart";
@@ -31,6 +31,9 @@ import { PRIVATE } from "~/lib/seo";
 import type { Route } from "./+types/terminal";
 
 const DAY = 24 * 60 * 60 * 1000;
+
+/** Slower than a bar would be pointless, faster than the feed moves is waste. */
+const REFRESH = 15_000;
 
 export const meta: Route.MetaFunction = ({ loaderData }) => [
   {
@@ -97,11 +100,12 @@ export const loader = async ({ url, params, request }: Route.LoaderArgs) => {
   const book = { orders, positions, realised: loaded.account.balance - loaded.account.plan.size };
 
   try {
-    const candles = await getCandles({
-      symbol: instrument.symbol,
-      interval: timeframe,
-      range: rangeFor(timeframe),
-    });
+    // The bar still printing is included here and nowhere else. It is what
+    // makes the chart move between one closed bar and the next.
+    const candles = await getCandles(
+      { symbol: instrument.symbol, interval: timeframe, range: rangeFor(timeframe) },
+      { forming: true },
+    );
 
     return data(
       {
@@ -232,6 +236,26 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
   useEffect(() => {
     setNow(Date.now());
     const tick = setInterval(() => setNow(Date.now()), 1000);
+
+    return () => clearInterval(tick);
+  }, []);
+
+  const revalidator = useRevalidator();
+  const refresh = useRef(revalidator);
+
+  useEffect(() => {
+    refresh.current = revalidator;
+  });
+
+  // The loader carries the tape and the blotter, so this is also what puts a
+  // fill the matcher wrote on the screen. Paused while the tab is hidden: a
+  // chart nobody is looking at is not worth a request.
+  useEffect(() => {
+    const tick = setInterval(() => {
+      if (!document.hidden && refresh.current.state === "idle") {
+        refresh.current.revalidate();
+      }
+    }, REFRESH);
 
     return () => clearInterval(tick);
   }, []);
