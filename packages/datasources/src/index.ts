@@ -1,3 +1,4 @@
+export { clearCount, countUp, readCount } from "./cache";
 export {
   type Candle,
   type CandleRequest,

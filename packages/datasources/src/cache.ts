@@ -72,6 +72,64 @@ export const writeCache = async (key: string, value: unknown, seconds: number) =
 };
 
 /**
+ * Adds one and answers with the total, starting the clock on the first. Redis
+ * counts across containers, memory only inside this process, so a count is a
+ * floor on what really happened rather than an exact tally.
+ */
+export const countUp = async (key: string, seconds: number) => {
+  const store = redis();
+
+  if (store) {
+    const total = await store.incr(key).catch(() => null);
+
+    if (total === null) {
+      return 0;
+    }
+
+    if (total === 1) {
+      await store.expire(key, seconds).catch(() => undefined);
+    }
+
+    return total;
+  }
+
+  const held = memory.get(key);
+  const running = held && held.until > Date.now() ? Number(held.value) : 0;
+  const total = running + 1;
+
+  memory.set(key, { value: total, until: held?.until ?? Date.now() + seconds * 1000 });
+
+  return total;
+};
+
+/** The count so far, without adding to it. Zero when nothing is being kept. */
+export const readCount = async (key: string) => {
+  const store = redis();
+
+  if (store) {
+    const raw = await store.get(key).catch(() => null);
+
+    return raw === null ? 0 : Number(raw);
+  }
+
+  const held = memory.get(key);
+
+  return held && held.until > Date.now() ? Number(held.value) : 0;
+};
+
+export const clearCount = async (key: string) => {
+  const store = redis();
+
+  if (store) {
+    await store.del(key).catch(() => undefined);
+
+    return;
+  }
+
+  memory.delete(key);
+};
+
+/**
  * True for the one caller that took it, false for everyone else until it runs
  * out. Redis makes it hold across containers, memory only inside this process.
  */
