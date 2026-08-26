@@ -7,17 +7,24 @@ const URL = process.env.NODE_ENV === "production" ? "redis://redis:6379" : "redi
 
 let complained = false;
 
+// A spec resets the modules that hold a cache, which resets the memory below and
+// cannot reset a server. Reaching a Redis that happens to be running on the same
+// machine makes a test answer from a previous run, so the tests keep to memory.
+const SHARED = process.env.NODE_ENV !== "test";
+
 // Opened at boot rather than on the first read, or the first request would
 // always find the connection still coming up and answer from memory.
-const client = new Redis(URL, {
-  enableOfflineQueue: false,
-  maxRetriesPerRequest: 1,
-  retryStrategy: (attempt) => Math.min(attempt * 500, 30_000),
-});
+const client = SHARED
+  ? new Redis(URL, {
+      enableOfflineQueue: false,
+      maxRetriesPerRequest: 1,
+      retryStrategy: (attempt) => Math.min(attempt * 500, 30_000),
+    })
+  : null;
 
 // Without a listener a dropped connection takes the process down, and a server
 // that is simply not there would print on every retry.
-client.on("error", (error) => {
+client?.on("error", (error) => {
   if (complained) {
     return;
   }
@@ -26,11 +33,11 @@ client.on("error", (error) => {
   console.error("Redis unavailable, caching in memory", error.message);
 });
 
-client.on("ready", () => {
+client?.on("ready", () => {
   complained = false;
 });
 
-const redis = () => (client.status === "ready" ? client : null);
+const redis = () => (client?.status === "ready" ? client : null);
 
 const memory = new Map<string, { value: unknown; until: number }>();
 
