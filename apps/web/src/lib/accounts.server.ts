@@ -6,8 +6,6 @@ import {
   tradingDays,
 } from "@propsim/database";
 import {
-  type AccountRules,
-  type Breach,
   balanceOf,
   cents,
   type DayAnchor,
@@ -23,7 +21,7 @@ import {
 import { listFills } from "@propsim/orders";
 import type { Plan } from "@propsim/plans";
 import { findPlan } from "@propsim/plans";
-import { and, desc, eq, isNull, sql } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import type { Account, AccountStatus } from "./accounts";
 import type { JournalDay } from "./journal";
 
@@ -72,14 +70,6 @@ const findAccountRow = async (userId: string, id: string) => {
   return row ?? null;
 };
 
-export const rulesOfRow = (row: AccountRow): AccountRules => ({
-  startingBalanceCents: row.startingBalanceCents,
-  profitTargetCents: row.profitTargetCents,
-  trailingDrawdownCents: row.trailingDrawdownCents,
-  dailyLossLimitCents: row.dailyLossLimitCents,
-  lockAboveStartCents: row.lockAboveStartCents,
-});
-
 export const createAccount = async (userId: string, plan: Plan, openedOn: string) => {
   const startingBalanceCents = cents(plan.size);
 
@@ -103,19 +93,6 @@ export const createAccount = async (userId: string, plan: Plan, openedOn: string
 
   return created.id;
 };
-
-/** Only ever rises, so a fold that proposes less than the stored mark loses. */
-export const raisePeak = (id: string, peakEquityCents: number) =>
-  getDb()
-    .update(accountsTable)
-    .set({ peakEquityCents: sql`GREATEST(${accountsTable.peakEquityCents}, ${peakEquityCents})` })
-    .where(eq(accountsTable.id, id));
-
-export const endAccount = (id: string, endedReason: Breach | "target_met") =>
-  getDb()
-    .update(accountsTable)
-    .set({ endedAt: new Date(), endedReason })
-    .where(and(eq(accountsTable.id, id), isNull(accountsTable.endedAt)));
 
 const anchorsOf = (days: TradingDay[]): DayAnchor[] =>
   days.map((day) => ({

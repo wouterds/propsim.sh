@@ -6,19 +6,16 @@ import {
   UUIDv7,
 } from "@propsim/database";
 import {
-  breachOf,
   equityOf,
   type Fill,
   ledgerOf,
-  peakOf,
   positionsOf,
   type Side,
-  targetOf,
   tradeDateOf,
 } from "@propsim/engine";
-import { findTradingDay, listFills, touchTradingDay, writeFill } from "@propsim/orders";
+import { listFills, settle, touchTradingDay, writeFill } from "@propsim/orders";
 import { and, asc, eq, isNull, ne } from "drizzle-orm";
-import { type AccountRow, endAccount, raisePeak, rulesOfRow } from "./accounts.server";
+import type { AccountRow } from "./accounts.server";
 
 type OrderType = OrderRow["type"];
 
@@ -55,40 +52,6 @@ const netOf = (fills: Fill[], instrument: string) => {
   }
 
   return position.side === "buy" ? position.quantity : -position.quantity;
-};
-
-/**
- * Reads the stream back after the write, so the marks and the breach are judged
- * on what was stored rather than on what the caller expected to store.
- */
-const settle = async (row: AccountRow, at: Date) => {
-  const ledger = ledgerOf(await listFills(row.id), row.startingBalanceCents);
-  const equityCents = equityOf(ledger);
-  const tradeDate = tradeDateOf(at);
-
-  await touchTradingDay(row.id, tradeDate, at, equityCents);
-
-  const peakEquityCents = Math.max(row.peakEquityCents, peakOf(ledger));
-  const day = await findTradingDay(row.id, tradeDate);
-
-  await raisePeak(row.id, peakEquityCents);
-
-  const rules = rulesOfRow(row);
-  const breach = breachOf(rules, {
-    lowEquityCents: Math.min(day?.lowEquityCents ?? equityCents, equityCents),
-    peakEquityCents,
-    sessionOpenCents: day?.openEquityCents ?? equityCents,
-  });
-
-  if (breach) {
-    await endAccount(row.id, breach);
-
-    return;
-  }
-
-  if (equityCents >= targetOf(rules)) {
-    await endAccount(row.id, "target_met");
-  }
 };
 
 const refuseTicket = (row: AccountRow, ticket: Ticket, held: number): Refusal => {
@@ -201,7 +164,7 @@ export const placeOrder = async (
     }
   });
 
-  await settle(row, at);
+  await settle(row.id, at);
 
   return null;
 };
@@ -371,7 +334,7 @@ export const closePosition = async (
       );
   });
 
-  await settle(row, at);
+  await settle(row.id, at);
 
   return null;
 };
