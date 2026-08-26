@@ -676,7 +676,9 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
               />
             )}
 
-            <div className="absolute top-2 right-2 z-10">
+            {/* Left of the chart on a phone. On the right it covers the price scale
+                and the live price badge, which are the two things being read. */}
+            <div className="absolute top-2 left-2 z-10 sm:right-2 sm:left-auto">
               <TimeframeSwitcher value={timeframe} />
             </div>
           </div>

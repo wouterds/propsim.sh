@@ -17,14 +17,11 @@ const Stat = ({ label, value, tone }: { label: string; value: string; tone?: str
 );
 
 const AccountStrip = ({ balance, equity, realised, openPnl, positions }: Props) => (
-  // One line that scrolls rather than two that wrap. Five money figures do not
-  // fit a phone at a size worth reading, and a second row pushed the chart down
-  // the screen on every load.
-  //
-  // Every number here is a risk number, so the edge is faded rather than cut:
-  // something half shown is something a trader knows to reach for.
-  <div className="relative rounded-lg border border-line bg-raised">
-    <div className="flex items-center gap-x-6 overflow-x-auto px-3 py-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+  // One line, tight enough that every figure fits a phone. It scrolls rather
+  // than wraps when a bigger balance stops that being true, because a second row
+  // pushes the chart down the screen on every load.
+  <div className="rounded-lg border border-line bg-raised">
+    <div className="flex items-center gap-x-3 overflow-x-auto px-3 py-2 sm:gap-x-6 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       <Stat label="Balance" value={formatMoney(balance)} />
       <Stat
         label="Equity"
@@ -39,11 +36,6 @@ const AccountStrip = ({ balance, equity, realised, openPnl, positions }: Props) 
       />
       <Stat label="Open" value={`${positions}`} />
     </div>
-
-    <div
-      aria-hidden="true"
-      className="pointer-events-none absolute inset-y-px right-px w-8 rounded-r-lg bg-gradient-to-l from-raised to-transparent sm:hidden"
-    />
   </div>
 );
 
