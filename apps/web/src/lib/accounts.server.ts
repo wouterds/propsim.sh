@@ -22,10 +22,10 @@ import {
   tradeDateOf,
   trailingFloorOf,
 } from "@propsim/engine";
-import { listFills, rulesOf } from "@propsim/orders";
+import { listFills, listFillsFor, rulesOf } from "@propsim/orders";
 import type { Plan } from "@propsim/plans";
 import { findPlan } from "@propsim/plans";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import type { Account, AccountStatus } from "./accounts";
 import type { JournalDay } from "./journal";
 import { listOrders } from "./orders.server";
@@ -77,6 +77,31 @@ const listTradingDays = (accountId: string) =>
     .from(tradingDays)
     .where(eq(tradingDays.accountId, accountId))
     .orderBy(desc(tradingDays.tradeDate));
+
+/** Every account's sessions in one query, for the shell that reads them all. */
+const listTradingDaysFor = async (accountIds: string[]) => {
+  const grouped = new Map<string, TradingDay[]>();
+
+  for (const id of accountIds) {
+    grouped.set(id, []);
+  }
+
+  if (accountIds.length === 0) {
+    return grouped;
+  }
+
+  const rows = await getDb()
+    .select()
+    .from(tradingDays)
+    .where(inArray(tradingDays.accountId, accountIds))
+    .orderBy(desc(tradingDays.tradeDate));
+
+  for (const row of rows) {
+    grouped.get(row.accountId)?.push(row);
+  }
+
+  return grouped;
+};
 
 const listAccountRows = (userId: string) =>
   getDb()
@@ -203,17 +228,22 @@ export const loadAccount = async (
   return { row, ledger, anchors, fills, account: viewOf(row, ledger, anchors, now) };
 };
 
+/**
+ * Every account a trader has. Two queries whatever the count, because the shell
+ * around every signed in page reads this and a query for each account turns one
+ * page into a round trip per account they ever opened.
+ */
 export const loadAccounts = async (userId: string, now = new Date()): Promise<Account[]> => {
   const rows = await listAccountRows(userId);
+  const ids = rows.map((row) => row.id);
+  const [fills, days] = await Promise.all([listFillsFor(ids), listTradingDaysFor(ids)]);
 
-  return Promise.all(
-    rows.map(async (row) => {
-      const [fills, days] = await Promise.all([listFills(row.id), listTradingDays(row.id)]);
-      const anchors = anchorsOf(days);
+  return rows.map((row) => {
+    const anchors = anchorsOf(days.get(row.id) ?? []);
+    const ledger = ledgerOf(fills.get(row.id) ?? [], row.startingBalanceCents);
 
-      return viewOf(row, ledgerOf(fills, row.startingBalanceCents), anchors, now);
-    }),
-  );
+    return viewOf(row, ledger, anchors, now);
+  });
 };
 
 /** What the trader did, rather than what the row calls it. */
