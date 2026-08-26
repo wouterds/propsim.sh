@@ -174,7 +174,7 @@ const buttonCell: CSSProperties = {
 const fill = { bgcolor: ACCENT } as TdHTMLAttributes<HTMLTableDataCellElement>;
 
 const buttonLabel: CSSProperties = {
-  color: INK,
+  color: "#ffffff",
   display: "inline-block",
   fontSize: "15px",
   fontWeight: 600,
@@ -197,7 +197,7 @@ export const ButtonLink = ({ href, children }: ButtonLinkProps) => (
       <tr>
         <td {...fill} style={buttonCell}>
           <Link href={href} style={buttonLabel}>
-            <span style={{ color: INK }}>{children}</span>
+            <span style={{ color: "#ffffff" }}>{children}</span>
           </Link>
         </td>
       </tr>

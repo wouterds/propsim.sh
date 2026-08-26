@@ -114,7 +114,7 @@ const AccountCard = ({ account }: Props) => {
         {isOpen(account.status) && (
           <Link
             to={href("/accounts/:id/terminal", { id: account.id })}
-            className="ml-auto inline-flex h-8 items-center rounded bg-accent-strong px-3 font-medium text-ink text-xs transition-colors hover:bg-accent-strong/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
+            className="ml-auto inline-flex h-8 items-center rounded bg-accent-strong px-3 font-medium text-white text-xs transition-colors hover:bg-accent-strong/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
           >
             Terminal
           </Link>

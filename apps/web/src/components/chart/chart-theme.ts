@@ -141,12 +141,6 @@ export const candleOptions = (
   wickUpColor: theme.up,
   wickDownColor: theme.down,
   borderVisible: false,
-  // Off, and drawn as a price line of our own instead. The series label picks
-  // its own text colour by YIQ brightness against a threshold of 160, and the
-  // teal scores 133, so it sets white on a fill that carries white at 2.49:1.
-  // A price line is the only axis label whose text colour can be set.
-  lastValueVisible: false,
-  priceLineVisible: false,
   // A contract ticks in its own increment. The default minMove prints prices
   // that cannot exist.
   priceFormat: { type: "price", precision: precisionFor(tick), minMove: tick },

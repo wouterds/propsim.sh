@@ -386,19 +386,6 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
 
   // The chart redraws its price lines whenever this array changes identity.
   const priceLines = useMemo<ChartPriceLine[]>(() => {
-    const printing = candles.at(-1);
-    // The series drew this one until it turned out its label cannot be styled.
-    const lastLines: ChartPriceLine[] = printing
-      ? [
-          {
-            id: "last",
-            price: printing.close,
-            tone: printing.close >= printing.open ? "up" : "down",
-            title: "",
-          },
-        ]
-      : [];
-
     const openLines = book.positions.flatMap((position) => {
       const lines: ChartPriceLine[] = [
         { id: position.id, price: position.entry, tone: "accent", title: "entry" },
@@ -434,8 +421,8 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
         title: `${order.side} ${order.type}`,
       }));
 
-    return [...lastLines, ...openLines, ...restingLines];
-  }, [book.positions, book.orders, candles]);
+    return [...openLines, ...restingLines];
+  }, [book.positions, book.orders]);
 
   const goToInstrument = (code: string) =>
     navigate(`?${new URLSearchParams({ ...Object.fromEntries(params), s: code })}`, {

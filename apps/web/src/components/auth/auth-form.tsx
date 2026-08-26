@@ -95,7 +95,7 @@ const AuthForm = ({ mode, error, gate }: Props) => {
       <button
         type="submit"
         disabled={busy}
-        className="inline-flex h-10 w-full items-center justify-center rounded bg-accent-strong font-medium text-sm text-ink transition-colors hover:bg-accent-strong/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent disabled:opacity-60"
+        className="inline-flex h-10 w-full items-center justify-center rounded bg-accent-strong font-medium text-sm text-white transition-colors hover:bg-accent-strong/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent disabled:opacity-60"
       >
         {busy ? "One moment" : COPY[mode].submit}
       </button>

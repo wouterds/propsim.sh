@@ -42,7 +42,7 @@ const Plans = () => (
               <div className="mt-auto border-line/70 border-t px-4 py-3">
                 <Link
                   to={`${href("/accounts/new")}?plan=${plan.id}`}
-                  className="inline-flex h-9 w-full items-center justify-center rounded bg-accent-strong font-medium text-sm text-ink transition-colors hover:bg-accent-strong/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
+                  className="inline-flex h-9 w-full items-center justify-center rounded bg-accent-strong font-medium text-sm text-white transition-colors hover:bg-accent-strong/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
                 >
                   Get free account
                 </Link>

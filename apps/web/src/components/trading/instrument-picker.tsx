@@ -39,10 +39,10 @@ const InstrumentPicker = ({ value, onChange }: Props) => (
                 <Select.Item
                   key={instrument.code}
                   value={instrument.code}
-                  className="group flex cursor-default items-baseline gap-2 rounded px-2 py-1.5 text-ink text-sm data-[highlighted]:bg-accent data-[highlighted]:text-sunken"
+                  className="group flex cursor-default items-baseline gap-2 rounded px-2 py-1.5 text-ink text-sm data-[highlighted]:bg-accent data-[highlighted]:text-white"
                 >
                   <Select.ItemText>{instrument.code}</Select.ItemText>
-                  <span className="ml-auto text-faint text-xs group-data-[highlighted]:text-sunken/75">
+                  <span className="ml-auto text-faint text-xs group-data-[highlighted]:text-white/75">
                     {instrument.name}
                   </span>
                 </Select.Item>

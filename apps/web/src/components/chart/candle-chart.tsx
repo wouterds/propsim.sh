@@ -185,7 +185,9 @@ const CandleChart = ({
         axisLabelVisible: true,
         title: line.title,
         axisLabelColor: theme[line.tone],
-        axisLabelTextColor: theme.sunken,
+        // White, like every other filled label. It is also what the series
+        // picks for its own last value label, so the two axis badges agree.
+        axisLabelTextColor: "#ffffff",
       }),
     );
 

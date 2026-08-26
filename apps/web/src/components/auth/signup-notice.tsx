@@ -96,7 +96,7 @@ const SignupNotice = ({ open, onOpenChange, onConfirm }: Props) => {
               className="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-sm border border-line-strong bg-base outline-hidden focus-visible:ring-1 focus-visible:ring-accent data-[checked]:border-accent-strong data-[checked]:bg-accent-strong"
             >
               <Checkbox.Indicator>
-                <Check aria-hidden className="size-3 text-ink" strokeWidth={3} />
+                <Check aria-hidden className="size-3 text-white" strokeWidth={3} />
               </Checkbox.Indicator>
             </Checkbox.Root>
             I have read this and understand that I cannot earn or withdraw money here.

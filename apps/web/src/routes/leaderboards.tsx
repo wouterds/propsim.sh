@@ -114,7 +114,7 @@ const Leaderboards = ({ loaderData }: Route.ComponentProps) => {
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <Link
               to={href("/plans")}
-              className="inline-flex h-9 items-center justify-center rounded bg-accent-strong px-4 font-medium text-ink text-sm transition-colors hover:bg-accent-strong/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
+              className="inline-flex h-9 items-center justify-center rounded bg-accent-strong px-4 font-medium text-white text-sm transition-colors hover:bg-accent-strong/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
             >
               Get a free account
             </Link>

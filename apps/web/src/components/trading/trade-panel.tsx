@@ -170,7 +170,7 @@ const TradePanel = ({ last, tick, point, pick, onSubmit }: Props) => {
                   <Select.Item
                     key={type.value}
                     value={type.value}
-                    className="cursor-default rounded px-2 py-1.5 text-ink text-sm data-[highlighted]:bg-accent data-[highlighted]:text-sunken"
+                    className="cursor-default rounded px-2 py-1.5 text-ink text-sm data-[highlighted]:bg-accent data-[highlighted]:text-white"
                   >
                     <Select.ItemText>{type.label}</Select.ItemText>
                   </Select.Item>

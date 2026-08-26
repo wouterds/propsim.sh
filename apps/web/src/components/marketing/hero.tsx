@@ -20,7 +20,7 @@ const Hero = () => (
 
         <Link
           to={href("/terminal")}
-          className="mt-8 inline-flex h-10 items-center rounded bg-accent-strong px-5 font-medium text-ink transition-colors hover:bg-accent-strong/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
+          className="mt-8 inline-flex h-10 items-center rounded bg-accent-strong px-5 font-medium text-white transition-colors hover:bg-accent-strong/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
         >
           Start trading
         </Link>

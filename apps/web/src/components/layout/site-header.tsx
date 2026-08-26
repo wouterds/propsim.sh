@@ -39,7 +39,7 @@ const SiteHeader = ({ signedIn }: { signedIn: boolean }) => (
         <Link
           to={signedIn ? href("/dash") : href("/terminal")}
           className={cn(
-            "h-8 items-center rounded bg-accent-strong px-3 font-medium text-ink text-sm transition-colors hover:bg-accent-strong/85",
+            "h-8 items-center rounded bg-accent-strong px-3 font-medium text-white text-sm transition-colors hover:bg-accent-strong/85",
             "inline-flex",
             FOCUS,
           )}

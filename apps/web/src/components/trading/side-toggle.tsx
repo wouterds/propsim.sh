@@ -9,10 +9,10 @@ const FILL: Record<Side, string> = {
   sell: "data-[pressed]:bg-down",
 };
 
-// The hover on the unpressed button sets `ink`, which would otherwise win here
-// and put a near-white label on teal at 2.1:1.
+// The unpressed button's hover sets `ink`, which would otherwise win here and
+// leave a chosen side a shade off every other filled control.
 const PRESSED =
-  "data-[pressed]:border-transparent data-[pressed]:text-sunken data-[pressed]:hover:text-sunken";
+  "data-[pressed]:border-transparent data-[pressed]:text-white data-[pressed]:hover:text-white";
 
 const SideToggle = ({ value, onChange }: { value: Side; onChange: (side: Side) => void }) => (
   <ToggleGroup
