@@ -21,7 +21,6 @@ import AccountStrip from "~/components/trading/account-strip";
 import Blotter from "~/components/trading/blotter";
 import ChartMenu from "~/components/trading/chart-menu";
 import { formatPrice } from "~/components/trading/format";
-import MoveOrder, { type OrderMove } from "~/components/trading/move-order";
 import NewsBanner from "~/components/trading/news-banner";
 import Panel from "~/components/trading/panel";
 import { barsPerDay, parseTimeframe, rangeFor } from "~/components/trading/timeframes";
@@ -343,7 +342,7 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
 
   const [menu, setMenu] = useState<{ price: number; x: number; y: number } | null>(null);
   const [pick, setPick] = useState<TicketPick | null>(null);
-  const [move, setMove] = useState<OrderMove | null>(null);
+  const [move, setMove] = useState<{ id: string; price: number; quantity: number } | null>(null);
 
   const openMenu = useCallback(
     (price: number, x: number, y: number) => setMenu({ price, x, y }),
@@ -363,13 +362,7 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
 
     if (!order) return;
 
-    setMove({
-      id,
-      label: `${order.side} ${order.type}`,
-      quantity: order.quantity,
-      from: order.price,
-      to: price,
-    });
+    setMove({ id, price, quantity: order.quantity });
   }, []);
 
   // Buying under the market is a limit and over it is a stop, and selling is
@@ -450,7 +443,9 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
       .filter((order) => isWorking(order.status))
       .map<ChartPriceLine>((order) => ({
         id: order.id,
-        price: order.price,
+        // A move waiting on an answer is drawn where it would land. Nothing has
+        // changed on the order until it is confirmed.
+        price: move?.id === order.id ? move.price : order.price,
         tone: order.side === "buy" ? "up" : "down",
         title: `${order.side} ${order.type}`,
         // The only lines that stand for something a trader can still change. A
@@ -459,7 +454,7 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
       }));
 
     return [...openLines, ...restingLines];
-  }, [book.positions, book.orders]);
+  }, [book.positions, book.orders, move]);
 
   const goToInstrument = (code: string) =>
     navigate(`?${new URLSearchParams({ ...Object.fromEntries(params), s: code })}`, {
@@ -529,6 +524,20 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
                 onHover={setHovered}
                 onPickPrice={openMenu}
                 onMove={askToMove}
+                pending={move}
+                busy={fetcher.state !== "idle"}
+                onCancelMove={() => setMove(null)}
+                onConfirmMove={() => {
+                  if (!move) return;
+
+                  send({
+                    intent: "modify",
+                    id: move.id,
+                    price: String(move.price),
+                    quantity: String(move.quantity),
+                  });
+                  setMove(null);
+                }}
               />
             )}
 
@@ -562,21 +571,6 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
           onCancel={(id) => send({ intent: "cancel", id })}
         />
       </div>
-      <MoveOrder
-        move={move}
-        busy={fetcher.state !== "idle"}
-        onCancel={() => setMove(null)}
-        onConfirm={(order) => {
-          send({
-            intent: "modify",
-            id: order.id,
-            price: String(order.to),
-            quantity: String(order.quantity),
-          });
-          setMove(null);
-        }}
-      />
-
       {menu !== null && last !== null && (
         <ChartMenu
           price={menu.price}

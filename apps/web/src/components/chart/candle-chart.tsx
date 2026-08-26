@@ -9,7 +9,8 @@ import {
   LineStyle,
   type UTCTimestamp,
 } from "lightweight-charts";
-import { useEffect, useRef } from "react";
+import { Check, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import {
   type ChartTheme,
   type ChartTone,
@@ -37,8 +38,13 @@ type Props = {
   visibleBars: number;
   /** A right click on the chart, at the price the cursor was over. */
   onPickPrice?: (price: number, x: number, y: number) => void;
-  /** A draggable line let go at a new price. The line snaps back until the order moves. */
+  /** A draggable line let go at a new price. Nothing has moved until it is confirmed. */
   onMove?: (id: string, price: number) => void;
+  /** The move waiting on an answer, drawn with a tick and a cross beside it. */
+  pending?: { id: string; price: number } | null;
+  onConfirmMove?: () => void;
+  onCancelMove?: () => void;
+  busy?: boolean;
   onHover: (bar: ChartBar | null) => void;
 };
 
@@ -53,8 +59,14 @@ const CandleChart = ({
   onHover,
   onPickPrice,
   onMove,
+  pending,
+  onConfirmMove,
+  onCancelMove,
+  busy = false,
 }: Props) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  /** Where the waiting line sits, so the answer follows it as the scale moves. */
+  const [pendingY, setPendingY] = useState<number | null>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
   const themeRef = useRef<ChartTheme | null>(null);
@@ -293,6 +305,8 @@ const CandleChart = ({
 
       held = null;
       container.releasePointerCapture(event.pointerId);
+      // Back to the price the order really has. The answer being waited on is
+      // what draws it at the new one, so a cancel needs nothing put back.
       api.applyOptions({ price: was });
 
       if (price !== null && snap(price) !== was) {
@@ -318,7 +332,63 @@ const CandleChart = ({
     };
   }, [onMove]);
 
-  return <div ref={containerRef} className="h-full w-full" />;
+  /**
+   * The price scale moves on its own as bars arrive, and lightweight-charts
+   * says nothing when it does, so the answer is placed each frame while it is
+   * waiting. The state only changes when the coordinate does.
+   */
+  useEffect(() => {
+    if (!pending) {
+      setPendingY(null);
+
+      return;
+    }
+
+    let frame = 0;
+
+    const place = () => {
+      const y = seriesRef.current?.priceToCoordinate(pending.price) ?? null;
+
+      setPendingY((was) => (was === y ? was : y));
+      frame = requestAnimationFrame(place);
+    };
+
+    place();
+
+    return () => cancelAnimationFrame(frame);
+  }, [pending]);
+
+  return (
+    <div className="relative h-full w-full">
+      <div ref={containerRef} className="h-full w-full" />
+
+      {pending && pendingY !== null && (
+        <div
+          style={{ top: pendingY }}
+          className="-translate-y-1/2 pointer-events-none absolute right-20 z-10 flex items-center gap-1"
+        >
+          <button
+            type="button"
+            aria-label="Cancel the move"
+            disabled={busy}
+            onClick={onCancelMove}
+            className="pointer-events-auto flex size-6 items-center justify-center rounded border border-line bg-raised text-faint transition-colors hover:text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent disabled:opacity-50"
+          >
+            <X aria-hidden="true" className="size-3.5" strokeWidth={2} />
+          </button>
+          <button
+            type="button"
+            aria-label="Move the order here"
+            disabled={busy}
+            onClick={onConfirmMove}
+            className="pointer-events-auto flex size-6 items-center justify-center rounded bg-accent-strong text-white transition-colors hover:bg-accent-strong/85 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent disabled:opacity-50"
+          >
+            <Check aria-hidden="true" className="size-3.5" strokeWidth={2} />
+          </button>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default CandleChart;
