@@ -21,9 +21,11 @@ const NewsBanner = ({ titles, endsIn }: Props) => (
       Red folder news
     </span>
 
-    <span className="text-ink text-sm">{titles.join(", ")}</span>
+    <span className="text-rose-300/90 text-sm">{titles.join(", ")}</span>
 
-    <span className="ml-auto text-muted text-xs tabular">Be flat. Clear in {clock(endsIn)}</span>
+    <span className="ml-auto text-rose-300/70 text-xs tabular">
+      Be flat. Clear in {clock(endsIn)}
+    </span>
   </output>
 );
 
