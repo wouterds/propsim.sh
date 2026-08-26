@@ -11,6 +11,11 @@ export type NewsWarningProps = {
   /** The window, on the same clock. Both edges count as inside it. */
   opens: string;
   closes: string;
+  /** The same instants in UTC, which is the same number wherever it is read. */
+  atUtc: string;
+  dateUtc: string;
+  opensUtc: string;
+  closesUtc: string;
 };
 
 const box: React.CSSProperties = {
@@ -36,6 +41,13 @@ const value: React.CSSProperties = {
   margin: "0 0 14px",
 };
 
+const quiet: React.CSSProperties = {
+  color: "#7b8493",
+  fontSize: "13px",
+  fontWeight: 400,
+  margin: "0 0 14px",
+};
+
 const window: React.CSSProperties = {
   ...value,
   color: "#ffb020",
@@ -43,9 +55,20 @@ const window: React.CSSProperties = {
   margin: 0,
 };
 
-export const NewsWarning = ({ to, releases, at, date, opens, closes }: NewsWarningProps) => (
+export const NewsWarning = ({
+  to,
+  releases,
+  at,
+  date,
+  opens,
+  closes,
+  atUtc,
+  dateUtc,
+  opensUtc,
+  closesUtc,
+}: NewsWarningProps) => (
   <Layout
-    preview={`Be flat from ${opens} to ${closes} Chicago time`}
+    preview={`Be flat from ${opensUtc} to ${closesUtc} UTC`}
     footnote="You are receiving this because you have an account open that a release can breach."
     to={to}
   >
@@ -65,12 +88,18 @@ export const NewsWarning = ({ to, releases, at, date, opens, closes }: NewsWarni
 
       <Text style={label}>When</Text>
       <Text style={value}>
+        {dateUtc}, {atUtc} UTC
+      </Text>
+      <Text style={{ ...value, ...quiet }}>
         {date}, {at} Chicago time
       </Text>
 
       <Text style={label}>Be flat between</Text>
       <Text style={window}>
-        {opens} and {closes}
+        {opensUtc} and {closesUtc} UTC
+      </Text>
+      <Text style={{ ...quiet, margin: "4px 0 0" }}>
+        {opens} to {closes} Chicago time
       </Text>
     </div>
 

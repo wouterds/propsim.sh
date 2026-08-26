@@ -1,7 +1,7 @@
 import { accounts, getDb, users } from "@propsim/database";
 import { sendAccountBreached, sendAccountNews } from "@propsim/mail";
 import { eq } from "drizzle-orm";
-import { chicagoTime, money } from "./format";
+import { chicagoTime, money, utcClock, utcDate } from "./format";
 
 const owner = async (accountId: string) => {
   const [row] = await getDb()
@@ -55,7 +55,7 @@ export const notifyNews = async (accountId: string, release: string, at: number)
       to: row.email,
       account: row.name,
       release,
-      at: chicagoTime(at),
+      at: `${utcDate(at)}, ${utcClock(at)} UTC (${chicagoTime(at)})`,
     }),
   );
 };

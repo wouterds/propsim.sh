@@ -50,6 +50,18 @@ export const activeWindow = (windows: NewsWindow[], now: number) =>
 export const nextWindow = (windows: NewsWindow[], now: number) =>
   windows.find((window) => window.from > now) ?? null;
 
+/**
+ * The window a screen should be showing: the next one once it is near enough to
+ * matter, and the one that just closed for a while after it. The tape runs ten
+ * minutes behind, so the release is still arriving on the chart well after the
+ * window itself has shut, and taking the notice away at that moment takes it
+ * away exactly when the bars start moving.
+ *
+ * Windows are in time order, so the earliest that still qualifies is the one.
+ */
+export const shownWindow = (windows: NewsWindow[], now: number, ahead: number, after: number) =>
+  windows.find((window) => now <= window.to + after && window.from - now <= ahead) ?? null;
+
 /** A stretch the account was not flat. Open ended while it still is not. */
 export type Held = { from: number; to: number | null };
 

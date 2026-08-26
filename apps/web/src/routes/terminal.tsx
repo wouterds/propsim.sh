@@ -4,9 +4,9 @@ import {
   findInstrument,
   instrumentOr,
   isWorking,
-  nextWindow,
   priceUnits,
   type Side,
+  shownWindow,
   tradeDateOf,
 } from "@propsim/engine";
 import { listFills } from "@propsim/orders";
@@ -45,6 +45,14 @@ import { useLivePrice } from "~/lib/use-live-price";
 import type { Route } from "./+types/terminal";
 
 const DAY = 24 * 60 * 60 * 1000;
+
+/**
+ * How long the notice stays up once the window has shut. The feed runs about
+ * ten minutes behind, so the bars carrying the release are still arriving after
+ * it, and taking the notice away at the close takes it away exactly as the
+ * chart starts to move.
+ */
+const AFTER_RELEASE = 15 * 60 * 1000;
 
 /**
  * Only the blotter needs this now: the tape arrives on its own stream. A fill
@@ -129,9 +137,11 @@ export const loader = async ({ url, params, request }: Route.LoaderArgs) => {
   );
   const positions = positionsIn(loaded.ledger, orderRows, fillRows);
 
-  // Only once it is inside a day. Further out it is the calendar's job.
-  const next = nextWindow(windows, Date.now());
-  const upcoming = next && next.at - Date.now() < DAY ? { at: next.at, titles: next.titles } : null;
+  // Inside a day it is worth saying, further out it is the calendar's job, and
+  // it stays up after the release because the bars carrying it are still on
+  // their way to the chart.
+  const shown = shownWindow(windows, Date.now(), DAY, AFTER_RELEASE);
+  const upcoming = shown ? { at: shown.at, titles: shown.titles } : null;
 
   const book = { orders, positions, realised: loaded.account.balance - loaded.account.plan.size };
 
@@ -514,7 +524,6 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
               <CandleChart
                 candles={bars}
                 priceLines={priceLines}
-                bands={windows}
                 tick={instrument.tick}
                 visibleBars={barsPerDay(timeframe)}
                 onHover={setHovered}

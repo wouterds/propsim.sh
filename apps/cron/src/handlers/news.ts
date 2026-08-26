@@ -1,6 +1,6 @@
 import { BATCH, sendNewsWarning } from "@propsim/mail";
 import { emailsSent } from "@propsim/mail/log";
-import { chicagoClock, chicagoDate, listAtRisk } from "@propsim/orders";
+import { chicagoClock, chicagoDate, listAtRisk, utcClock, utcDate } from "@propsim/orders";
 import { redFolderWindows } from "~/calendar";
 
 const MINUTE = 60_000;
@@ -71,6 +71,10 @@ export const news = async () => {
       date: chicagoDate(window.at),
       opens: chicagoClock(window.from),
       closes: chicagoClock(window.to),
+      atUtc: utcClock(window.at),
+      dateUtc: utcDate(window.at),
+      opensUtc: utcClock(window.from),
+      closesUtc: utcClock(window.to),
     };
 
     for (let from = 0; from < pending.length; from += BATCH) {

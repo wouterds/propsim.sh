@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
 import type { Fill, Side } from "./fills";
 import { priceUnits } from "./money";
-import { activeWindow, heldSpansOf, heldThroughOf, nextWindow, windowsOf } from "./news";
+import {
+  activeWindow,
+  heldSpansOf,
+  heldThroughOf,
+  nextWindow,
+  shownWindow,
+  windowsOf,
+} from "./news";
 
 const at = (iso: string) => new Date(iso).getTime();
 const NFP = at("2026-09-04T12:30:00Z");
@@ -102,6 +109,35 @@ const fill = (side: Side, quantity: number, at: number, instrument = "MES"): Fil
 
 const windows = windowsOf([{ time: NFP, title: "Non-Farm Employment Change" }]);
 const minute = 60_000;
+const DAY = 86_400_000;
+
+describe("shownWindow", () => {
+  const two = windowsOf([
+    { time: NFP, title: "NFP" },
+    { time: NFP + 3 * 3_600_000, title: "FOMC" },
+  ]);
+
+  it("should keep showing a release for a while after its window shuts", () => {
+    // given a window that closed ten minutes ago and a grace of fifteen
+    // then the bars carrying it are still reaching a chart ten minutes behind
+    expect(shownWindow(two, NFP + 11 * minute, DAY, 15 * minute)?.titles).toEqual(["NFP"]);
+  });
+
+  it("should let it go once the grace is spent", () => {
+    // given the same window seventeen minutes past its close
+    expect(shownWindow(two, NFP + 17 * minute, DAY, 15 * minute)?.titles).toEqual(["FOMC"]);
+  });
+
+  it("should say nothing about a release further out than it is asked to look", () => {
+    // given only the second window left, three hours away, and an hour of reach
+    expect(shownWindow(two, NFP + 30 * minute, 3_600_000, 60_000)).toBeNull();
+  });
+
+  it("should take the nearer window when both are in reach", () => {
+    // given a day of reach, which covers them both
+    expect(shownWindow(two, NFP - 60 * minute, DAY, 60_000)?.titles).toEqual(["NFP"]);
+  });
+});
 
 describe("heldSpansOf", () => {
   it("should give nothing back for a stream that never opened anything", () => {

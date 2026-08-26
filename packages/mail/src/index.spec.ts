@@ -114,6 +114,10 @@ const NOTICE = {
   date: "Wednesday, August 26",
   opens: "7:29:00 AM",
   closes: "7:31:00 AM",
+  atUtc: "12:30:00",
+  dateUtc: "Wednesday 26 August",
+  opensUtc: "12:29:00",
+  closesUtc: "12:31:00",
 };
 
 describe("sendNewsWarning", () => {
@@ -166,5 +170,22 @@ describe("sendNewsWarning", () => {
     const sent = JSON.parse(fetched.mock.calls[0][1].body).Messages;
     expect(sent[0].To).toEqual([{ Email: "a@example.com" }]);
     expect(sent[1].To).toEqual([{ Email: "b@example.com" }]);
+  });
+});
+
+describe("the release notice", () => {
+  it("should give the window in UTC as well as on the session's own clock", async () => {
+    // given a notice for a release
+    const fetched = captureBatch();
+
+    // when
+    await sendNewsWarning(["a@example.com"], NOTICE, { release: 1 });
+
+    // then a mail has no idea where it is read, so the one number that means
+    // the same everywhere has to be in it
+    const html = JSON.parse(fetched.mock.calls[0][1].body).Messages[0].HTMLPart;
+    expect(html).toContain("12:29:00");
+    expect(html).toContain("UTC");
+    expect(html).toContain("Chicago time");
   });
 });
