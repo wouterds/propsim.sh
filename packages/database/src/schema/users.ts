@@ -1,4 +1,12 @@
-import { index, mysqlEnum, mysqlTable, timestamp, unique, varchar } from "drizzle-orm/mysql-core";
+import {
+  boolean,
+  index,
+  mysqlEnum,
+  mysqlTable,
+  timestamp,
+  unique,
+  varchar,
+} from "drizzle-orm/mysql-core";
 
 import { UUIDv7, uuid } from "./types/uuid";
 
@@ -19,6 +27,14 @@ export const users = mysqlTable(
     // What the board calls them. Null means the generated persona is used, and
     // the column collation is what makes two spellings of one name collide.
     username: varchar("username", { length: 20 }),
+    // Handles, never URLs. The site each one belongs to decides how to reach it,
+    // so a stored link cannot point somewhere the profile did not mean to.
+    twitter: varchar("twitter", { length: 40 }),
+    youtube: varchar("youtube", { length: 40 }),
+    twitch: varchar("twitch", { length: 40 }),
+    // Off until asked for. A profile is public, and which plans somebody runs
+    // is a good deal more than the board already says about them.
+    showsAccounts: boolean("shows_accounts").notNull().default(false),
     // Set when the account is emptied, by its owner or by the dormancy sweep.
     deletedAt: timestamp("deleted_at"),
     // The last dormancy notice sent, so the sweep does not repeat one every run.
