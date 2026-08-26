@@ -321,7 +321,8 @@ const Settings = ({ loaderData, actionData }: Route.ComponentProps) => {
             <Field
               name="username"
               label="Username"
-              autoComplete="off"
+              private
+              autoComplete="nickname"
               required={false}
               maxLength={MAX_USERNAME}
               defaultValue={username ?? ""}
@@ -334,7 +335,7 @@ const Settings = ({ loaderData, actionData }: Route.ComponentProps) => {
               </button>
               <p className="text-faint text-xs">
                 {username
-                  ? "Clear the field to go back to a generated name."
+                  ? "Clear the field to go back to an anonymous name."
                   : `You currently show up as ${pseudonym}.`}
               </p>
             </div>
