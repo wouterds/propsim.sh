@@ -104,6 +104,7 @@ const Day = ({ loaderData }: Route.ComponentProps) => {
                 <th className={cn(HEAD, "text-right")}>Entry</th>
                 <th className={cn(HEAD, "text-right")}>Exit</th>
                 <th className={cn(HEAD, "hidden text-right sm:table-cell")}>Held</th>
+                <th className={cn(HEAD, "hidden text-right sm:table-cell")}>Fees</th>
                 <th className={cn(HEAD, "text-right")}>P&amp;L</th>
               </tr>
             </thead>
@@ -135,6 +136,9 @@ const Day = ({ loaderData }: Route.ComponentProps) => {
                   </td>
                   <td className="hidden h-11 px-4 text-right text-faint text-xs tabular sm:table-cell">
                     {trade.duration}
+                  </td>
+                  <td className="hidden h-11 px-4 text-right text-faint text-xs tabular sm:table-cell">
+                    {trade.fees === 0 ? "–" : `-${formatMoney(trade.fees)}`}
                   </td>
                   <td
                     className={cn(

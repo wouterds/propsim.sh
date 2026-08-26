@@ -13,13 +13,21 @@ export type Fill = {
   quantity: number;
   /** In price units, see PRICE_SCALE. */
   price: number;
+  /** Commission on this side, stamped when it printed. Never worked out again. */
+  feeCents: number;
   at: Date;
   /** Stamped by whatever produced the fill. Nothing downstream re-cuts the session. */
   tradeDate: string;
 };
 
 /** Signed: a positive quantity is long. */
-export type Lot = { quantity: number; price: number; at: Date };
+export type Lot = {
+  quantity: number;
+  price: number;
+  /** Per contract, so a partial close takes its share and leaves the rest. */
+  feeCents: number;
+  at: Date;
+};
 
 export type NetPosition = {
   instrument: string;
@@ -36,7 +44,10 @@ export type RoundTrip = {
   quantity: number;
   entry: number;
   exit: number;
+  /** Before commission. */
   pnlCents: number;
+  /** Both sides of it, for the contracts this trip closed. */
+  feeCents: number;
   openedAt: Date;
   closedAt: Date;
   tradeDate: string;
@@ -50,7 +61,10 @@ export type Ledger = {
   marks: Map<string, number>;
   trips: RoundTrip[];
   path: EquityPoint[];
+  /** Price movement banked, before commission. */
   realisedCents: number;
+  /** Every side charged so far. Only ever grows. */
+  feesCents: number;
   startingCents: number;
 };
 
@@ -88,12 +102,18 @@ export const ledgerOf = (fills: Fill[], startingCents = 0): Ledger => {
   const trips: RoundTrip[] = [];
   const path: EquityPoint[] = [];
   let realisedCents = 0;
+  let feesCents = 0;
 
   const ordered = [...fills].sort((a, b) => a.at.getTime() - b.at.getTime());
 
   for (const fill of ordered) {
     const pointCents = pointCentsOf(contractOf(fill.instrument));
     const lots = books.get(fill.instrument) ?? [];
+    // Charged per side, so it lands whether this fill opened or closed anything.
+    const perContract = fill.quantity === 0 ? 0 : Math.round(fill.feeCents / fill.quantity);
+
+    feesCents += fill.feeCents;
+
     let open = fill.side === "buy" ? fill.quantity : -fill.quantity;
 
     while (open !== 0 && lots.length > 0 && directionOf(lots[0].quantity) !== directionOf(open)) {
@@ -110,6 +130,7 @@ export const ledgerOf = (fills: Fill[], startingCents = 0): Ledger => {
         entry: lot.price,
         exit: fill.price,
         pnlCents,
+        feeCents: (lot.feeCents + perContract) * closed,
         openedAt: lot.at,
         closedAt: fill.at,
         tradeDate: fill.tradeDate,
@@ -124,7 +145,7 @@ export const ledgerOf = (fills: Fill[], startingCents = 0): Ledger => {
     }
 
     if (open !== 0) {
-      lots.push({ quantity: open, price: fill.price, at: fill.at });
+      lots.push({ quantity: open, price: fill.price, feeCents: perContract, at: fill.at });
     }
 
     books.set(fill.instrument, lots);
@@ -133,11 +154,11 @@ export const ledgerOf = (fills: Fill[], startingCents = 0): Ledger => {
     path.push({
       at: fill.at,
       tradeDate: fill.tradeDate,
-      equityCents: startingCents + realisedCents + unrealisedIn(books, marks),
+      equityCents: startingCents + realisedCents - feesCents + unrealisedIn(books, marks),
     });
   }
 
-  return { books, marks, trips, path, realisedCents, startingCents };
+  return { books, marks, trips, path, realisedCents, feesCents, startingCents };
 };
 
 /**
@@ -151,7 +172,9 @@ export const carriedInOf = (ledger: Ledger, tradeDate: string) => {
   return earlier.at(-1)?.equityCents ?? ledger.startingCents;
 };
 
-export const balanceOf = (ledger: Ledger) => ledger.startingCents + ledger.realisedCents;
+/** What the account actually holds: banked movement, less every side it paid for. */
+export const balanceOf = (ledger: Ledger) =>
+  ledger.startingCents + ledger.realisedCents - ledger.feesCents;
 
 /** Marks given here win, and a contract left out falls back to its last print. */
 export const unrealisedOf = (ledger: Ledger, marks?: Map<string, number>) =>

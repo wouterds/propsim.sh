@@ -16,6 +16,7 @@ const trip = (closedAt: string, pnlCents: number): RoundTrip => ({
   entry: 21_500_000_000,
   exit: 21_500_000_000,
   pnlCents,
+  feeCents: 0,
   openedAt: new Date(closedAt),
   closedAt: new Date(closedAt),
   tradeDate: closedAt.slice(0, 10),

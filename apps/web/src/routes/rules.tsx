@@ -79,6 +79,15 @@ const GROUPS: Group[] = [
         ],
       },
       {
+        id: "commission",
+        title: "Commission comes out of the same balance",
+        body: [
+          "Every fill is charged, so a round turn pays twice. A micro is fifty cents a side, micro gold eighty and micro silver a dollar sixty, which is the schedule the firms publish.",
+          "It leaves the balance, so it reaches your equity, so both floors and the profit target count it. A round turn at the full micro cap on a 50K spends forty dollars of a twelve hundred dollar daily limit before the trade is right or wrong about anything.",
+          "Exchange and clearing fees sit on top of this at a real firm. Those are not charged here, so the number you see is the floor of what it would cost you, never the ceiling.",
+        ],
+      },
+      {
         id: "size",
         title: "Position limits are counted across everything open",
         body: [

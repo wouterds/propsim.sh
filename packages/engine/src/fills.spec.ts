@@ -14,7 +14,7 @@ const START = 5_000_000;
 
 let minute = 0;
 
-const fill = (side: Side, quantity: number, price: number): Fill => {
+const fill = (side: Side, quantity: number, price: number, feeCents = 0): Fill => {
   minute += 1;
 
   return {
@@ -22,6 +22,7 @@ const fill = (side: Side, quantity: number, price: number): Fill => {
     side,
     quantity,
     price: priceUnits(price),
+    feeCents,
     at: new Date(Date.UTC(2026, 7, 25, 14, minute)),
     tradeDate: "2026-08-25",
   };
@@ -123,5 +124,67 @@ describe("carriedInOf", () => {
     // then the anchor is where the earlier session closed, not the latest point
     expect(carriedInOf(ledger, "2026-08-26")).toBe(START + 2_000);
     expect(balanceOf(ledger)).toBe(START - 2_000);
+  });
+});
+
+describe("commission", () => {
+  it("should take the balance below the starting one on a trade that broke even", () => {
+    // given a round trip closed at the price it opened at, both sides charged
+    const fills = [fill("buy", 2, 20_000, 100), fill("sell", 2, 20_000, 100)];
+
+    // when
+    const ledger = ledgerOf(fills, START);
+
+    // then the movement is nothing and the account is still down what it paid
+    expect(ledger.realisedCents).toBe(0);
+    expect(ledger.feesCents).toBe(200);
+    expect(balanceOf(ledger)).toBe(START - 200);
+  });
+
+  it("should charge a fill that opened nothing back, the same as one that closed", () => {
+    // given a position opened and left open
+    const ledger = ledgerOf([fill("buy", 1, 20_000, 50)], START);
+
+    // then commission is per side, so it lands before anything is realised
+    expect(balanceOf(ledger)).toBe(START - 50);
+  });
+
+  it("should take the fee off the equity path, so a floor reads it", () => {
+    // given one charged fill
+    const ledger = ledgerOf([fill("buy", 1, 20_000, 50)], START);
+
+    // then a path that ignored it would leave both floors measuring an account
+    // richer than it is, and the peak higher than it ever reached
+    expect(ledger.path.at(-1)?.equityCents).toBe(START - 50);
+    expect(peakOf(ledger)).toBe(START);
+  });
+
+  it("should split a fee across a close that only took part of a lot", () => {
+    // given four bought for 200 and two sold for 100
+    const fills = [fill("buy", 4, 20_000, 200), fill("sell", 2, 20_010, 100)];
+
+    // when
+    const ledger = ledgerOf(fills, START);
+
+    // then the trip carries the two contracts it closed on each side, not all
+    // four of the entry, and the rest stays with the lot still open
+    expect(ledger.trips[0]?.feeCents).toBe(200);
+    expect(ledger.feesCents).toBe(300);
+  });
+
+  it("should carry each lot's own rate through a first in, first out close", () => {
+    // given two entries charged differently and one sale covering both
+    const fills = [
+      fill("buy", 1, 20_000, 50),
+      fill("buy", 1, 20_100, 160),
+      fill("sell", 2, 20_050, 100),
+    ];
+
+    // when
+    const ledger = ledgerOf(fills, START);
+
+    // then the cheap lot closes first and takes its own entry fee with it
+    expect(ledger.trips[0]?.feeCents).toBe(100);
+    expect(ledger.trips[1]?.feeCents).toBe(210);
   });
 });

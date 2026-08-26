@@ -17,6 +17,7 @@ const fill = (side: Side, quantity: number, price: number): Fill => {
     side,
     quantity,
     price: priceUnits(price),
+    feeCents: 0,
     at: new Date(Date.UTC(2026, 7, 25, 14, minute)),
     tradeDate: DATE,
   };

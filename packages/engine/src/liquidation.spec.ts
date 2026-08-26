@@ -12,6 +12,7 @@ const fill = (instrument: string, side: Side, quantity: number, price: number): 
   side,
   quantity,
   price: priceUnits(price),
+  feeCents: 0,
   at: new Date(Date.UTC(2026, 7, 26, 14)),
   tradeDate: "2026-08-26",
 });

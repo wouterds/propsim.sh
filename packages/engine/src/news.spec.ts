@@ -95,6 +95,7 @@ const fill = (side: Side, quantity: number, at: number, instrument = "MES"): Fil
   side,
   quantity,
   price: priceUnits(5_000),
+  feeCents: 0,
   at: new Date(at),
   tradeDate: "2026-09-04",
 });

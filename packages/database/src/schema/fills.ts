@@ -36,6 +36,10 @@ export const fills = mysqlTable(
     quantity: smallint("quantity", { unsigned: true }).notNull(),
     // Price units, see PRICE_SCALE.
     price: bigint("price", { mode: "number" }).notNull(),
+    // Commission on this side, stamped at the rate that was in force. A later
+    // revision to the schedule must not reprice a trade that already happened.
+    // Zero on every row written before there were any.
+    feeCents: bigint("fee_cents", { mode: "number" }).notNull().default(0),
     at: datetime("at", { fsp: 3 }).notNull(),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },

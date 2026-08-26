@@ -98,6 +98,30 @@ what the account was holding when the release printed.
 The account is not stopped from opening inside the window. Refusing the ticket would hide the rule
 this whole thing exists to teach.
 
+## Commission
+
+Charged **per side**, so a round turn pays twice, taken from Lucid's published
+schedule. Micros are 50 cents a side, micro gold 80, micro silver 160.
+
+It comes out of the balance, so it reaches equity, so **both floors and the
+profit target read it**. A round turn at the 40 micro cap on a 50K spends $40 of
+a $1,200 daily limit before the trade is right or wrong about anything.
+
+The rate is **stamped onto the fill** as `fills.fee_cents`, worked out inside
+`writeFill` so no caller can write a free one. It is not derived at fold time
+and not snapshotted onto the account: a commission is a fact about a print, the
+same way `trade_date` is, and a revision to the schedule must never reprice a
+trade that already happened. Rows written before there were any carry zero,
+which is what they cost.
+
+`RoundTrip.pnlCents` stays the price movement. `feeCents` beside it carries both
+sides for the contracts that trip closed, taken from the lot's own rate, so a
+first in first out close pays what its own entry was charged rather than an
+average. The screen subtracts one from the other.
+
+Exchange, clearing and NFA fees sit on top of this at a real firm and are not
+modelled.
+
 ## The Session
 
 Cut at **17:00 CT**, read off a Chicago wall clock rather than by shifting the instant, so the two
@@ -118,6 +142,7 @@ Listed so nobody assumes otherwise. Each is published on `/rules` and does nothi
 | **Microscalping, HFT** | Both are flags for a human at a real firm, not automatic breaches |
 | **Position limits** | Only `maxMicros` is checked. `maxMinis` is unenforced, which is currently equivalent because the contract catalog is micros only |
 | **Daily profit ceiling** | Lucid moves a trader to live on hitting it. There is nothing to be moved to here |
+| **Slippage and the queue** | A limit fills wherever the tape reached it, with nothing in front of it. With commission modelled this is the last place the simulator is kinder than a broker |
 
 ## One Clock: The Tape's
 

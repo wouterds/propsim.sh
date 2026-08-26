@@ -229,7 +229,10 @@ export const loadAccountDay = async (
       quantity: trip.quantity,
       entry: toPrice(trip.entry),
       exit: toPrice(trip.exit),
-      pnl: toDollars(trip.pnlCents),
+      // Net, because it is what the trade was worth to the account. The session
+      // total is folded off the equity path, which is net of commission too.
+      pnl: toDollars(trip.pnlCents - trip.feeCents),
+      fees: toDollars(trip.feeCents),
       seconds: Math.round((trip.closedAt.getTime() - trip.openedAt.getTime()) / 1000),
     }));
 

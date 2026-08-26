@@ -1,0 +1,1 @@
+ALTER TABLE `fills` ADD `fee_cents` bigint DEFAULT 0 NOT NULL;
