@@ -9,6 +9,7 @@ import {
   balanceOf,
   cents,
   type DayAnchor,
+  dailyFloorOf,
   equityOf,
   type Ledger,
   ledgerOf,
@@ -18,6 +19,7 @@ import {
   toDollars,
   toPrice,
   tradeDateOf,
+  trailingFloorOf,
 } from "@propsim/engine";
 import { listFills, rulesOf } from "@propsim/orders";
 import type { Plan } from "@propsim/plans";
@@ -25,6 +27,7 @@ import { findPlan } from "@propsim/plans";
 import { and, desc, eq } from "drizzle-orm";
 import type { Account, AccountStatus } from "./accounts";
 import type { JournalDay } from "./journal";
+import { listOrders } from "./orders.server";
 
 export type { AccountRow };
 
@@ -135,6 +138,8 @@ export type LoadedAccount = {
   row: AccountRow;
   ledger: Ledger;
   anchors: DayAnchor[];
+  /** The prints themselves, which the fold turns into trips and loses. */
+  fills: Awaited<ReturnType<typeof listFills>>;
   account: Account;
 };
 
@@ -194,7 +199,7 @@ export const loadAccount = async (
   const ledger = ledgerOf(fills, row.startingBalanceCents);
   const anchors = anchorsOf(days);
 
-  return { row, ledger, anchors, account: viewOf(row, ledger, anchors, now) };
+  return { row, ledger, anchors, fills, account: viewOf(row, ledger, anchors, now) };
 };
 
 export const loadAccounts = async (userId: string, now = new Date()): Promise<Account[]> => {
@@ -208,6 +213,14 @@ export const loadAccounts = async (userId: string, now = new Date()): Promise<Ac
       return viewOf(row, ledgerOf(fills, row.startingBalanceCents), anchors, now);
     }),
   );
+};
+
+/** What the trader did, rather than what the row calls it. */
+const kindOf = (type: string, intent: string) => {
+  if (intent === "stop_loss") return "Stop loss";
+  if (intent === "take_profit") return "Target";
+
+  return type === "market" ? "Market" : type === "limit" ? "Limit" : "Stop";
 };
 
 export const loadAccountDay = async (
@@ -228,6 +241,7 @@ export const loadAccountDay = async (
     .map((trip, index) => ({
       id: `${trip.instrument}-${index}`,
       at: trip.closedAt.getTime(),
+      instrument: trip.instrument,
       side: trip.side,
       quantity: trip.quantity,
       entry: toPrice(trip.entry),
@@ -239,5 +253,47 @@ export const loadAccountDay = async (
       seconds: Math.round((trip.closedAt.getTime() - trip.openedAt.getTime()) / 1000),
     }));
 
-  return { account: loaded.account, day, trades };
+  const orders = new Map(
+    (await listOrders(loaded.row.id)).map((order) => [order.id, order] as const),
+  );
+
+  const fills = loaded.fills
+    .filter((fill) => fill.tradeDate === tradeDate)
+    .map((fill) => {
+      const order = orders.get(fill.orderId);
+
+      return {
+        id: fill.id,
+        at: fill.at.getTime(),
+        instrument: fill.instrument,
+        side: fill.side,
+        quantity: fill.quantity,
+        price: toPrice(fill.price),
+        fee: toDollars(fill.feeCents),
+        kind: order ? kindOf(order.type, order.intent) : "Market",
+      };
+    });
+
+  const rules = rulesOf(loaded.row);
+  const anchor = loaded.anchors.find((one) => one.tradeDate === tradeDate);
+  const openEquityCents = anchor?.openEquityCents ?? carriedInCents(loaded.ledger, tradeDate);
+  const lowEquityCents = anchor?.lowEquityCents ?? openEquityCents;
+
+  const session = {
+    openEquity: toDollars(openEquityCents),
+    lowEquity: toDollars(lowEquityCents),
+    dailyFloor: toDollars(dailyFloorOf(rules, openEquityCents)),
+    trailingFloor: toDollars(trailingFloorOf(rules, cents(loaded.account.peakEquity))),
+    lockedOut: lockedOutOf(rules, { openEquityCents, lowEquityCents }),
+    fees: fills.reduce((total, fill) => total + fill.fee, 0),
+  };
+
+  // Only when this is the session it happened in. An account ended on Tuesday
+  // says nothing about the Monday being read.
+  const ended =
+    loaded.row.endedAt && tradeDateOf(loaded.row.endedAt) === tradeDate
+      ? { reason: loaded.row.endedReason, at: loaded.row.endedAt.getTime() }
+      : null;
+
+  return { account: loaded.account, day, trades, fills, session, ended };
 };
