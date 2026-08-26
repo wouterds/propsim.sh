@@ -11,109 +11,119 @@ type Props = {
   accountId?: string;
 };
 
-const HEAD = "h-8 px-4 text-left font-normal";
+/**
+ * A grid rather than a table, because the whole row is one link. An anchor
+ * stretched inside a table row escapes it: a row is not a containing block in
+ * every browser, and the hit area then covers the page instead of the row.
+ */
+const ROW =
+  "grid grid-cols-[1fr_auto] items-center gap-x-4 px-4 sm:grid-cols-[1fr_3rem_3rem_5rem]" +
+  " md:grid-cols-[1fr_3rem_3rem_8rem_7rem_5rem] lg:grid-cols-[1fr_3rem_3rem_8rem_7rem_7rem_5rem]";
+
+const HEAD = "text-[11px] text-faint uppercase tracking-wider";
+
+const Shell = ({ title, children }: { title: string; children: React.ReactNode }) => (
+  <div className="min-w-0 rounded-lg border border-line bg-raised">
+    <div className="flex h-9 items-center border-line border-b px-4">
+      <span className="text-[11px] text-faint uppercase tracking-wider">{title}</span>
+    </div>
+    {children}
+  </div>
+);
 
 const JournalTable = ({ days, title, accountId }: Props) => {
   const widest = Math.max(...days.map((day) => Math.abs(day.pnl)), 1);
 
   if (days.length === 0) {
     return (
-      <div className="min-w-0 rounded-lg border border-line bg-raised">
-        <div className="flex h-9 items-center border-line border-b px-4">
-          <span className="text-[11px] text-faint uppercase tracking-wider">{title}</span>
-        </div>
+      <Shell title={title}>
         <p className="px-4 py-8 text-center text-faint text-sm">
           Nothing traded yet. The first session shows up here once it closes.
         </p>
-      </div>
+      </Shell>
     );
   }
 
   return (
-    <div className="min-w-0 rounded-lg border border-line bg-raised">
-      <div className="flex h-9 items-center border-line border-b px-4">
-        <span className="text-[11px] text-faint uppercase tracking-wider">{title}</span>
+    <Shell title={title}>
+      <div className={cn(ROW, "h-8 border-line/60 border-b")}>
+        <span className={HEAD}>Day</span>
+        <span className={cn(HEAD, "hidden text-right sm:block")}>Trades</span>
+        <span className={cn(HEAD, "hidden text-right sm:block")}>Won</span>
+        <span className={cn(HEAD, "hidden text-right md:block")}>Worst drawdown</span>
+        <span className={cn(HEAD, "hidden text-right sm:block")}>P&amp;L</span>
+        <span className={cn(HEAD, "hidden lg:block")} />
+        <span className={cn(HEAD, "text-right")}>Rules</span>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[30rem] border-collapse">
-          <thead>
-            <tr className="border-line/60 border-b text-[11px] text-faint uppercase tracking-wider">
-              <th className={HEAD}>Day</th>
-              <th className={cn(HEAD, "text-right")}>Trades</th>
-              <th className={cn(HEAD, "hidden text-right sm:table-cell")}>Won</th>
-              <th className={cn(HEAD, "hidden text-right md:table-cell")}>Worst drawdown</th>
-              <th className={cn(HEAD, "text-right")}>P&amp;L</th>
-              <th className={cn(HEAD, "hidden lg:table-cell")}>
-                <span className="sr-only">Size of the day</span>
-              </th>
-              <th className={cn(HEAD, "text-right")}>Rules</th>
-            </tr>
-          </thead>
-          <tbody>
-            {days.map((day) => (
-              <tr
-                key={day.date}
-                className="relative border-line/60 border-b transition-colors last:border-b-0 hover:bg-overlay/60"
+      <ul>
+        {days.map((day) => {
+          const cells = (
+            <>
+              <span className="truncate text-ink text-xs tabular">{formatDay(day.date)}</span>
+              <span className="hidden text-right text-ink text-xs tabular sm:block">
+                {day.trades}
+              </span>
+              <span className="hidden text-right text-muted text-xs tabular sm:block">
+                {day.wins}
+              </span>
+              <span className="hidden text-right text-down text-xs tabular md:block">
+                {formatMoney(day.worstDrawdown)}
+              </span>
+              <span
+                className={cn(
+                  "hidden text-right font-medium text-xs tabular sm:block",
+                  TONE_TEXT[toneOf(day.pnl)],
+                )}
               >
-                <td className="h-11 px-4 text-xs tabular">
-                  {accountId ? (
-                    // The anchor covers the row rather than the row handling a
-                    // click, so the whole thing opens in a tab like any link.
-                    <Link
-                      to={href("/accounts/:id/journal/:date", { id: accountId, date: day.date })}
-                      className="rounded-sm text-ink after:absolute after:inset-0 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
-                    >
-                      {formatDay(day.date)}
-                    </Link>
-                  ) : (
-                    <span className="text-ink">{formatDay(day.date)}</span>
+                {formatSigned(day.pnl)}
+              </span>
+
+              <span className="hidden lg:flex lg:items-center lg:gap-px">
+                <span className="flex flex-1 justify-end">
+                  {day.pnl < 0 && (
+                    <span
+                      className="h-1 rounded-full bg-down"
+                      style={{ width: `${(Math.abs(day.pnl) / widest) * 100}%` }}
+                    />
                   )}
-                </td>
-                <td className="h-11 px-4 text-right text-ink text-xs tabular">{day.trades}</td>
-                <td className="hidden h-11 px-4 text-right text-muted text-xs tabular sm:table-cell">
-                  {day.wins}
-                </td>
-                <td className="hidden h-11 px-4 text-right text-down text-xs tabular md:table-cell">
-                  {formatMoney(day.worstDrawdown)}
-                </td>
-                <td
+                </span>
+                <span className="flex flex-1">
+                  {day.pnl > 0 && (
+                    <span
+                      className="h-1 rounded-full bg-up"
+                      style={{ width: `${(day.pnl / widest) * 100}%` }}
+                    />
+                  )}
+                </span>
+              </span>
+
+              <span className="flex justify-end">
+                <Badge tone={VERDICT_TONE[day.verdict]}>{VERDICT_LABEL[day.verdict]}</Badge>
+              </span>
+            </>
+          );
+
+          return (
+            <li key={day.date} className="border-line/60 border-b last:border-b-0">
+              {accountId ? (
+                <Link
+                  to={href("/accounts/:id/journal/:date", { id: accountId, date: day.date })}
                   className={cn(
-                    "h-11 px-4 text-right font-medium text-xs tabular",
-                    TONE_TEXT[toneOf(day.pnl)],
+                    ROW,
+                    "h-11 transition-colors hover:bg-overlay/60 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent",
                   )}
                 >
-                  {formatSigned(day.pnl)}
-                </td>
-                <td className="hidden h-11 w-28 px-4 lg:table-cell">
-                  <span className="flex h-1 items-center gap-px" aria-hidden="true">
-                    <span className="flex h-full flex-1 justify-end">
-                      {day.pnl < 0 && (
-                        <span
-                          className="h-full rounded-full bg-down"
-                          style={{ width: `${(Math.abs(day.pnl) / widest) * 100}%` }}
-                        />
-                      )}
-                    </span>
-                    <span className="flex h-full flex-1">
-                      {day.pnl > 0 && (
-                        <span
-                          className="h-full rounded-full bg-up"
-                          style={{ width: `${(day.pnl / widest) * 100}%` }}
-                        />
-                      )}
-                    </span>
-                  </span>
-                </td>
-                <td className="h-11 px-4 text-right">
-                  <Badge tone={VERDICT_TONE[day.verdict]}>{VERDICT_LABEL[day.verdict]}</Badge>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+                  {cells}
+                </Link>
+              ) : (
+                <div className={cn(ROW, "h-11")}>{cells}</div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </Shell>
   );
 };
 
