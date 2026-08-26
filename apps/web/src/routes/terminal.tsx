@@ -345,6 +345,7 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
 
   const [menu, setMenu] = useState<{ price: number; x: number; y: number } | null>(null);
   const [pick, setPick] = useState<TicketPick | null>(null);
+  const [ticket, setTicket] = useState<OrderDraft | null>(null);
   const [move, setMove] = useState<{ id: string; price: number; quantity: number } | null>(null);
 
   const openMenu = useCallback(
@@ -456,8 +457,47 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
         draggable: true,
       }));
 
-    return [...openLines, ...restingLines];
-  }, [book.positions, book.orders, move]);
+    // The ticket as it stands, before anything is sent. A market order has no
+    // level of its own, so only the brackets on it are worth drawing.
+    const entry = ticket?.type === "market" ? null : (ticket?.limitPrice ?? null);
+    const draftLines: ChartPriceLine[] = [];
+
+    if (ticket && ticket.quantity > 0) {
+      const size = `${ticket.quantity}`;
+
+      if (entry !== null) {
+        draftLines.push({
+          id: "draft-entry",
+          price: entry,
+          tone: ticket.side === "buy" ? "up" : "down",
+          title: `${ticket.side} ${size} ${ticket.type}`,
+          draft: true,
+        });
+      }
+
+      if (ticket.stopLoss !== null) {
+        draftLines.push({
+          id: "draft-sl",
+          price: ticket.stopLoss,
+          tone: "down",
+          title: `stop ${size}`,
+          draft: true,
+        });
+      }
+
+      if (ticket.takeProfit !== null) {
+        draftLines.push({
+          id: "draft-tp",
+          price: ticket.takeProfit,
+          tone: "up",
+          title: `target ${size}`,
+          draft: true,
+        });
+      }
+    }
+
+    return [...openLines, ...restingLines, ...draftLines];
+  }, [book.positions, book.orders, move, ticket]);
 
   const goToInstrument = (code: string) =>
     navigate(`?${new URLSearchParams({ ...Object.fromEntries(params), s: code })}`, {
@@ -562,6 +602,7 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
             point={instrument.point}
             pick={pick}
             onSubmit={submit}
+            onDraft={setTicket}
           />
         </Panel>
 

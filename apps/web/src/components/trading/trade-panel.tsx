@@ -36,6 +36,8 @@ type Props = {
   point: number;
   pick: TicketPick | null;
   onSubmit: (draft: OrderDraft) => void;
+  /** Every keystroke, so the chart can draw the ticket before it is sent. */
+  onDraft?: (draft: OrderDraft) => void;
 };
 
 const ORDER_TYPES = [
@@ -72,7 +74,7 @@ const keptFrom = (raw: string | null): Kept | null => {
   }
 };
 
-const TradePanel = ({ last, tick, point, pick, onSubmit }: Props) => {
+const TradePanel = ({ last, tick, point, pick, onSubmit, onDraft }: Props) => {
   const [draft, setDraft] = useState(EMPTY_DRAFT);
   const quantity = useRef<HTMLInputElement>(null);
 
@@ -112,6 +114,18 @@ const TradePanel = ({ last, tick, point, pick, onSubmit }: Props) => {
       return next;
     });
   };
+
+  // The chart draws whatever the form is holding, so it follows the ticket
+  // rather than the ticket telling it on each edit.
+  const shown = useRef(onDraft);
+
+  useEffect(() => {
+    shown.current = onDraft;
+  }, [onDraft]);
+
+  useEffect(() => {
+    shown.current?.(draft);
+  }, [draft]);
 
   // No tape, no ticket. Every price on this form is quoted against the last
   // print, so a stand-in would put a number on the button that nothing backs.

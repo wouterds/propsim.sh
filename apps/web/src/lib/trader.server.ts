@@ -4,7 +4,7 @@ import { listFillsFor } from "@propsim/orders";
 import { findPlan } from "@propsim/plans";
 import { desc, eq } from "drizzle-orm";
 
-export type TraderAccount = {
+type TraderAccount = {
   id: string;
   name: string;
   plan: string;

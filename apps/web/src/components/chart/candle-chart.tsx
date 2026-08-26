@@ -21,12 +21,13 @@ import {
   candleOptions,
   chartOptions,
   readChartTheme,
+  withAlpha,
 } from "./chart-theme";
 
 export type ChartBar = Pick<Candle, "time" | "open" | "high" | "low" | "close">;
 
 /** A fill, drawn as an arrow on the bar it printed in. */
-export type ChartMarker = {
+type ChartMarker = {
   id: string;
   /** Milliseconds, the same clock as a candle. */
   time: number;
@@ -40,6 +41,8 @@ export type ChartPriceLine = {
   title: string;
   /** A working order, which is the only kind of line that can be moved. */
   draggable?: boolean;
+  /** A ticket nobody has sent. Drawn faint and broken, so it reads as intent. */
+  draft?: boolean;
 };
 
 type Props = {
@@ -264,13 +267,15 @@ const CandleChart = ({
       line,
       api: series.createPriceLine({
         price: line.price,
-        color: theme[line.tone],
+        // A draft is the same colour half faded and broken up, so it reads as a
+        // level being chosen rather than one the account is holding.
+        color: line.draft ? withAlpha(theme[line.tone], 0.5) : theme[line.tone],
         lineWidth: 1,
-        lineStyle: LineStyle.Dashed,
+        lineStyle: line.draft ? LineStyle.SparseDotted : LineStyle.Dashed,
         lineVisible: true,
         axisLabelVisible: true,
         title: line.title,
-        axisLabelColor: theme[line.tone],
+        axisLabelColor: line.draft ? withAlpha(theme[line.tone], 0.5) : theme[line.tone],
         // White, like every other filled label. It is also what the series
         // picks for its own last value label, so the two axis badges agree.
         axisLabelTextColor: "#ffffff",
