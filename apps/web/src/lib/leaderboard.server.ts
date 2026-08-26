@@ -1,6 +1,6 @@
 import { accounts, fills, getDb, users } from "@propsim/database";
 import { type Fill, ledgerOf, toDollars } from "@propsim/engine";
-import { asc, eq, inArray, isNull } from "drizzle-orm";
+import { asc, eq, inArray } from "drizzle-orm";
 import { personaOf } from "~/components/identity/persona";
 import {
   bankedSince,
@@ -59,6 +59,11 @@ const toRow = (standing: Standing, index: number): Row => ({
 /**
  * Every account folded from its own fills, then summed per trader. A public
  * page, so nothing on it names an address or an account.
+ *
+ * A trader who left stays on the board. The sessions happened and the standings
+ * behind them would move if they were taken out, so what goes is the name they
+ * chose rather than the record: they fall back to the drawn one, which is what
+ * everybody who never picked a username is already shown as.
  */
 export const loadLeaderboard = async (span: Span, now = new Date()) => {
   const rows = await getDb()
@@ -66,12 +71,12 @@ export const loadLeaderboard = async (span: Span, now = new Date()) => {
       id: accounts.id,
       userId: accounts.userId,
       username: users.username,
+      deletedAt: users.deletedAt,
       startingBalanceCents: accounts.startingBalanceCents,
       endedReason: accounts.endedReason,
     })
     .from(accounts)
-    .innerJoin(users, eq(users.id, accounts.userId))
-    .where(isNull(users.deletedAt));
+    .innerJoin(users, eq(users.id, accounts.userId));
 
   const empty = {
     standings: [] as Standing[],
@@ -116,7 +121,7 @@ export const loadLeaderboard = async (span: Span, now = new Date()) => {
     const ledger = ledgerOf(byAccount.get(row.id) ?? [], row.startingBalanceCents);
     const tally = byUser.get(row.userId) ?? {
       userId: row.userId,
-      username: row.username,
+      username: row.deletedAt ? null : row.username,
       accounts: 0,
       startingCents: 0,
       pnlCents: 0,
