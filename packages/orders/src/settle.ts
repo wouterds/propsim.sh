@@ -14,7 +14,8 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 import { findTradingDay, touchTradingDay } from "./days";
 import { listFills } from "./fills";
 
-const rulesOf = (row: Account): AccountRules => ({
+/** The terms the account opened under, which is what every floor is measured from. */
+export const rulesOf = (row: Account): AccountRules => ({
   startingBalanceCents: row.startingBalanceCents,
   profitTargetCents: row.profitTargetCents,
   trailingDrawdownCents: row.trailingDrawdownCents,
