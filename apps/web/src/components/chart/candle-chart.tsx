@@ -4,6 +4,7 @@ import {
   CandlestickSeries,
   createChart,
   type IChartApi,
+  type IPriceLine,
   type ISeriesApi,
   LineStyle,
   type Logical,
@@ -21,7 +22,14 @@ import {
 
 export type ChartBar = Pick<Candle, "time" | "open" | "high" | "low" | "close">;
 
-export type ChartPriceLine = { id: string; price: number; tone: ChartTone; title: string };
+export type ChartPriceLine = {
+  id: string;
+  price: number;
+  tone: ChartTone;
+  title: string;
+  /** A working order, which is the only kind of line that can be moved. */
+  draggable?: boolean;
+};
 
 export type ChartBand = { from: number; to: number; at: number };
 
@@ -35,8 +43,13 @@ type Props = {
   visibleBars: number;
   /** A right click on the chart, at the price the cursor was over. */
   onPickPrice?: (price: number, x: number, y: number) => void;
+  /** A draggable line let go at a new price. The line snaps back until the order moves. */
+  onMove?: (id: string, price: number) => void;
   onHover: (bar: ChartBar | null) => void;
 };
+
+/** How near the cursor has to be to a line, in pixels, before it can take hold of it. */
+const GRAB = 6;
 
 const CandleChart = ({
   candles,
@@ -46,6 +59,7 @@ const CandleChart = ({
   visibleBars,
   onHover,
   onPickPrice,
+  onMove,
 }: Props) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const bandsRef = useRef<HTMLDivElement>(null);
@@ -56,6 +70,8 @@ const CandleChart = ({
   const framed = useRef<string | null>(null);
   const tickRef = useRef(tick);
   const hoverRef = useRef(onHover);
+  /** What is on the chart right now, so the drag can find a line by where it sits. */
+  const drawnRef = useRef<{ line: ChartPriceLine; api: IPriceLine }[]>([]);
 
   // In a ref so a new callback identity does not rebuild the chart.
   useEffect(() => {
@@ -175,8 +191,9 @@ const CandleChart = ({
 
     if (!series || !theme) return;
 
-    const drawn = priceLines.map((line) =>
-      series.createPriceLine({
+    const drawn = priceLines.map((line) => ({
+      line,
+      api: series.createPriceLine({
         price: line.price,
         color: theme[line.tone],
         lineWidth: 1,
@@ -189,17 +206,125 @@ const CandleChart = ({
         // picks for its own last value label, so the two axis badges agree.
         axisLabelTextColor: "#ffffff",
       }),
-    );
+    }));
+
+    drawnRef.current = drawn;
 
     return () => {
+      drawnRef.current = [];
+
       // On unmount the chart cleanup already disposed the series.
       if (seriesRef.current !== series) return;
 
-      for (const line of drawn) {
-        series.removePriceLine(line);
+      for (const one of drawn) {
+        series.removePriceLine(one.api);
       }
     };
   }, [priceLines]);
+
+  /**
+   * Dragging a working order to a new level. The chart pans on a drag of its
+   * own, so it has to be told to let go while the cursor is over a line, and
+   * told again on the way out.
+   *
+   * The line is put back where it was on release. Nothing has moved yet at that
+   * point: the caller confirms first, and the order redrawing at its new price
+   * is what actually moves it.
+   */
+  useEffect(() => {
+    const container = containerRef.current;
+    const chart = chartRef.current;
+    const series = seriesRef.current;
+
+    if (!container || !chart || !series || !onMove) return;
+
+    const priceAt = (clientY: number) =>
+      series.coordinateToPrice(clientY - container.getBoundingClientRect().top);
+
+    const snap = (price: number) => Math.round(price / tickRef.current) * tickRef.current;
+
+    const lineAt = (clientY: number) => {
+      const y = clientY - container.getBoundingClientRect().top;
+
+      const near = drawnRef.current
+        .filter((one) => one.line.draggable)
+        .map((one) => ({
+          one,
+          away: Math.abs((series.priceToCoordinate(one.line.price) ?? -1e6) - y),
+        }))
+        .filter((found) => found.away <= GRAB)
+        .sort((a, b) => a.away - b.away);
+
+      return near[0]?.one ?? null;
+    };
+
+    let held: { id: string; price: number; api: IPriceLine } | null = null;
+    let armed = false;
+
+    const arm = (on: boolean) => {
+      if (armed === on) return;
+
+      armed = on;
+      container.style.cursor = on ? "ns-resize" : "";
+      // Before the press rather than during it, or the pan has already started.
+      chart.applyOptions({ handleScroll: !on, handleScale: !on });
+    };
+
+    const down = (event: PointerEvent) => {
+      const found = event.button === 0 ? lineAt(event.clientY) : null;
+
+      if (!found) return;
+
+      held = { id: found.line.id, price: found.line.price, api: found.api };
+      container.setPointerCapture(event.pointerId);
+    };
+
+    const move = (event: PointerEvent) => {
+      if (!held) {
+        arm(lineAt(event.clientY) !== null);
+
+        return;
+      }
+
+      const price = priceAt(event.clientY);
+
+      if (price !== null) {
+        held.api.applyOptions({ price: snap(price) });
+      }
+    };
+
+    const up = (event: PointerEvent) => {
+      if (!held) return;
+
+      const price = priceAt(event.clientY);
+      const { id, api, price: was } = held;
+
+      held = null;
+      container.releasePointerCapture(event.pointerId);
+      api.applyOptions({ price: was });
+
+      if (price !== null && snap(price) !== was) {
+        onMove(id, snap(price));
+      }
+    };
+
+    const leave = () => {
+      if (!held) arm(false);
+    };
+
+    container.addEventListener("pointerdown", down);
+    container.addEventListener("pointermove", move);
+    container.addEventListener("pointerup", up);
+    container.addEventListener("pointerleave", leave);
+
+    return () => {
+      container.removeEventListener("pointerdown", down);
+      container.removeEventListener("pointermove", move);
+      container.removeEventListener("pointerup", up);
+      container.removeEventListener("pointerleave", leave);
+      arm(false);
+    };
+  }, [onMove]);
 
   // Lightweight Charts draws no vertical span of its own, so the band is a div
   // placed from the time scale and moved whenever the view does.

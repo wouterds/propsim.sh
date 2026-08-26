@@ -21,6 +21,7 @@ import AccountStrip from "~/components/trading/account-strip";
 import Blotter from "~/components/trading/blotter";
 import ChartMenu from "~/components/trading/chart-menu";
 import { formatPrice } from "~/components/trading/format";
+import MoveOrder, { type OrderMove } from "~/components/trading/move-order";
 import NewsBanner from "~/components/trading/news-banner";
 import Panel from "~/components/trading/panel";
 import { barsPerDay, parseTimeframe, rangeFor } from "~/components/trading/timeframes";
@@ -332,11 +333,34 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
 
   const [menu, setMenu] = useState<{ price: number; x: number; y: number } | null>(null);
   const [pick, setPick] = useState<TicketPick | null>(null);
+  const [move, setMove] = useState<OrderMove | null>(null);
 
   const openMenu = useCallback(
     (price: number, x: number, y: number) => setMenu({ price, x, y }),
     [],
   );
+
+  // Read through a ref, so the chart keeps one drag handler for its whole life
+  // rather than rebinding every time the book comes back from the loader.
+  const ordersRef = useRef(book.orders);
+
+  useEffect(() => {
+    ordersRef.current = book.orders;
+  }, [book.orders]);
+
+  const askToMove = useCallback((id: string, price: number) => {
+    const order = ordersRef.current.find((one) => one.id === id);
+
+    if (!order) return;
+
+    setMove({
+      id,
+      label: `${order.side} ${order.type}`,
+      quantity: order.quantity,
+      from: order.price,
+      to: price,
+    });
+  }, []);
 
   // Buying under the market is a limit and over it is a stop, and selling is
   // the same read upside down. The side and the level decide it, not a dropdown.
@@ -419,6 +443,9 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
         price: order.price,
         tone: order.side === "buy" ? "up" : "down",
         title: `${order.side} ${order.type}`,
+        // The only lines that stand for something a trader can still change. A
+        // position's entry is a fact, and the last price belongs to the tape.
+        draggable: true,
       }));
 
     return [...openLines, ...restingLines];
@@ -492,6 +519,7 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
                 visibleBars={barsPerDay(timeframe)}
                 onHover={setHovered}
                 onPickPrice={openMenu}
+                onMove={askToMove}
               />
             )}
 
@@ -525,6 +553,21 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
           onCancel={(id) => send({ intent: "cancel", id })}
         />
       </div>
+      <MoveOrder
+        move={move}
+        busy={fetcher.state !== "idle"}
+        onCancel={() => setMove(null)}
+        onConfirm={(order) => {
+          send({
+            intent: "modify",
+            id: order.id,
+            price: String(order.to),
+            quantity: String(order.quantity),
+          });
+          setMove(null);
+        }}
+      />
+
       {menu !== null && last !== null && (
         <ChartMenu
           price={menu.price}
