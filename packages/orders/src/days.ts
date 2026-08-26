@@ -2,15 +2,16 @@ import { getDb, tradingDays } from "@propsim/database";
 import { and, eq, sql } from "drizzle-orm";
 
 /**
- * Opens the session at the equity it is first seen with, or lowers the mark it
- * already carries. The opening equity is written once and never touched again,
- * because it is the anchor the daily floor hangs off for the rest of the day.
+ * Opens the session, or lowers the mark it already carries. The two numbers are
+ * different observations: the open is written once and never touched again,
+ * because the daily floor hangs off it for the rest of the day, while the low
+ * only ever falls.
  */
 export const touchTradingDay = (
   accountId: string,
   tradeDate: string,
   at: Date,
-  equityCents: number,
+  equity: { openEquityCents: number; lowEquityCents: number },
 ) =>
   getDb()
     .insert(tradingDays)
@@ -18,12 +19,12 @@ export const touchTradingDay = (
       accountId,
       tradeDate,
       openedAt: at,
-      openEquityCents: equityCents,
-      lowEquityCents: equityCents,
+      openEquityCents: equity.openEquityCents,
+      lowEquityCents: equity.lowEquityCents,
     })
     .onDuplicateKeyUpdate({
       set: {
-        lowEquityCents: sql`LEAST(${tradingDays.lowEquityCents}, ${equityCents})`,
+        lowEquityCents: sql`LEAST(${tradingDays.lowEquityCents}, ${equity.lowEquityCents})`,
       },
     });
 

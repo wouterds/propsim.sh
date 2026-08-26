@@ -3,6 +3,7 @@ import {
   type AccountRules,
   type Breach,
   breachOf,
+  carriedInOf,
   equityOf,
   ledgerOf,
   peakOf,
@@ -56,7 +57,10 @@ export const settle = async (accountId: string, at: Date) => {
   const equityCents = equityOf(ledger);
   const tradeDate = tradeDateOf(at);
 
-  await touchTradingDay(accountId, tradeDate, at, equityCents);
+  await touchTradingDay(accountId, tradeDate, at, {
+    openEquityCents: carriedInOf(ledger, tradeDate),
+    lowEquityCents: equityCents,
+  });
 
   const peakEquityCents = Math.max(row.peakEquityCents, peakOf(ledger));
   const day = await findTradingDay(accountId, tradeDate);

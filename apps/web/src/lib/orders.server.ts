@@ -5,15 +5,8 @@ import {
   orders as ordersTable,
   UUIDv7,
 } from "@propsim/database";
-import {
-  equityOf,
-  type Fill,
-  ledgerOf,
-  positionsOf,
-  type Side,
-  tradeDateOf,
-} from "@propsim/engine";
-import { listFills, settle, touchTradingDay, writeFill } from "@propsim/orders";
+import { type Fill, ledgerOf, positionsOf, type Side, tradeDateOf } from "@propsim/engine";
+import { listFills, settle, writeFill } from "@propsim/orders";
 import { and, asc, eq, isNull, ne } from "drizzle-orm";
 import type { AccountRow } from "./accounts.server";
 
@@ -100,11 +93,6 @@ export const placeOrder = async (
   }
 
   const tradeDate = tradeDateOf(at);
-  const ledger = ledgerOf(fills, row.startingBalanceCents);
-  const opening = equityOf(ledger, new Map([[ticket.instrument, mark]]));
-
-  await touchTradingDay(row.id, tradeDate, at, opening);
-
   const id = UUIDv7();
   const shared = {
     accountId: row.id,
@@ -288,12 +276,6 @@ export const closePosition = async (
   }
 
   const tradeDate = tradeDateOf(at);
-  const ledger = ledgerOf(fills, row.startingBalanceCents);
-
-  // Before the fill. A session opened after it anchors on equity that already
-  // carries this close, and the daily floor hangs off that anchor all day.
-  await touchTradingDay(row.id, tradeDate, at, equityOf(ledger, new Map([[instrument, mark]])));
-
   const side = held > 0 ? "sell" : "buy";
   const id = UUIDv7();
 
