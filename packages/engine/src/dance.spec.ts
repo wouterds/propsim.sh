@@ -403,3 +403,40 @@ describe("revealedOf", () => {
     expect(MATCH_MARGIN_MS).toBeLessThan(MINUTE / 2);
   });
 });
+
+describe("catching up after the sweep was down", () => {
+  it("should fill at the step that reached it, not at the step it caught up on", () => {
+    // given an order resting before a run of bars nobody swept
+    const bars = [UP, DOWN, printed(2, 100, 101, 96, 97)];
+    const order = resting({ id: "o", side: "buy", type: "limit", price: priceUnits(98) });
+
+    // when the tape is read long after all three finished revealing
+    const late = OPEN + 10 * MINUTE;
+    const steps = revealedOf(bars, late, TICK);
+    const [match] = matchesOf([order], steps);
+
+    // then the fill lands on the step that actually reached the price
+    expect(match).toBeDefined();
+    expect(match.at.getTime()).toBeLessThan(OPEN + 3 * MINUTE);
+
+    const reached = steps.find((step) => step.time === match.at.getTime());
+
+    expect(reached).toBeDefined();
+    expect(reached?.low ?? Infinity).toBeLessThanOrEqual(98);
+  });
+
+  it("should give the same answer whenever the sweep gets round to it", () => {
+    // given the same order and the same bars
+    const bars = [UP, DOWN];
+    const order = resting({ id: "o", side: "buy", type: "limit", price: priceUnits(98) });
+
+    // when one sweep reads them promptly and another an hour later
+    const prompt = matchesOf([order], revealedOf(bars, OPEN + 3 * MINUTE, TICK));
+    const late = matchesOf([order], revealedOf(bars, OPEN + 60 * MINUTE, TICK));
+
+    // then downtime changes nothing about where or when it filled
+    expect(late.map((m) => [m.price, m.at.getTime()])).toEqual(
+      prompt.map((m) => [m.price, m.at.getTime()]),
+    );
+  });
+});
