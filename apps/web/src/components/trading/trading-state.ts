@@ -19,6 +19,8 @@ export type Order = {
   type: OrderType;
   quantity: number;
   price: number;
+  /** Commission charged on this order's own fills. */
+  fees: number;
   status: OrderStatus;
 };
 

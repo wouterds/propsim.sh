@@ -1,5 +1,5 @@
 import type { Fill as FillRow, Order as OrderRow } from "@propsim/database";
-import { isWorking, type Ledger, positionsOf, statusOf, toPrice } from "@propsim/engine";
+import { isWorking, type Ledger, positionsOf, statusOf, toDollars, toPrice } from "@propsim/engine";
 import type { Order, Position } from "~/components/trading/trading-state";
 
 const takenOn = (fills: FillRow[], orderId: string) =>
@@ -29,6 +29,9 @@ export const ordersOf = (rows: OrderRow[], fills: FillRow[]): Order[] =>
       type: row.type,
       quantity: row.quantity,
       price: priceOf(row, taken),
+      // What its own prints were charged. An order that never printed paid
+      // nothing, which is not the same as an order that was free.
+      fees: toDollars(taken.reduce((total, fill) => total + fill.feeCents, 0)),
       status: statusOf(row, filled),
     };
   });

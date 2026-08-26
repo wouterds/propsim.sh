@@ -2,7 +2,7 @@ import { isWorking, type OrderStatus } from "@propsim/engine";
 import { cn } from "~/lib/utils";
 import Badge from "./badge";
 import Button from "./button";
-import { formatClock, formatPrice } from "./format";
+import { formatClock, formatMoney, formatPrice } from "./format";
 import { ROW, TD, TH } from "./styles";
 import type { Order } from "./trading-state";
 
@@ -34,6 +34,7 @@ const OrdersTable = ({ orders, empty, onCancel }: Props) => {
           <th className={TH}>Type</th>
           <th className={TH}>Qty</th>
           <th className={TH}>Price</th>
+          <th className={cn(TH, "hidden text-right sm:table-cell")}>Fee</th>
           <th className={TH}>Status</th>
           {actionable && <th className={TH} />}
         </tr>
@@ -50,6 +51,11 @@ const OrdersTable = ({ orders, empty, onCancel }: Props) => {
             <td className={cn(TD, "text-muted uppercase")}>{order.type}</td>
             <td className={TD}>{order.quantity}</td>
             <td className={TD}>{formatPrice(order.price)}</td>
+            {/* Nothing rather than zero when it never printed: an order that
+                was cancelled was not a free one. */}
+            <td className={cn(TD, "hidden text-right text-faint sm:table-cell")}>
+              {order.fees === 0 ? "\u2013" : `-${formatMoney(order.fees)}`}
+            </td>
             <td className={TD}>
               <Badge tone={STATUS_TONE[order.status]}>{order.status}</Badge>
             </td>
