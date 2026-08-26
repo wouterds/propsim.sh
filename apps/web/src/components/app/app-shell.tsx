@@ -29,7 +29,9 @@ const AppShell = ({ accounts, email, children }: Props) => {
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="flex h-14 shrink-0 items-center gap-3 border-line border-b bg-raised px-3 lg:hidden">
+          {/* The same gutter every page under it uses, or the menu sits left of
+              everything it opens onto. */}
+          <header className="flex h-14 shrink-0 items-center gap-3 border-line border-b bg-raised px-5 sm:px-8 lg:hidden">
             <Dialog.Root open={open} onOpenChange={setOpen}>
               <Dialog.Trigger
                 aria-label="Open the menu"
