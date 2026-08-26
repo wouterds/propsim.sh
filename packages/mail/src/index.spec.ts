@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { sendConfirmCode, sendWelcome } from "./index";
+import { sendAccountBreached, sendConfirmCode, sendWelcome } from "./index";
 
 // These cover what Mailjet is handed. The log is specced against its own module.
 vi.mock("./log", () => ({ logEmail: vi.fn(), scrubEmailLogs: vi.fn() }));
@@ -60,5 +60,27 @@ describe("sendWelcome", () => {
     expect(
       links.every((href: string) => href.startsWith("https://") || href.startsWith("mailto:")),
     ).toBe(true);
+  });
+});
+
+describe("sendAccountBreached", () => {
+  it("should name the rule that ended the account and not the other one", async () => {
+    // given a session closed by the daily limit rather than the drawdown
+    const sent = captureSend();
+
+    // when
+    await sendAccountBreached({
+      to: "trader@example.com",
+      account: "50K Daily",
+      reason: "daily_loss",
+      equity: "$49,400.00",
+      floor: "$49,400.00",
+    });
+
+    // then a swapped lookup would tell the trader they broke a rule they did not
+    const payload = sent();
+    expect(payload.HTMLPart).toContain("daily loss limit");
+    expect(payload.HTMLPart).not.toContain("trailing drawdown");
+    expect(payload.TextPart).toContain("$49,400.00");
   });
 });
