@@ -13,7 +13,10 @@ const PlanTable = () => (
         dollars and no more room in percent, which is the part most people get wrong.
       </p>
 
-      <div className="mt-8 overflow-x-auto rounded-lg border border-line bg-raised">
+      {/* Positioned, so the screen reader label in the header resolves inside the
+          scroller. `overflow-x-auto` scrolls but is not a containing block, and
+          an absolute child of it lands against the page and drags it wider. */}
+      <div className="relative mt-8 overflow-x-auto rounded-lg border border-line bg-raised">
         <table className="w-full min-w-[40rem] border-collapse">
           <thead>
             <tr className="border-line border-b">
