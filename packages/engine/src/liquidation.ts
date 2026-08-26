@@ -1,4 +1,5 @@
 import { equityOf, type Ledger, positionsOf, type Side } from "./fills";
+import { type AccountRules, type Breach, breachOf, floorOf } from "./floors";
 import type { Bar } from "./matching";
 import { priceUnits } from "./money";
 
@@ -62,4 +63,85 @@ export const liquidationMarksOf = (ledger: Ledger, bars: Map<string, Bar>, floor
   const travelled = fallen <= 0 ? 0 : (opening - floorCents) / fallen;
 
   return marksAt(edges, Math.min(1, Math.max(0, travelled)));
+};
+
+/** Every bar each held contract printed over the span being read. */
+export type Tape = Map<string, Bar[]>;
+
+export type Liquidation = {
+  breach: Breach;
+  /** The bar the floor was crossed in. */
+  at: Date;
+  /** Where each open contract is flattened. */
+  marks: Map<string, number>;
+};
+
+export type Marking = {
+  /** The worst the account stood across every bar read. */
+  lowEquityCents: number;
+  liquidation: Liquidation | null;
+};
+
+const minutesOf = (tape: Tape) => {
+  const times = new Set<number>();
+
+  for (const bars of tape.values()) {
+    for (const bar of bars) {
+      times.add(bar.time);
+    }
+  }
+
+  return [...times].sort((a, b) => a - b);
+};
+
+const barsAt = (tape: Tape, time: number) => {
+  const found = new Map<string, Bar>();
+
+  for (const [code, bars] of tape) {
+    const bar = bars.find((one) => one.time === time);
+
+    if (bar) {
+      found.set(code, bar);
+    }
+  }
+
+  return found;
+};
+
+/**
+ * Reads the tape a minute at a time and stops at the first bar that took the
+ * account through a floor. Taking the whole span at once finds the same breach
+ * but flattens it against a bar that had not printed when it happened.
+ *
+ * The book is only constant between two fills, so the caller passes the bars
+ * since the last print and no others.
+ */
+export const markingOf = (
+  ledger: Ledger,
+  tape: Tape,
+  rules: AccountRules,
+  marks: { peakEquityCents: number; sessionOpenCents: number },
+): Marking => {
+  let lowEquityCents = equityOf(ledger);
+
+  for (const time of minutesOf(tape)) {
+    const bars = barsAt(tape, time);
+
+    lowEquityCents = Math.min(lowEquityCents, lowEquityOf(ledger, bars));
+
+    const breach = breachOf(rules, { ...marks, lowEquityCents });
+
+    if (breach) {
+      return {
+        lowEquityCents,
+        liquidation: {
+          breach,
+          at: new Date(time),
+          marks: liquidationMarksOf(ledger, bars, floorOf(rules, marks)),
+        },
+      };
+    }
+  }
+
+  return { lowEquityCents, liquidation: null };
 };

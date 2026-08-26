@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { type Fill, ledgerOf, type Side } from "./fills";
-import { liquidationMarksOf, lowEquityOf } from "./liquidation";
+import type { AccountRules } from "./floors";
+import { liquidationMarksOf, lowEquityOf, markingOf } from "./liquidation";
 import type { Bar } from "./matching";
 import { priceUnits, toPrice } from "./money";
 
@@ -16,6 +17,23 @@ const fill = (instrument: string, side: Side, quantity: number, price: number): 
 });
 
 const bar = (open: number, high: number, low: number): Bar => ({ time: 0, open, high, low });
+
+const at = (minute: number, open: number, high: number, low: number): Bar => ({
+  time: Date.UTC(2026, 7, 26, 15, minute),
+  open,
+  high,
+  low,
+});
+
+const rules: AccountRules = {
+  startingBalanceCents: START,
+  profitTargetCents: 300_000,
+  trailingDrawdownCents: 200_000,
+  dailyLossLimitCents: 10_000,
+  lockAboveStartCents: 10_000,
+};
+
+const marks = { peakEquityCents: START, sessionOpenCents: START };
 
 describe("lowEquityOf", () => {
   it("should read a long at the low of the bar and a short at the high", () => {
@@ -84,5 +102,48 @@ describe("liquidationMarksOf", () => {
     // then neither is invented a path of its own
     expect(toPrice(marks.get("MES") ?? 0)).toBe(4_995);
     expect(toPrice(marks.get("MNQ") ?? 0)).toBe(19_950);
+  });
+});
+
+describe("markingOf", () => {
+  it("should flatten in the bar that broke the floor, not the worst one after it", () => {
+    // given two long, and a tape that dips through the floor before falling much further
+    const ledger = ledgerOf([fill("MES", "buy", 2, 5_000)], START);
+    const tape = new Map([
+      ["MES", [at(0, 5_000, 5_001, 4_998), at(1, 4_995, 4_996, 4_986), at(2, 4_986, 4_987, 4_900)]],
+    ]);
+
+    // when the tape is read
+    const { liquidation } = markingOf(ledger, tape, rules, marks);
+
+    // then the second bar ended it, at the price that met the floor inside it
+    expect(liquidation?.breach).toBe("daily_loss");
+    expect(liquidation?.at.getTime()).toBe(Date.UTC(2026, 7, 26, 15, 1));
+    expect(toPrice(liquidation?.marks.get("MES") ?? 0)).toBe(4_990);
+  });
+
+  it("should report the low without a liquidation when no bar reached the floor", () => {
+    // given a tape that fell nine dollars short of the daily limit
+    const ledger = ledgerOf([fill("MES", "buy", 2, 5_000)], START);
+    const tape = new Map([["MES", [at(0, 5_000, 5_001, 4_991)]]]);
+
+    // when
+    const { lowEquityCents, liquidation } = markingOf(ledger, tape, rules, marks);
+
+    // then the mark is still worth storing, because the ratchet only falls
+    expect(liquidation).toBeNull();
+    expect(lowEquityCents).toBe(START - 9_000);
+  });
+
+  it("should hold the low at the last print when the tape says nothing", () => {
+    // given an account holding a position and no bars to read
+    const ledger = ledgerOf([fill("MES", "buy", 2, 5_000)], START);
+
+    // when
+    const { lowEquityCents, liquidation } = markingOf(ledger, new Map(), rules, marks);
+
+    // then nothing is invented from an empty tape
+    expect(liquidation).toBeNull();
+    expect(lowEquityCents).toBe(START);
   });
 });
