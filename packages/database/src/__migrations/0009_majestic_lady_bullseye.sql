@@ -1,0 +1,1 @@
+ALTER TABLE `accounts` MODIFY COLUMN `ended_reason` enum('daily_loss','trailing_drawdown','news','target_met');

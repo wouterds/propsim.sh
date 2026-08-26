@@ -40,7 +40,14 @@ export const accounts = mysqlTable(
     // one, so this value wins and the trailing floor cannot be handed back.
     peakEquityCents: bigint("peak_equity_cents", { mode: "number" }).notNull(),
     endedAt: timestamp("ended_at"),
-    endedReason: mysqlEnum("ended_reason", ["daily_loss", "trailing_drawdown", "target_met"]),
+    // `daily_loss` is history. The daily floor shuts the session and leaves the
+    // account alone, so nothing writes it any more.
+    endedReason: mysqlEnum("ended_reason", [
+      "daily_loss",
+      "trailing_drawdown",
+      "news",
+      "target_met",
+    ]),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
   },
