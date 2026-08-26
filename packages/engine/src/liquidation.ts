@@ -99,34 +99,24 @@ export type Marking = {
   liquidation: Liquidation | null;
 };
 
-const minutesOf = (tape: Tape) => {
-  const times = new Set<number>();
-
-  for (const bars of tape.values()) {
-    for (const bar of bars) {
-      times.add(bar.time);
-    }
-  }
-
-  return [...times].sort((a, b) => a - b);
-};
-
-const barsAt = (tape: Tape, time: number) => {
-  const found = new Map<string, Bar>();
+/** Every instant the tape printed at, oldest first, with what printed there. */
+const timelineOf = (tape: Tape) => {
+  const at = new Map<number, Map<string, Bar>>();
 
   for (const [code, bars] of tape) {
-    const bar = bars.find((one) => one.time === time);
+    for (const bar of bars) {
+      const found = at.get(bar.time) ?? new Map<string, Bar>();
 
-    if (bar) {
       found.set(code, bar);
+      at.set(bar.time, found);
     }
   }
 
-  return found;
+  return [...at].sort(([one], [two]) => one - two);
 };
 
 /**
- * Reads the tape a minute at a time and stops at the first bar that took the
+ * Reads the tape a bar at a time and stops at the first bar that took the
  * account through a floor. Taking the whole span at once finds the same breach
  * but flattens it against a bar that had not printed when it happened.
  *
@@ -145,8 +135,7 @@ export const markingOf = (
   let lowEquityCents = equityOf(ledger);
   let peak = peakEquityCents;
 
-  for (const time of minutesOf(tape)) {
-    const bars = barsAt(tape, time);
+  for (const [time, bars] of timelineOf(tape)) {
     const low = lowEquityOf(ledger, bars);
 
     lowEquityCents = Math.min(lowEquityCents, low);

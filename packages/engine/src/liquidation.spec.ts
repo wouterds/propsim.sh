@@ -122,6 +122,21 @@ describe("markingOf", () => {
     expect(toPrice(liquidation?.marks.get("MES") ?? 0)).toBe(4_991);
   });
 
+  it("should read two contracts in one order of time, not one contract after the other", () => {
+    // given a long in each, and a tape whose contracts interleave in time
+    const ledger = ledgerOf([fill("MES", "buy", 1, 5_000), fill("MNQ", "buy", 1, 20_000)], START);
+    const tape = new Map([
+      ["MES", [at(0, 5_000, 5_001, 4_999), at(2, 5_000, 5_000, 4_900)]],
+      ["MNQ", [at(1, 20_000, 20_000, 19_940)]],
+    ]);
+
+    // when the tape is read
+    const { liquidation } = markingOf(ledger, tape, rules, START);
+
+    // then the earlier bar ended it, not the one that happened to be listed first
+    expect(liquidation?.at.getTime()).toBe(Date.UTC(2026, 7, 26, 15, 1));
+  });
+
   it("should report the low without a liquidation when no bar reached the floor", () => {
     // given a tape that fell nine dollars short of the daily limit
     const ledger = ledgerOf([fill("MES", "buy", 2, 5_000)], START);
