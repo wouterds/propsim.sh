@@ -159,7 +159,8 @@ const GROUPS: Group[] = [
         id: "dormant",
         title: "An account you never trade is removed",
         body: [
-          "An account that has not produced at least a dollar of profit or loss in thirty days is treated as abandoned and deleted. A breached one is deleted on the same clock unless it is reset first.",
+          "Nothing is removed for being quiet. What runs on a clock is the sign in: after 90 days without one a notice goes out, after 120 a final one, and at 150 the account is emptied and the address anonymised.",
+          "The trading accounts and everything they printed are never deleted. They stop belonging to a name, which is why a trader who left still holds the place on the board their sessions earned.",
         ],
       },
     ],

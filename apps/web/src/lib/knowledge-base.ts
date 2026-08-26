@@ -203,7 +203,8 @@ export const CATEGORIES: Category[] = [
         body: [
           "There is no reset fee because there is no fee. Open another account on the same plan and carry on.",
           "The breached one is not deleted straight away. Its journal, its fills and the moment it ended stay there to read, which is the part worth having.",
-          "An account that has not produced a dollar of profit or loss in thirty days is treated as abandoned and removed. A breached one goes on the same clock.",
+          "Nothing is removed for being quiet. What runs on a clock is the sign in: after 90 days without one a notice goes out, after 120 a final one, and at 150 the account is emptied and the address anonymised.",
+          "The trading accounts and everything they printed are never deleted. They stop belonging to a name, which is why a trader who left still holds the place on the board that their sessions earned.",
         ],
         related: ["how-many-accounts", "what-happens-when-you-breach"],
       },
