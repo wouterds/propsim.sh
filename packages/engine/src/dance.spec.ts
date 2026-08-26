@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { type Printed, STEPS, settledOf, shownOf, stepsOf } from "./dance";
+import { type Fill, ledgerOf } from "./fills";
+import type { AccountRules } from "./floors";
+import { markingOf } from "./liquidation";
 import { matchesOf, type Resting } from "./matching";
 import { priceUnits } from "./money";
 
@@ -262,5 +265,86 @@ describe("an order placed part way through a bar", () => {
 
     // then the dance does not invent a price to reach it
     expect(matches).toEqual([]);
+  });
+});
+
+describe("shownOf, read twice", () => {
+  it("should only ever grow, so nothing already shown can be taken back", () => {
+    // given the same bar read at two instants a step apart
+    const at = OPEN + MINUTE;
+
+    // when the later read happens
+    for (let step = 0; step < STEPS; step++) {
+      const earlier = shownOf(UP, at + step * (MINUTE / STEPS), TICK);
+      const later = shownOf(UP, at + (step + 1) * (MINUTE / STEPS), TICK);
+
+      // then the earlier read is a prefix of it, price for price
+      expect(later.slice(0, earlier.length)).toEqual(earlier);
+      expect(later.length).toBeGreaterThanOrEqual(earlier.length);
+    }
+  });
+
+  it("should hold a fill decided on an early read when the bar is read in full", () => {
+    // given the steps the trader was shown partway through the reveal
+    const early = shownOf(UP, OPEN + MINUTE + 4 * (MINUTE / STEPS), TICK);
+    const whole = stepsOf(UP, TICK);
+
+    // when the same bar is read again once it has finished
+    // then every step the fill could have been decided on is unchanged
+    expect(whole.slice(0, early.length)).toEqual(early);
+  });
+});
+
+describe("markingOf, over the danced steps", () => {
+  const START = 5_000_000;
+
+  const rules: AccountRules = {
+    startingBalanceCents: START,
+    profitTargetCents: 300_000,
+    // Ten dollars, so a four point fall on one micro reaches the floor.
+    trailingDrawdownCents: 1_000,
+    dailyLossLimitCents: 500_000,
+    lockAboveStartCents: 10_000,
+  };
+
+  const held: Fill = {
+    instrument: "MES",
+    side: "buy",
+    quantity: 1,
+    price: priceUnits(103),
+    feeCents: 0,
+    at: new Date(OPEN),
+    tradeDate: "2026-08-25",
+  };
+
+  it("should end the account inside a step, not at the minute's open", () => {
+    // given one long, and a minute that trades down through its floor
+    const ledger = ledgerOf([held], START);
+    const steps = stepsOf(DOWN, TICK);
+    const { liquidation } = markingOf(ledger, new Map([["MES", steps]]), rules, START);
+
+    // when the floor is crossed somewhere inside the dance
+    expect(liquidation).not.toBeNull();
+
+    // then it is stamped at the step that crossed it, not at the bar's own open
+    const stamped = liquidation?.at.getTime() ?? 0;
+
+    expect(steps.map((step) => step.time)).toContain(stamped);
+    expect(stamped).toBeGreaterThan(DOWN.time);
+  });
+
+  it("should flatten at a price the dance actually swept", () => {
+    // given the same long and the same danced minute
+    const ledger = ledgerOf([held], START);
+    const steps = stepsOf(DOWN, TICK);
+    const { liquidation } = markingOf(ledger, new Map([["MES", steps]]), rules, START);
+    const mark = liquidation?.marks.get("MES") ?? 0;
+
+    // when the mark it was flattened at is read back
+    const step = steps.find((one) => one.time === liquidation?.at.getTime());
+
+    // then it sits inside the step the trader was shown, never outside it
+    expect(mark).toBeGreaterThanOrEqual(priceUnits(step?.low ?? 0));
+    expect(mark).toBeLessThanOrEqual(priceUnits(step?.high ?? 0));
   });
 });
