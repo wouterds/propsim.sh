@@ -54,7 +54,7 @@ const JournalTable = ({ days, title, accountId }: Props) => {
             {days.map((day) => (
               <tr
                 key={day.date}
-                className="group relative border-line/60 border-b last:border-b-0 hover:bg-overlay"
+                className="relative border-line/60 border-b transition-colors last:border-b-0 hover:bg-overlay/60"
               >
                 <td className="h-11 px-4 text-xs tabular">
                   {accountId ? (
@@ -62,7 +62,7 @@ const JournalTable = ({ days, title, accountId }: Props) => {
                     // click, so the whole thing opens in a tab like any link.
                     <Link
                       to={href("/accounts/:id/journal/:date", { id: accountId, date: day.date })}
-                      className="rounded-sm text-ink transition-colors after:absolute after:inset-0 group-hover:text-accent focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
+                      className="rounded-sm text-ink after:absolute after:inset-0 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
                     >
                       {formatDay(day.date)}
                     </Link>
