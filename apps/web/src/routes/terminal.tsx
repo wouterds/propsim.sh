@@ -29,12 +29,12 @@ import TimeframeSwitcher from "~/components/chart/timeframe-switcher";
 import AccountStrip from "~/components/trading/account-strip";
 import Blotter from "~/components/trading/blotter";
 import ChartMenu from "~/components/trading/chart-menu";
-import { formatPrice } from "~/components/trading/format";
+import { formatPrice, formatSignedMoney } from "~/components/trading/format";
 import NewsBanner from "~/components/trading/news-banner";
 import Panel from "~/components/trading/panel";
 import { barsPerDay, parseTimeframe, rangeFor } from "~/components/trading/timeframes";
 import TradePanel, { type TicketPick } from "~/components/trading/trade-panel";
-import { fillPriceFor, type OrderDraft } from "~/components/trading/trading-state";
+import { fillPriceFor, type OrderDraft, unrealisedPnl } from "~/components/trading/trading-state";
 import { loadAccount } from "~/lib/accounts.server";
 import { requireUserId } from "~/lib/auth.server";
 
@@ -449,12 +449,15 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
   const priceLines = useMemo<ChartPriceLine[]>(() => {
     const openLines = book.positions.flatMap((position) => {
       const held = `${position.quantity}`;
+      // What the position is worth right now, on the line it was opened at, so
+      // the number and the level it is measured from are read together.
+      const open = last === null ? null : unrealisedPnl(position, last, instrument.point);
       const lines: ChartPriceLine[] = [
         {
           id: position.id,
           price: position.entry,
           tone: "accent",
-          title: `entry ${held}`,
+          title: open === null ? `entry ${held}` : `entry ${held} · ${formatSignedMoney(open)}`,
         },
       ];
 
@@ -536,7 +539,7 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
     }
 
     return [...openLines, ...restingLines, ...draftLines];
-  }, [book.positions, book.orders, move, ticket, picked]);
+  }, [book.positions, book.orders, move, ticket, picked, last, instrument.point]);
 
   const goToInstrument = (code: string) =>
     navigate(`?${new URLSearchParams({ ...Object.fromEntries(params), s: code })}`, {
