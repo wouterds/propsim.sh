@@ -1,4 +1,4 @@
-import { type Candle, getCandles, getNewsEvents, isRedFolder } from "@propsim/datasources";
+import { type Candle, getCandles } from "@propsim/datasources";
 import {
   carriedInOf,
   contractOf,
@@ -11,7 +11,6 @@ import {
   peakOf,
   positionsOf,
   tradeDateOf,
-  windowsOf,
 } from "@propsim/engine";
 import {
   failForNews,
@@ -23,6 +22,7 @@ import {
   settle,
   touchTradingDay,
 } from "@propsim/orders";
+import { redFolderWindows } from "~/calendar";
 
 type LiveAccount = Awaited<ReturnType<typeof listLive>>[number];
 
@@ -33,15 +33,6 @@ type Watched = {
   positions: NetPosition[];
   /** The last print, after which the book stopped changing. */
   opened: number;
-};
-
-/** The calendar the blackout windows are cut from, red folder releases only. */
-const redFolderWindows = async () => {
-  const events = await getNewsEvents();
-
-  return windowsOf(
-    events.filter(isRedFolder).map((event) => ({ time: event.time, title: event.title })),
-  );
 };
 
 /**
