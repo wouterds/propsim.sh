@@ -4,13 +4,18 @@ import mysql from "mysql2/promise";
 import { required } from "./env";
 import * as schema from "./schema";
 
-let instance: MySql2Database<typeof schema> | undefined;
+export type Db = MySql2Database<typeof schema>;
+
+/** What a `transaction` callback is handed. Anything that writes takes this. */
+export type Tx = Parameters<Parameters<Db["transaction"]>[0]>[0];
+
+let instance: Db | undefined;
 
 const POOL_SIZE = 50;
 
 // Built on first use, not on import. Reading the credentials at module load
 // stops the whole server booting when it only needs them for some routes.
-export const getDb = () => {
+export const getDb = (): Db => {
   if (instance) {
     return instance;
   }

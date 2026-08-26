@@ -7,6 +7,7 @@ import {
   mysqlTable,
   smallint,
   timestamp,
+  unique,
   varchar,
 } from "drizzle-orm/mysql-core";
 
@@ -41,6 +42,8 @@ export const fills = mysqlTable(
   (table) => [
     index("account_id_at_idx").on(table.accountId, table.at),
     index("account_id_trade_date_idx").on(table.accountId, table.tradeDate),
-    index("order_id_idx").on(table.orderId),
+    // One fill per order. This is what makes a second matcher, or one restarted
+    // mid write, a duplicate key rather than a doubled position.
+    unique("order_id_unique").on(table.orderId),
   ],
 );
