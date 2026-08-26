@@ -173,12 +173,15 @@ const buttonCell: CSSProperties = {
 // in dark mode drops a white background that is only set in CSS.
 const fill = { bgcolor: ACCENT } as TdHTMLAttributes<HTMLTableDataCellElement>;
 
+// A step under the paragraph it follows rather than level with it. At the same
+// 15px and 600 it read as the loudest thing in the mail, which is the heading's
+// job, and the button only has to be the thing you press.
 const buttonLabel: CSSProperties = {
   color: "#ffffff",
   display: "inline-block",
-  fontSize: "15px",
-  fontWeight: 600,
-  padding: "12px 20px",
+  fontSize: "14px",
+  fontWeight: 500,
+  padding: "10px 18px",
   textDecoration: "none",
 };
 
