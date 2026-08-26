@@ -12,7 +12,15 @@ import {
 } from "@propsim/engine";
 import { listFills } from "@propsim/orders";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { data, useFetcher, useNavigate, useRevalidator, useSearchParams } from "react-router";
+import {
+  data,
+  href,
+  redirect,
+  useFetcher,
+  useNavigate,
+  useRevalidator,
+  useSearchParams,
+} from "react-router";
 import NewsStrip from "~/components/app/news-strip";
 import type { ChartBar, ChartPriceLine } from "~/components/chart/candle-chart";
 import CandleChart from "~/components/chart/candle-chart";
@@ -120,6 +128,12 @@ export const loader = async ({ url, params, request }: Route.LoaderArgs) => {
 
   if (!loaded) {
     throw new Response("No such account", { status: 404 });
+  }
+
+  // An account that has ended cannot take another order, so the ticket and the
+  // book behind it have nothing left to do. The summary is what is left to read.
+  if (loaded.account.endedAt) {
+    throw redirect(href("/accounts/:id", { id: params.id }));
   }
 
   const headers = {

@@ -15,10 +15,17 @@ const AccountHeader = ({ account }: Props) => {
 
   // Only the summary matches exactly. The others stay lit on a page under them,
   // so opening one session does not read as having left the journal.
+  //
+  // An account that has ended takes no more orders, so the terminal goes with
+  // it rather than sitting there as a door that turns you round.
   const tabs = [
     { to: href("/accounts/:id", { id: account.id }), label: "Summary", end: true },
     { to: href("/accounts/:id/journal", { id: account.id }), label: "Journal", end: false },
-    { to: href("/accounts/:id/terminal", { id: account.id }), label: "Terminal", end: false },
+    ...(account.endedAt
+      ? []
+      : [
+          { to: href("/accounts/:id/terminal", { id: account.id }), label: "Terminal", end: false },
+        ]),
   ];
 
   return (
