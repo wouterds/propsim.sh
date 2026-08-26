@@ -1,18 +1,7 @@
 import { accounts, getDb, users } from "@propsim/database";
-import { toDollars } from "@propsim/engine";
 import { sendAccountBreached, sendAccountNews } from "@propsim/mail";
 import { eq } from "drizzle-orm";
-
-const MONEY = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
-
-const money = (cents: number) => MONEY.format(toDollars(cents));
-
-const CHICAGO = new Intl.DateTimeFormat("en-US", {
-  timeZone: "America/Chicago",
-  dateStyle: "medium",
-  timeStyle: "short",
-  timeZoneName: "short",
-});
+import { chicagoTime, money } from "./format";
 
 const owner = async (accountId: string) => {
   const [row] = await getDb()
@@ -66,7 +55,7 @@ export const notifyNews = async (accountId: string, release: string, at: number)
       to: row.email,
       account: row.name,
       release,
-      at: CHICAGO.format(new Date(at)),
+      at: chicagoTime(at),
     }),
   );
 };
