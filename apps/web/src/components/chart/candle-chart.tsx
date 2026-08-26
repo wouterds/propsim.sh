@@ -225,7 +225,9 @@ const CandleChart = ({
             time,
             position: marker.side === "buy" ? "belowBar" : "aboveBar",
             shape: marker.side === "buy" ? "arrowUp" : "arrowDown",
-            color: marker.side === "buy" ? theme.accent : theme.down,
+            // The same two tones the candles use, so a fill reads as the side it
+            // was rather than as a third thing the chart draws.
+            color: marker.side === "buy" ? theme.up : theme.down,
           },
         ];
       })
