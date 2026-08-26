@@ -1,5 +1,6 @@
 import { NumberField as BaseNumberField } from "@base-ui/react/number-field";
 import { Minus, Plus } from "lucide-react";
+import type React from "react";
 import { useId } from "react";
 import { cn } from "~/lib/utils";
 import { FIELD, FOCUS_RING, LABEL } from "./styles";
@@ -13,6 +14,7 @@ type Props = {
   placeholder?: string;
   disabled?: boolean;
   steppers?: boolean;
+  inputRef?: React.Ref<HTMLInputElement>;
 };
 
 const STEPPER = cn(
@@ -30,6 +32,7 @@ const NumberField = ({
   placeholder,
   disabled,
   steppers,
+  inputRef,
 }: Props) => {
   const id = useId();
 
@@ -59,6 +62,7 @@ const NumberField = ({
           </BaseNumberField.Decrement>
         )}
         <BaseNumberField.Input
+          ref={inputRef}
           placeholder={placeholder}
           className={cn(FIELD, steppers && "text-center")}
         />

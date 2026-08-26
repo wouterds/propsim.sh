@@ -33,10 +33,20 @@ type Props = {
   /** The contract's smallest price move. */
   tick: number;
   visibleBars: number;
+  /** A right click on the chart, at the price the cursor was over. */
+  onPickPrice?: (price: number, x: number, y: number) => void;
   onHover: (bar: ChartBar | null) => void;
 };
 
-const CandleChart = ({ candles, priceLines, bands, tick, visibleBars, onHover }: Props) => {
+const CandleChart = ({
+  candles,
+  priceLines,
+  bands,
+  tick,
+  visibleBars,
+  onHover,
+  onPickPrice,
+}: Props) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const bandsRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
@@ -136,6 +146,28 @@ const CandleChart = ({ candles, priceLines, bands, tick, visibleBars, onHover }:
 
     chart.timeScale().setVisibleLogicalRange({ from: bars.length - visibleBars, to: bars.length });
   }, [candles, visibleBars]);
+
+  // The chart owns the price scale, so it is the only thing that can turn a
+  // cursor into a price. Snapped to the tick, since no order rests off it.
+  useEffect(() => {
+    const container = containerRef.current;
+    const series = seriesRef.current;
+
+    if (!container || !series || !onPickPrice) return;
+
+    const open = (event: MouseEvent) => {
+      const price = series.coordinateToPrice(event.clientY - container.getBoundingClientRect().top);
+
+      if (price === null) return;
+
+      event.preventDefault();
+      onPickPrice(Math.round(price / tick) * tick, event.clientX, event.clientY);
+    };
+
+    container.addEventListener("contextmenu", open);
+
+    return () => container.removeEventListener("contextmenu", open);
+  }, [onPickPrice, tick]);
 
   useEffect(() => {
     const series = seriesRef.current;
