@@ -38,23 +38,21 @@ const AccountHeader = ({ account }: Props) => {
           </Badge>
         </div>
 
+        {/* One line for what the account is. The badge has already said that
+            something ended it, and this is where it says what and when. */}
         <p className="mt-1 text-faint text-xs tabular">
           {plan.label} · up to {plan.maxMicros} micros · opened {formatDate(account.openedOn)}
+          {account.endedReason && account.endedAt && (
+            <>
+              {" · "}
+              <span className={account.endedReason === "target_met" ? "text-accent" : "text-down"}>
+                {ENDING[account.endedReason]}
+              </span>
+              {" · "}
+              {formatMoment(new Date(account.endedAt))}
+            </>
+          )}
         </p>
-
-        {/* No box around it. The badge above has already said something is
-            wrong, and this is the sentence that says what. */}
-        {account.endedReason && account.endedAt && (
-          <p
-            className={cn(
-              "mt-2 text-sm",
-              account.endedReason === "target_met" ? "text-accent" : "text-down",
-            )}
-          >
-            {ENDING[account.endedReason]}
-            <span className="text-faint"> · {formatMoment(new Date(account.endedAt))}</span>
-          </p>
-        )}
 
         <nav className="-mx-2.5 mt-4 flex items-center gap-1">
           {tabs.map((tab) => (
