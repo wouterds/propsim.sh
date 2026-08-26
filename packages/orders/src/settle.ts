@@ -1,14 +1,11 @@
 import { accounts, getDb } from "@propsim/database";
 import {
-  balanceOf,
   carriedInOf,
   equityOf,
-  failedDuringOf,
-  failedOf,
   ledgerOf,
+  outcomeOf,
   peakOf,
   positionsOf,
-  targetOf,
   tradeDateOf,
   trailingFloorOf,
 } from "@propsim/engine";
@@ -72,32 +69,20 @@ export const settle = async (accountId: string, at: Date) => {
 
   const rules = rulesOf(row);
 
-  // Now against now, and the fill history against the floor as it stood at each
-  // print. Never the session's stored low against the floor as it stands today:
-  // that low belongs to a moment when the peak, and so the floor, was lower, and
-  // reading the two together ends an account on a trade that made money.
-  //
   // Nothing re-reads the stored low for this. The sweep judged it against the
   // peak of its own moment and ended the account there if it had to.
-  //
-  // The daily floor is judged nowhere here: it shuts the session rather than the
-  // account, and `lockedFor` reads that straight off the day's own low.
-  const failed =
-    failedOf(rules, { lowEquityCents: equityCents, peakEquityCents }) ||
-    failedDuringOf(rules, ledger.path, row.startingBalanceCents);
+  const outcome = outcomeOf(rules, ledger, peakEquityCents);
 
-  if (failed) {
-    if (await endAccount(accountId, "trailing_drawdown", at)) {
+  if (outcome === "trailing_drawdown") {
+    if (await endAccount(accountId, outcome, at)) {
       await notifyBreach(accountId, equityCents, trailingFloorOf(rules, peakEquityCents));
     }
 
     return;
   }
 
-  // Banked, never floating. A target met on an open position is money the
-  // account has not made, and the screen has always counted it this way.
-  if (balanceOf(ledger) >= targetOf(rules)) {
-    if (await endAccount(accountId, "target_met", at)) {
+  if (outcome === "target_met") {
+    if (await endAccount(accountId, outcome, at)) {
       // A passed account is done trading, so nothing is left marking against a
       // tape it can no longer act on. Closed where each contract last printed.
       await flatten(accountId, positionsOf(ledger), ledger.marks, at);
