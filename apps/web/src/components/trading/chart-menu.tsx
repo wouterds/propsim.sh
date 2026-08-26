@@ -13,7 +13,7 @@ type Props = {
 };
 
 const ITEM = cn(
-  "flex h-8 w-full items-center justify-between gap-6 rounded px-2 text-sm transition-colors",
+  "flex h-8 flex-1 items-center justify-center rounded px-3 font-medium text-sm transition-colors",
   FOCUS_RING,
 );
 
@@ -42,27 +42,27 @@ const ChartMenu = ({ price, x, y, onPick, onClose }: Props) => {
       // Its own pointerdown must not reach the listener that closes it.
       onPointerDown={(event) => event.stopPropagation()}
       style={{ left: x, top: y }}
-      className="fixed z-50 w-40 rounded-lg border border-line bg-overlay p-1 shadow-[0_16px_40px_-24px_rgb(0_0_0)]"
+      className="fixed z-50 w-32 rounded-lg border border-line bg-overlay p-1 shadow-[0_16px_40px_-24px_rgb(0_0_0)]"
     >
-      <p className="px-2 py-1 text-[11px] text-faint uppercase tracking-wider tabular">
-        {formatPrice(price)}
-      </p>
+      <p className="px-2 py-1 text-center text-ink text-xs tabular">{formatPrice(price)}</p>
 
-      <button
-        type="button"
-        onClick={() => onPick("buy")}
-        className={cn(ITEM, "text-up hover:bg-up/10")}
-      >
-        Buy
-      </button>
+      <div className="flex items-stretch gap-1">
+        <button
+          type="button"
+          onClick={() => onPick("buy")}
+          className={cn(ITEM, "text-up hover:bg-up/10")}
+        >
+          Buy
+        </button>
 
-      <button
-        type="button"
-        onClick={() => onPick("sell")}
-        className={cn(ITEM, "text-down hover:bg-down/10")}
-      >
-        Sell
-      </button>
+        <button
+          type="button"
+          onClick={() => onPick("sell")}
+          className={cn(ITEM, "text-down hover:bg-down/10")}
+        >
+          Sell
+        </button>
+      </div>
     </div>
   );
 };
