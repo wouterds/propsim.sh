@@ -66,6 +66,7 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
   const rows = await listSessions(session.userId);
 
   return {
+    id: user.id,
     email: user.email,
     username: user.username,
     twitter: user.twitter,
@@ -264,6 +265,7 @@ const Settings = ({ loaderData, actionData }: Route.ComponentProps) => {
 
   const {
     email,
+    id,
     username,
     pseudonym,
     hasPassword,
@@ -348,10 +350,20 @@ const Settings = ({ loaderData, actionData }: Route.ComponentProps) => {
               </span>
             </label>
 
-            <div className="sm:col-span-3">
+            <div className="flex flex-wrap items-center gap-3 sm:col-span-3">
               <button type="submit" disabled={busy("profile")} className={PRIMARY_SM}>
                 {busy("profile") ? "One moment" : "Save profile"}
               </button>
+              {/* A new tab, because leaving the form would lose whatever is
+                  typed into it and not saved. */}
+              <a
+                href={href("/traders/:id", { id })}
+                target="_blank"
+                rel="noreferrer"
+                className={SECONDARY_SM}
+              >
+                View profile
+              </a>
             </div>
           </Form>
         </Section>
