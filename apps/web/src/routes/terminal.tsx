@@ -142,6 +142,11 @@ export const loader = async ({ url, params, request }: Route.LoaderArgs) => {
   const shown = shownWindow(windows, Date.now(), DAY, AFTER_RELEASE);
   const upcoming = shown ? { at: shown.at, titles: shown.titles } : null;
 
+  // Only this contract's, since the chart only ever draws one of them.
+  const marks = fillRows
+    .filter((fill) => fill.instrument === instrument.code)
+    .map((fill) => ({ id: fill.id, time: fill.at.getTime(), side: fill.side }));
+
   const book = { orders, positions, realised: loaded.account.balance - loaded.account.plan.size };
 
   try {
@@ -159,6 +164,7 @@ export const loader = async ({ url, params, request }: Route.LoaderArgs) => {
         instrument,
         timeframe,
         candles,
+        marks,
         windows,
         upcoming,
         error: null,
@@ -177,6 +183,7 @@ export const loader = async ({ url, params, request }: Route.LoaderArgs) => {
         instrument,
         timeframe,
         candles: [] as Candle[],
+        marks,
         windows,
         upcoming,
         error,
@@ -276,7 +283,8 @@ export const action = async ({ params, request }: Route.ActionArgs) => {
 };
 
 const Trading = ({ loaderData }: Route.ComponentProps) => {
-  const { account, book, instrument, timeframe, candles, windows, upcoming, error } = loaderData;
+  const { account, book, instrument, timeframe, candles, marks, windows, upcoming, error } =
+    loaderData;
   const navigate = useNavigate();
   const fetcher = useFetcher<typeof action>();
   const [params] = useSearchParams();
@@ -519,6 +527,7 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
               <CandleChart
                 candles={bars}
                 priceLines={priceLines}
+                markers={marks}
                 tick={instrument.tick}
                 visibleBars={barsPerDay(timeframe)}
                 onHover={setHovered}

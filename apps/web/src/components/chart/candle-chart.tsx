@@ -3,10 +3,14 @@ import {
   type CandlestickData,
   CandlestickSeries,
   createChart,
+  createSeriesMarkers,
   type IChartApi,
   type IPriceLine,
   type ISeriesApi,
+  type ISeriesMarkersPluginApi,
   LineStyle,
+  type SeriesMarker,
+  type Time,
   type UTCTimestamp,
 } from "lightweight-charts";
 import { Check, X } from "lucide-react";
@@ -21,6 +25,14 @@ import {
 
 export type ChartBar = Pick<Candle, "time" | "open" | "high" | "low" | "close">;
 
+/** A fill, drawn as an arrow on the bar it printed in. */
+export type ChartMarker = {
+  id: string;
+  /** Milliseconds, the same clock as a candle. */
+  time: number;
+  side: "buy" | "sell";
+};
+
 export type ChartPriceLine = {
   id: string;
   price: number;
@@ -33,6 +45,7 @@ export type ChartPriceLine = {
 type Props = {
   candles: Candle[];
   priceLines: ChartPriceLine[];
+  markers?: ChartMarker[];
   /** The contract's smallest price move. */
   tick: number;
   visibleBars: number;
@@ -51,9 +64,12 @@ type Props = {
 /** How near the cursor has to be to a line, in pixels, before it can take hold of it. */
 const GRAB = 6;
 
+const EMPTY: ChartMarker[] = [];
+
 const CandleChart = ({
   candles,
   priceLines,
+  markers = EMPTY,
   tick,
   visibleBars,
   onHover,
@@ -69,6 +85,7 @@ const CandleChart = ({
   const [pendingY, setPendingY] = useState<number | null>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
+  const markersRef = useRef<ISeriesMarkersPluginApi<Time> | null>(null);
   const themeRef = useRef<ChartTheme | null>(null);
   /** The tape the window was framed for, so a refresh does not re-frame it. */
   const framed = useRef<string | null>(null);
@@ -119,12 +136,14 @@ const CandleChart = ({
     chartRef.current = chart;
     seriesRef.current = series;
     themeRef.current = theme;
+    markersRef.current = createSeriesMarkers(series);
 
     return () => {
       // Null it first. React re-runs this effect in development and a disposed series throws.
       chartRef.current = null;
       seriesRef.current = null;
       themeRef.current = null;
+      markersRef.current = null;
       chart.remove();
     };
   }, []);
@@ -166,6 +185,52 @@ const CandleChart = ({
 
     chart.timeScale().setVisibleLogicalRange({ from: bars.length - visibleBars, to: bars.length });
   }, [candles, visibleBars]);
+
+  /**
+   * A fill is drawn on the bar that was printing when it happened, which is the
+   * last bar to open at or before it. Reading the interval off the timeframe
+   * instead would put a fill in a session gap on its own.
+   */
+  useEffect(() => {
+    const plugin = markersRef.current;
+    const theme = themeRef.current;
+
+    if (!plugin || !theme) return;
+
+    const times = candles.map((candle) => Math.floor(candle.time / 1000) as UTCTimestamp);
+
+    const barAt = (seconds: number) => {
+      let found: UTCTimestamp | null = null;
+
+      for (const time of times) {
+        if (time > seconds) break;
+
+        found = time;
+      }
+
+      return found;
+    };
+
+    const drawn = markers
+      .flatMap((marker): SeriesMarker<Time>[] => {
+        const time = barAt(Math.floor(marker.time / 1000));
+
+        if (time === null) return [];
+
+        return [
+          {
+            time,
+            position: marker.side === "buy" ? "belowBar" : "aboveBar",
+            shape: marker.side === "buy" ? "arrowUp" : "arrowDown",
+            color: marker.side === "buy" ? theme.accent : theme.down,
+          },
+        ];
+      })
+      // The plugin draws them in the order given and expects them oldest first.
+      .sort((a, b) => Number(a.time) - Number(b.time));
+
+    plugin.setMarkers(drawn);
+  }, [candles, markers]);
 
   // The chart owns the price scale, so it is the only thing that can turn a
   // cursor into a price. Snapped to the tick, since no order rests off it.
