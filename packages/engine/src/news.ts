@@ -99,7 +99,12 @@ export const heldThroughOf = (
   fills: Fill[],
   windows: NewsWindow[],
   now: number,
-): NewsWindow | null =>
-  windows.find((window) =>
-    heldSpansOf(fills).some((span) => span.from <= window.to && (span.to ?? now) >= window.from),
-  ) ?? null;
+): NewsWindow | null => {
+  const spans = heldSpansOf(fills);
+
+  return (
+    windows.find((window) =>
+      spans.some((span) => span.from <= window.to && (span.to ?? now) >= window.from),
+    ) ?? null
+  );
+};
