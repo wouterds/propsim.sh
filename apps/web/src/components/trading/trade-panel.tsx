@@ -101,8 +101,9 @@ const TradePanel = ({ last, tick, point, pick, onSubmit, onDraft }: Props) => {
       return next;
     });
 
+    // Focused, not selected. A picked price usually means the size is already
+    // right, and selecting it makes the next keystroke wipe it.
     quantity.current?.focus();
-    quantity.current?.select();
   }, [pick]);
 
   const patch = (fields: Partial<OrderDraft>) => {
