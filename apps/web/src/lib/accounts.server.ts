@@ -25,7 +25,7 @@ import {
 import { listFills, listFillsFor, rulesOf } from "@propsim/orders";
 import type { Plan } from "@propsim/plans";
 import { findPlan } from "@propsim/plans";
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import type { Account, AccountStatus } from "./accounts";
 import type { JournalDay } from "./journal";
 import { listOrders } from "./orders.server";
@@ -103,12 +103,20 @@ const listTradingDaysFor = async (accountIds: string[]) => {
   return grouped;
 };
 
+/**
+ * Live first, then whatever was touched most recently. An account that ended
+ * weeks ago is history, and it should not sit above the one being traded.
+ */
 const listAccountRows = (userId: string) =>
   getDb()
     .select()
     .from(accountsTable)
     .where(eq(accountsTable.userId, userId))
-    .orderBy(desc(accountsTable.createdAt));
+    .orderBy(
+      sql`${accountsTable.endedAt} is not null`,
+      desc(accountsTable.updatedAt),
+      desc(accountsTable.createdAt),
+    );
 
 const findAccountRow = async (userId: string, id: string) => {
   const [row] = await getDb()

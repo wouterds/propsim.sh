@@ -2,7 +2,7 @@ import { accounts as accountsTable, getDb, users } from "@propsim/database";
 import { balanceOf, ledgerOf, statsOf, toDollars } from "@propsim/engine";
 import { listFillsFor } from "@propsim/orders";
 import { findPlan } from "@propsim/plans";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 
 type TraderAccount = {
   id: string;
@@ -33,7 +33,12 @@ export const loadTrader = async (id: string) => {
     .select()
     .from(accountsTable)
     .where(eq(accountsTable.userId, id))
-    .orderBy(desc(accountsTable.createdAt));
+    // Live first, then whatever was touched most recently, same as the sidebar.
+    .orderBy(
+      sql`${accountsTable.endedAt} is not null`,
+      desc(accountsTable.updatedAt),
+      desc(accountsTable.createdAt),
+    );
 
   const fills = await listFillsFor(rows.map((row) => row.id));
   const ledgers = rows.map((row) => ledgerOf(fills.get(row.id) ?? [], row.startingBalanceCents));
