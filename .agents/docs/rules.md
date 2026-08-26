@@ -72,6 +72,26 @@ read from the plan catalog.
 Both floors are read at **the deepest the equity went**, not where it settled. A position that
 breached intraday and closed green has still breached.
 
+### The peak is read off the tape, not off the fills
+
+The peak counts open trade profit, so it moves whenever the tape moves and not only when something
+prints. `ledger.path` holds one point per fill, so folding the peak out of it alone leaves every
+high that happened between two prints unseen: the floor never follows the rally up, and the give
+back that should have ended the account lands on a floor that is still sitting under the entry.
+
+So the sweep ratchets it. `markingOf` takes each bar at its **favourable** end, the high of a long
+and the low of a short, and returns the peak it reached. The caller has to store that, or the next
+sweep starts from the last fill again and the floor forgets every high the position ever saw.
+
+Two orderings inside one bar, and the bar does not say which happened:
+
+- The **low is read first**, against the floor as it stood before this bar. A bar's own high never
+  drags the floor over that bar's own low, because nothing says the high came first
+- Each bar is judged on **its own low**, never on the running low of the span. An earlier low was
+  safe against the floor of its own moment, and reading it again under a floor a later peak dragged
+  up ends the account for a dip it already survived. This is `failedDuringOf`'s rule, applied to
+  bars instead of fills
+
 ### Liquidation
 
 Only the trailing floor flattens anything. The floor is crossed somewhere inside a bar, and a bar
