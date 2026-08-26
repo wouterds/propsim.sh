@@ -1,5 +1,5 @@
 import { Heading, Text } from "@react-email/components";
-import { ButtonLink, heading, Layout, paragraph, SITE } from "../layout";
+import { ButtonLink, Callout, heading, Layout, paragraph, SITE } from "../layout";
 
 export type NewsWarningProps = {
   to: string;
@@ -51,10 +51,10 @@ export const NewsWarning = ({ to, releases, at, date, opens, closes }: NewsWarni
   >
     <Heading style={heading}>Red folder news in an hour</Heading>
 
-    <Text style={paragraph}>
+    <Callout label="News trading is not permitted">
       Holding a position through a high impact release ends the account. So does opening one inside
       the window. The rule is to be flat, not to finish the window in profit.
-    </Text>
+    </Callout>
 
     <div style={box}>
       <Text style={label}>Releasing</Text>

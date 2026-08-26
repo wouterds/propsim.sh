@@ -1,5 +1,5 @@
 import { Heading, Text } from "@react-email/components";
-import { ButtonLink, heading, Layout, paragraph, SITE } from "../layout";
+import { ButtonLink, Callout, heading, Layout, paragraph, SITE } from "../layout";
 
 export type InactivityProps = {
   to: string;
@@ -13,10 +13,9 @@ export const Inactivity = ({ to, daysLeft }: InactivityProps) => (
     to={to}
   >
     <Heading style={heading}>Nobody has signed in for a while</Heading>
-    <Text style={paragraph}>
-      This account will be deleted in {daysLeft} days. Signing in is all it takes to keep it, and
-      the clock starts again from there.
-    </Text>
+    <Callout label={`Deleted in ${daysLeft} days`}>
+      Signing in is all it takes to keep it, and the clock starts again from there.
+    </Callout>
     <ButtonLink href={`${SITE}/auth`}>Sign in</ButtonLink>
     <Text style={{ ...paragraph, margin: "16px 0 16px" }}>
       If you are done with it, there is nothing to do. On the day it goes, your address comes off

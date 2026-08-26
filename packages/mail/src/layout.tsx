@@ -17,6 +17,12 @@ const LINE = "#22262d";
 const ACCENT = "#2563eb";
 const UP = "#14b8a6";
 const DOWN = "#f43f5e";
+// The app's warn token. It reads as attention rather than as an error, which is
+// what a rule about to bite somebody is.
+const WARN = "#ffb020";
+// The same amber at eight percent over the card, flattened. A translucent
+// background is the first thing Outlook throws away, and it throws it to white.
+const WARN_FILL = "#231f17";
 
 const body: CSSProperties = {
   backgroundColor: BASE,
@@ -90,6 +96,55 @@ export const paragraph: CSSProperties = {
   lineHeight: "24px",
   margin: "0 0 16px",
 };
+
+const callout: CSSProperties = {
+  borderCollapse: "collapse",
+  margin: "0 0 20px",
+  width: "100%",
+};
+
+const calloutBar: CSSProperties = { backgroundColor: WARN, width: "3px" };
+
+const calloutCell: CSSProperties = { backgroundColor: WARN_FILL, padding: "12px 16px" };
+
+const calloutLabel: CSSProperties = {
+  color: WARN,
+  fontSize: "11px",
+  fontWeight: 700,
+  letterSpacing: "0.08em",
+  margin: "0 0 6px",
+  textTransform: "uppercase",
+};
+
+const calloutBody: CSSProperties = {
+  color: INK,
+  fontSize: "14px",
+  lineHeight: "22px",
+  margin: 0,
+};
+
+// React dropped `bgcolor`, and Outlook reads it when it ignores the CSS.
+const barFill = { bgcolor: WARN } as TdHTMLAttributes<HTMLTableDataCellElement>;
+const cellFill = { bgcolor: WARN_FILL } as TdHTMLAttributes<HTMLTableDataCellElement>;
+
+/**
+ * The one line in a mail that costs somebody something if they skim past it.
+ * A cell with a colour rather than a border, because Outlook keeps one of those
+ * and drops the other.
+ */
+export const Callout = ({ label, children }: { label?: string; children: ReactNode }) => (
+  <table cellPadding={0} cellSpacing={0} role="presentation" style={callout}>
+    <tbody>
+      <tr>
+        <td {...barFill} style={calloutBar} />
+        <td {...cellFill} style={calloutCell}>
+          {label && <Text style={calloutLabel}>{label}</Text>}
+          <Text style={calloutBody}>{children}</Text>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+);
 
 export const digits: CSSProperties = {
   backgroundColor: BASE,

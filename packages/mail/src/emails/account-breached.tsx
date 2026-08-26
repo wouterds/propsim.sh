@@ -1,5 +1,5 @@
 import { Heading, Text } from "@react-email/components";
-import { ButtonLink, heading, Layout, paragraph, SITE } from "../layout";
+import { ButtonLink, Callout, heading, Layout, paragraph, SITE } from "../layout";
 
 export type AccountBreachedProps = {
   to: string;
@@ -17,10 +17,10 @@ export const AccountBreached = ({ to, account, equity, floor }: AccountBreachedP
     to={to}
   >
     <Heading style={heading}>{account} is closed</Heading>
-    <Text style={paragraph}>
-      It hit the trailing drawdown. That floor follows your peak equity up and never comes back
-      down, and it is the only one that ends an account rather than a day.
-    </Text>
+    <Callout label="Trailing drawdown">
+      That floor follows your peak equity up and never comes back down, and it is the only one that
+      ends an account rather than a day.
+    </Callout>
     <Text style={paragraph}>
       The floor was {floor} and the account reached {equity}. Everything it was holding has been
       closed and every working order cancelled.

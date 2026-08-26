@@ -1,5 +1,5 @@
 import { Heading, Text } from "@react-email/components";
-import { ButtonLink, heading, Layout, paragraph, SITE } from "../layout";
+import { ButtonLink, Callout, heading, Layout, paragraph, SITE } from "../layout";
 
 export type AccountNewsProps = {
   to: string;
@@ -16,11 +16,11 @@ export const AccountNews = ({ to, account, release, at }: AccountNewsProps) => (
     to={to}
   >
     <Heading style={heading}>{account} is closed</Heading>
-    <Text style={paragraph}>
+    <Callout label="Red folder news">
       It was holding a position through {release} at {at}. A daily payout account has to be flat
       from a minute before a red folder release until a minute after it, and trading through one
       ends the account whether the trade won or lost.
-    </Text>
+    </Callout>
     <Text style={paragraph}>
       Opening inside the window counts the same as carrying one in. The rule is to be flat, not to
       finish the window in profit.
