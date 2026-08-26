@@ -18,16 +18,10 @@ import { endSession, requireSession, rotateSession } from "~/lib/auth.server";
 import { describeDevice } from "~/lib/device";
 import { issueEmailChange } from "~/lib/email-changes.server";
 import { countryOf, formatDate, formatRelative } from "~/lib/format";
+import { type Network, readHandle } from "~/lib/handles";
 import { notify } from "~/lib/notify.server";
 import { hashPassword, verifyPassword } from "~/lib/password.server";
-import {
-  EMAIL_CHANGE_TTL_MINUTES,
-  handleError,
-  MAX_HANDLE,
-  MAX_USERNAME,
-  MIN_PASSWORD,
-  usernameError,
-} from "~/lib/policy";
+import { EMAIL_CHANGE_TTL_MINUTES, MAX_USERNAME, MIN_PASSWORD, usernameError } from "~/lib/policy";
 import { PRIVATE } from "~/lib/seo";
 import { listSessions, revokeOtherSessions, revokeSession } from "~/lib/sessions.server";
 import {
@@ -95,68 +89,45 @@ export const action = async ({ request }: Route.ActionArgs) => {
   const form = await request.formData();
   const intent = form.get("intent");
 
-  if (intent === "username") {
-    const username = String(form.get("username") ?? "").trim();
-
-    if (username === "") {
-      await updateUsername(user.id, null);
-
-      return { done: `You are back to ${personaOf(user.id).name}.`, error: null };
-    }
-
-    const wrong = usernameError(username);
-
-    if (wrong) {
-      return { done: null, error: wrong };
-    }
-
-    const holder = await findUserByUsername(username);
-
-    if (holder && holder.id !== user.id) {
-      return { done: null, error: "Somebody already goes by that name." };
-    }
-
-    await updateUsername(user.id, username);
-
-    return { done: `You now show up as ${username}.`, error: null };
-  }
-
   if (intent === "profile") {
-    const handles = ["twitter", "youtube", "twitch"] as const;
-    const cleaned: Record<string, string | null> = {};
+    const username = String(form.get("username") ?? "").trim();
+    const named = username === "" ? null : username;
 
-    for (const key of handles) {
-      // A pasted profile address is the obvious mistake, so the handle is taken
-      // out of one rather than the whole thing being refused.
-      const raw = String(form.get(key) ?? "")
-        .trim()
-        .replace(/^@/, "")
-        .replace(/^https?:\/\/[^/]+\//, "")
-        .replace(/^@/, "")
-        .replace(/\/+$/, "");
-
-      if (raw === "") {
-        cleaned[key] = null;
-        continue;
-      }
-
-      const wrong = handleError(raw);
+    if (named) {
+      const wrong = usernameError(named);
 
       if (wrong) {
         return { done: null, error: wrong };
       }
 
-      cleaned[key] = raw;
+      const holder = await findUserByUsername(named);
+
+      if (holder && holder.id !== user.id) {
+        return { done: null, error: "Somebody already goes by that name." };
+      }
     }
 
+    const handles: Record<Network, string | null> = { twitter: null, youtube: null, twitch: null };
+
+    for (const network of ["twitter", "youtube", "twitch"] as const) {
+      const { handle, error } = readHandle(network, String(form.get(network) ?? ""));
+
+      if (error) {
+        return { done: null, error };
+      }
+
+      handles[network] = handle;
+    }
+
+    await updateUsername(user.id, named);
     await updateProfile(user.id, {
-      twitter: cleaned.twitter,
-      youtube: cleaned.youtube,
-      twitch: cleaned.twitch,
+      ...handles,
       showsAccounts: form.get("showsAccounts") === "on",
     });
 
-    return { done: "Profile saved.", error: null };
+    const called = named ?? personaOf(user.id).name;
+
+    return { done: `Saved. You show up as ${called}.`, error: null };
   }
 
   if (intent === "password") {
@@ -313,11 +284,11 @@ const Settings = ({ loaderData, actionData }: Route.ComponentProps) => {
         <Notice done={actionData?.done} error={actionData?.error} />
 
         <Section
-          title="Public name"
-          description="What the board and the leaderboards call you. Everything else stays private."
+          title="Public profile"
+          description="Your name, your links and what they can see. Everything else stays private."
         >
-          <Form method="post" className="grid gap-4 sm:grid-cols-2">
-            <input type="hidden" name="intent" value="username" />
+          <Form method="post" className="grid gap-4 sm:grid-cols-3">
+            <input type="hidden" name="intent" value="profile" />
             <Field
               name="username"
               label="Username"
@@ -328,32 +299,19 @@ const Settings = ({ loaderData, actionData }: Route.ComponentProps) => {
               defaultValue={username ?? ""}
               placeholder={pseudonym}
             />
-            <div className="hidden sm:block" />
-            <div className="sm:col-span-2 flex flex-wrap items-center gap-3">
-              <button type="submit" disabled={busy("username")} className={PRIMARY_SM}>
-                {busy("username") ? "One moment" : "Save name"}
-              </button>
+            <div className="sm:col-span-2 sm:self-end sm:pb-2.5">
               <p className="text-faint text-xs">
                 {username
                   ? "Clear the field to go back to an anonymous name."
                   : `You currently show up as ${pseudonym}.`}
               </p>
             </div>
-          </Form>
-        </Section>
 
-        <Section
-          title="Profile"
-          description="Your profile is public. Handles only, and each one links to the site it belongs to."
-        >
-          <Form method="post" className="grid gap-4 sm:grid-cols-3">
-            <input type="hidden" name="intent" value="profile" />
             <Field
               name="twitter"
               label="X"
               autoComplete="off"
               required={false}
-              maxLength={MAX_HANDLE}
               defaultValue={twitter ?? ""}
               placeholder="handle"
             />
@@ -362,7 +320,6 @@ const Settings = ({ loaderData, actionData }: Route.ComponentProps) => {
               label="YouTube"
               autoComplete="off"
               required={false}
-              maxLength={MAX_HANDLE}
               defaultValue={youtube ?? ""}
               placeholder="handle"
             />
@@ -371,7 +328,6 @@ const Settings = ({ loaderData, actionData }: Route.ComponentProps) => {
               label="Twitch"
               autoComplete="off"
               required={false}
-              maxLength={MAX_HANDLE}
               defaultValue={twitch ?? ""}
               placeholder="handle"
             />

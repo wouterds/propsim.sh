@@ -11,6 +11,7 @@ import {
   TONE_TEXT,
   toneOf,
 } from "~/lib/format";
+import { linkTo } from "~/lib/handles";
 import { pageMeta } from "~/lib/seo";
 import { loadTrader } from "~/lib/trader.server";
 import { cn } from "~/lib/utils";
@@ -41,13 +42,9 @@ export const loader = async ({ params }: Route.LoaderArgs) => {
 };
 
 const LINKS = [
-  { key: "twitter", label: "X", at: (handle: string) => `https://x.com/${handle}` },
-  {
-    key: "youtube",
-    label: "YouTube",
-    at: (handle: string) => `https://youtube.com/@${handle}`,
-  },
-  { key: "twitch", label: "Twitch", at: (handle: string) => `https://twitch.tv/${handle}` },
+  { key: "twitter", label: "X" },
+  { key: "youtube", label: "YouTube" },
+  { key: "twitch", label: "Twitch" },
 ] as const;
 
 const FILTERS = [
@@ -103,7 +100,7 @@ const Trader = ({ loaderData }: Route.ComponentProps) => {
             links[link.key] ? (
               <a
                 key={link.key}
-                href={link.at(links[link.key] as string)}
+                href={linkTo(link.key, links[link.key] as string)}
                 rel="me noopener noreferrer nofollow"
                 target="_blank"
                 className="inline-flex h-8 items-center rounded border border-line px-3 text-muted text-sm transition-colors hover:text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
