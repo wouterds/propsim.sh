@@ -25,15 +25,14 @@ const at = (minute: number, open: number, high: number, low: number): Bar => ({
   low,
 });
 
+// A ten dollar drawdown, so a bar of the tape can reach the trailing floor.
 const rules: AccountRules = {
   startingBalanceCents: START,
   profitTargetCents: 300_000,
-  trailingDrawdownCents: 200_000,
-  dailyLossLimitCents: 10_000,
+  trailingDrawdownCents: 10_000,
+  dailyLossLimitCents: 5_000,
   lockAboveStartCents: 10_000,
 };
-
-const marks = { peakEquityCents: START, sessionOpenCents: START };
 
 describe("lowEquityOf", () => {
   it("should read a long at the low of the bar and a short at the high", () => {
@@ -114,10 +113,9 @@ describe("markingOf", () => {
     ]);
 
     // when the tape is read
-    const { liquidation } = markingOf(ledger, tape, rules, marks);
+    const { liquidation } = markingOf(ledger, tape, rules, START);
 
     // then the second bar ended it, at the price that met the floor inside it
-    expect(liquidation?.breach).toBe("daily_loss");
     expect(liquidation?.at.getTime()).toBe(Date.UTC(2026, 7, 26, 15, 1));
     expect(toPrice(liquidation?.marks.get("MES") ?? 0)).toBe(4_990);
   });
@@ -128,7 +126,7 @@ describe("markingOf", () => {
     const tape = new Map([["MES", [at(0, 5_000, 5_001, 4_991)]]]);
 
     // when
-    const { lowEquityCents, liquidation } = markingOf(ledger, tape, rules, marks);
+    const { lowEquityCents, liquidation } = markingOf(ledger, tape, rules, START);
 
     // then the mark is still worth storing, because the ratchet only falls
     expect(liquidation).toBeNull();
@@ -140,10 +138,24 @@ describe("markingOf", () => {
     const ledger = ledgerOf([fill("MES", "buy", 2, 5_000)], START);
 
     // when
-    const { lowEquityCents, liquidation } = markingOf(ledger, new Map(), rules, marks);
+    const { lowEquityCents, liquidation } = markingOf(ledger, new Map(), rules, START);
 
     // then nothing is invented from an empty tape
     expect(liquidation).toBeNull();
     expect(lowEquityCents).toBe(START);
+  });
+
+  it("should leave a position that only broke the daily floor open", () => {
+    // given a tape that spends the daily limit twice over but stops above the
+    // trailing floor, which sits ten dollars under the peak
+    const ledger = ledgerOf([fill("MES", "buy", 2, 5_000)], START);
+    const tape = new Map([["MES", [at(0, 5_000, 5_001, 4_991)]]]);
+
+    // when
+    const { liquidation } = markingOf(ledger, tape, rules, START);
+
+    // then the day is over and the position is untouched, because only the
+    // floor that ends the account flattens anything
+    expect(liquidation).toBeNull();
   });
 });

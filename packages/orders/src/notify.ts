@@ -1,5 +1,5 @@
 import { accounts, getDb, users } from "@propsim/database";
-import { type Breach, toDollars } from "@propsim/engine";
+import { toDollars } from "@propsim/engine";
 import { sendAccountBreached } from "@propsim/mail";
 import { eq } from "drizzle-orm";
 
@@ -11,12 +11,7 @@ const money = (cents: number) => MONEY.format(toDollars(cents));
  * Tells the owner what ended their account. The address is read here rather
  * than carried in, so an emptied user has nothing left to send to.
  */
-export const notifyBreach = async (
-  accountId: string,
-  breach: Breach,
-  equityCents: number,
-  floorCents: number,
-) => {
+export const notifyBreach = async (accountId: string, equityCents: number, floorCents: number) => {
   const [row] = await getDb()
     .select({ email: users.email, name: accounts.name, deletedAt: users.deletedAt })
     .from(accounts)
@@ -32,7 +27,6 @@ export const notifyBreach = async (
     await sendAccountBreached({
       to: row.email,
       account: row.name,
-      reason: breach,
       equity: money(equityCents),
       floor: money(floorCents),
     });

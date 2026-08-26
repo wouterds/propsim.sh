@@ -1,29 +1,19 @@
-import { type Account, accounts, getDb } from "@propsim/database";
+import { accounts, getDb } from "@propsim/database";
 import {
-  type AccountRules,
-  type Breach,
-  breachOf,
   carriedInOf,
   equityOf,
-  floorOf,
+  failedOf,
   ledgerOf,
   peakOf,
   targetOf,
   tradeDateOf,
+  trailingFloorOf,
 } from "@propsim/engine";
 import { and, eq, isNull, sql } from "drizzle-orm";
+import { findAccount, rulesOf } from "./accounts";
 import { findTradingDay, touchTradingDay } from "./days";
 import { listFills } from "./fills";
 import { notifyBreach } from "./notify";
-
-/** The terms the account opened under, which is what every floor is measured from. */
-export const rulesOf = (row: Account): AccountRules => ({
-  startingBalanceCents: row.startingBalanceCents,
-  profitTargetCents: row.profitTargetCents,
-  trailingDrawdownCents: row.trailingDrawdownCents,
-  dailyLossLimitCents: row.dailyLossLimitCents,
-  lockAboveStartCents: row.lockAboveStartCents,
-});
 
 /** Only ever rises, so a fold that proposes less than the stored mark loses. */
 const raisePeak = (id: string, peakEquityCents: number) =>
@@ -32,6 +22,9 @@ const raisePeak = (id: string, peakEquityCents: number) =>
     .set({ peakEquityCents: sql`GREATEST(${accounts.peakEquityCents}, ${peakEquityCents})` })
     .where(eq(accounts.id, id));
 
+/** Only the trailing floor ends an account. The daily one ends the session. */
+type EndedReason = "trailing_drawdown" | "target_met";
+
 /**
  * Ends the account and says whether this call was the one that did it. The
  * `ended_at IS NULL` is what makes that answer worth trusting: a second call
@@ -39,19 +32,13 @@ const raisePeak = (id: string, peakEquityCents: number) =>
  *
  * Stamped at the instant the floor was met, not at the sweep that noticed.
  */
-const endAccount = async (id: string, endedReason: Breach | "target_met", at: Date) => {
+const endAccount = async (id: string, endedReason: EndedReason, at: Date) => {
   const [result] = await getDb()
     .update(accounts)
     .set({ endedAt: at, endedReason })
     .where(and(eq(accounts.id, id), isNull(accounts.endedAt)));
 
   return result.affectedRows > 0;
-};
-
-const findAccount = async (id: string) => {
-  const [row] = await getDb().select().from(accounts).where(eq(accounts.id, id)).limit(1);
-
-  return row ?? null;
 };
 
 /**
@@ -81,16 +68,15 @@ export const settle = async (accountId: string, at: Date) => {
   await raisePeak(accountId, peakEquityCents);
 
   const rules = rulesOf(row);
-  const reading = {
-    lowEquityCents: Math.min(day?.lowEquityCents ?? equityCents, equityCents),
-    peakEquityCents,
-    sessionOpenCents: day?.openEquityCents ?? equityCents,
-  };
-  const breach = breachOf(rules, reading);
+  // The deepest the account went, which is what both floors are read at. A
+  // session that went through one and recovered has still been through it.
+  const lowEquityCents = Math.min(day?.lowEquityCents ?? equityCents, equityCents);
 
-  if (breach) {
-    if (await endAccount(accountId, breach, at)) {
-      await notifyBreach(accountId, breach, reading.lowEquityCents, floorOf(rules, reading));
+  // The daily floor is judged nowhere: it shuts the session rather than the
+  // account, and `lockedFor` reads that straight off the day's own low.
+  if (failedOf(rules, { lowEquityCents, peakEquityCents })) {
+    if (await endAccount(accountId, "trailing_drawdown", at)) {
+      await notifyBreach(accountId, lowEquityCents, trailingFloorOf(rules, peakEquityCents));
     }
 
     return;

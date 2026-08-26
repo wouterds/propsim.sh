@@ -1,5 +1,5 @@
 import { equityOf, type Ledger, positionsOf, type Side } from "./fills";
-import { type AccountRules, type Breach, breachOf, floorOf } from "./floors";
+import { type AccountRules, failedOf, trailingFloorOf } from "./floors";
 import type { Bar } from "./matching";
 import { priceUnits } from "./money";
 
@@ -69,8 +69,7 @@ export const liquidationMarksOf = (ledger: Ledger, bars: Map<string, Bar>, floor
 export type Tape = Map<string, Bar[]>;
 
 export type Liquidation = {
-  breach: Breach;
-  /** The bar the floor was crossed in. */
+  /** The bar the trailing floor was crossed in. */
   at: Date;
   /** Where each open contract is flattened. */
   marks: Map<string, number>;
@@ -115,12 +114,15 @@ const barsAt = (tape: Tape, time: number) => {
  *
  * The book is only constant between two fills, so the caller passes the bars
  * since the last print and no others.
+ *
+ * Only the trailing floor is read. The daily floor ends the session and leaves
+ * the position alone, so nothing is flattened for it.
  */
 export const markingOf = (
   ledger: Ledger,
   tape: Tape,
   rules: AccountRules,
-  marks: { peakEquityCents: number; sessionOpenCents: number },
+  peakEquityCents: number,
 ): Marking => {
   let lowEquityCents = equityOf(ledger);
 
@@ -129,15 +131,12 @@ export const markingOf = (
 
     lowEquityCents = Math.min(lowEquityCents, lowEquityOf(ledger, bars));
 
-    const breach = breachOf(rules, { ...marks, lowEquityCents });
-
-    if (breach) {
+    if (failedOf(rules, { lowEquityCents, peakEquityCents })) {
       return {
         lowEquityCents,
         liquidation: {
-          breach,
           at: new Date(time),
-          marks: liquidationMarksOf(ledger, bars, floorOf(rules, marks)),
+          marks: liquidationMarksOf(ledger, bars, trailingFloorOf(rules, peakEquityCents)),
         },
       };
     }

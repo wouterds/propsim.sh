@@ -97,10 +97,12 @@ export const marking = async () => {
       const sessionOpenCents = day?.openEquityCents ?? carriedInOf(one.ledger, tradeDate);
       const peakEquityCents = Math.max(one.account.peakEquityCents, peakOf(one.ledger));
 
-      const { lowEquityCents, liquidation } = markingOf(one.ledger, bars, rulesOf(one.account), {
+      const { lowEquityCents, liquidation } = markingOf(
+        one.ledger,
+        bars,
+        rulesOf(one.account),
         peakEquityCents,
-        sessionOpenCents,
-      });
+      );
 
       await touchTradingDay(one.account.id, tradeDate, now, {
         openEquityCents: sessionOpenCents,

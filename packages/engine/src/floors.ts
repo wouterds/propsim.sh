@@ -26,35 +26,22 @@ export const trailingFloorOf = (rules: AccountRules, peakEquityCents: number) =>
 export const targetOf = (rules: AccountRules) =>
   rules.startingBalanceCents + rules.profitTargetCents;
 
-type Marks = {
-  peakEquityCents: number;
-  sessionOpenCents: number;
-};
-
-type Reading = Marks & {
-  /** The deepest the equity went, not where it settled. */
-  lowEquityCents: number;
-};
+/**
+ * The daily floor ends the session, never the account. Hitting it locks the
+ * account out until the next session opens, and that lock needs no column of
+ * its own: the session's low water mark already carries it, and only falls.
+ */
+export const lockedOutOf = (
+  rules: AccountRules,
+  day: { openEquityCents: number; lowEquityCents: number },
+) => day.lowEquityCents <= dailyFloorOf(rules, day.openEquityCents);
 
 /**
- * The floor equity meets first on the way down, which is the higher of the two.
- * `breachOf` names the rule that ended the account, this is the price level it
- * was ended at, and a liquidation fills there.
+ * The trailing floor is the only one that ends the account. Read at the
+ * deepest the equity went rather than where it settled, so a position that
+ * went through and came back is still gone.
  */
-export const floorOf = (rules: AccountRules, marks: Marks) =>
-  Math.max(
-    trailingFloorOf(rules, marks.peakEquityCents),
-    dailyFloorOf(rules, marks.sessionOpenCents),
-  );
-
-export const breachOf = (rules: AccountRules, reading: Reading): Breach | null => {
-  if (reading.lowEquityCents <= trailingFloorOf(rules, reading.peakEquityCents)) {
-    return "trailing_drawdown";
-  }
-
-  if (reading.lowEquityCents <= dailyFloorOf(rules, reading.sessionOpenCents)) {
-    return "daily_loss";
-  }
-
-  return null;
-};
+export const failedOf = (
+  rules: AccountRules,
+  marks: { lowEquityCents: number; peakEquityCents: number },
+) => marks.lowEquityCents <= trailingFloorOf(rules, marks.peakEquityCents);

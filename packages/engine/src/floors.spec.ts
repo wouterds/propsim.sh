@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { type AccountRules, breachOf, floorOf, trailingFloorOf } from "./floors";
+import { type AccountRules, failedOf, lockedOutOf, trailingFloorOf } from "./floors";
 
 const rules: AccountRules = {
   startingBalanceCents: 5_000_000,
@@ -26,58 +26,77 @@ describe("trailingFloorOf", () => {
   });
 });
 
-describe("breachOf", () => {
-  it("should count equity that only touched the daily floor as a breach", () => {
-    // given a session that went exactly one daily limit below its open
-    const reading = {
-      lowEquityCents: 4_880_000,
-      peakEquityCents: 5_000_000,
-      sessionOpenCents: 5_000_000,
-    };
+describe("lockedOutOf", () => {
+  it("should lock a session that went exactly one daily limit below its open", () => {
+    // given a session opened at the starting balance and down the full limit
+    const day = { openEquityCents: 5_000_000, lowEquityCents: 4_880_000 };
 
-    // then
-    expect(breachOf(rules, reading)).toBe("daily_loss");
+    // then touching the floor is enough, the same as every other floor here
+    expect(lockedOutOf(rules, day)).toBe(true);
   });
 
-  it("should leave a cent above the daily floor alone", () => {
+  it("should leave a session a cent above its daily floor trading", () => {
     // given the same session, one cent shallower
-    const reading = {
-      lowEquityCents: 4_880_001,
-      peakEquityCents: 5_000_000,
-      sessionOpenCents: 5_000_000,
-    };
+    const day = { openEquityCents: 5_000_000, lowEquityCents: 4_880_001 };
 
     // then
-    expect(breachOf(rules, reading)).toBeNull();
+    expect(lockedOutOf(rules, day)).toBe(false);
   });
 
-  it("should name the trailing floor when both floors were taken out", () => {
-    // given a session deep enough to break the daily limit and the drawdown with it
-    const reading = {
-      lowEquityCents: 4_700_000,
-      peakEquityCents: 5_000_000,
-      sessionOpenCents: 5_000_000,
-    };
+  it("should measure from the session open rather than the starting balance", () => {
+    // given a session that opened in profit and gave back less than the limit
+    const day = { openEquityCents: 5_300_000, lowEquityCents: 5_190_000 };
 
-    // then the floor that ends the account wins over the one that ends the day
-    expect(breachOf(rules, reading)).toBe("trailing_drawdown");
+    // then an account well above its start is still locked by its own session
+    expect(lockedOutOf(rules, day)).toBe(false);
+    expect(lockedOutOf(rules, { openEquityCents: 5_300_000, lowEquityCents: 5_180_000 })).toBe(
+      true,
+    );
+  });
+
+  it("should lock a losing session before the account is anywhere near failing", () => {
+    // given a session that opened down and spent its limit again
+    const day = { openEquityCents: 4_950_000, lowEquityCents: 4_830_000 };
+
+    // then the day is over and the account is not: these are separate rules
+    expect(lockedOutOf(rules, day)).toBe(true);
+    expect(failedOf(rules, { lowEquityCents: 4_830_000, peakEquityCents: 5_000_000 })).toBe(false);
   });
 });
 
-describe("floorOf", () => {
-  it("should take the daily floor while it sits above the trailing one", () => {
-    // given a session that opened at the starting balance and never ran up
-    // then the daily limit is the shallower of the two, so it is met first
-    expect(floorOf(rules, { peakEquityCents: 5_000_000, sessionOpenCents: 5_000_000 })).toBe(
-      4_880_000,
-    );
+describe("failedOf", () => {
+  it("should not end an account that only broke its daily limit", () => {
+    // given a session a full daily limit down, with the peak at the open
+    // then the daily floor is 4,880,000 and the trailing floor is 4,800,000
+    expect(failedOf(rules, { lowEquityCents: 4_880_000, peakEquityCents: 5_000_000 })).toBe(false);
   });
 
-  it("should take the trailing floor once a losing session has fallen past it", () => {
-    // given a session that opened well down, dragging its daily floor under the drawdown
-    // then
-    expect(floorOf(rules, { peakEquityCents: 5_000_000, sessionOpenCents: 4_900_000 })).toBe(
-      4_800_000,
-    );
+  it("should end an account that touched the trailing floor", () => {
+    // given equity exactly a full drawdown under the peak
+    expect(failedOf(rules, { lowEquityCents: 4_800_000, peakEquityCents: 5_000_000 })).toBe(true);
+  });
+
+  it("should leave a cent above the trailing floor alone", () => {
+    // given the same reading, one cent shallower
+    expect(failedOf(rules, { lowEquityCents: 4_800_001, peakEquityCents: 5_000_000 })).toBe(false);
+  });
+
+  it("should follow the peak up, so a level that was safe stops being safe", () => {
+    // given equity that sat above the floor before the account ran up
+    const reading = { lowEquityCents: 4_900_000, peakEquityCents: 5_000_000 };
+
+    // when a later peak drags the floor up behind it
+    // then the same equity now fails, which is the ratchet doing its job
+    expect(failedOf(rules, reading)).toBe(false);
+    expect(failedOf(rules, { ...reading, peakEquityCents: 5_100_000 })).toBe(true);
+  });
+
+  it("should stop following the peak once the floor locks", () => {
+    // given a peak far past the point where the trailing floor stops climbing
+    const locked = { lowEquityCents: 5_010_000, peakEquityCents: 9_000_000 };
+
+    // then the floor is the locked one, not nine million less the drawdown
+    expect(failedOf(rules, locked)).toBe(true);
+    expect(failedOf(rules, { ...locked, lowEquityCents: 5_010_001 })).toBe(false);
   });
 });

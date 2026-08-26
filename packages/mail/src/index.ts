@@ -1,7 +1,7 @@
 import { render, toPlainText } from "@react-email/components";
 import { createElement, type ReactElement } from "react";
 
-import { AccountBreached, type BreachReason } from "./emails/account-breached";
+import { AccountBreached } from "./emails/account-breached";
 import { AccountDeleted } from "./emails/account-deleted";
 import { ConfirmCode } from "./emails/confirm-code";
 import { ConfirmNewEmail } from "./emails/confirm-new-email";
@@ -78,13 +78,11 @@ export const sendPasswordChanged = ({ to }: { to: string }) =>
 export const sendAccountBreached = ({
   to,
   account,
-  reason,
   equity,
   floor,
 }: {
   to: string;
   account: string;
-  reason: BreachReason;
   equity: string;
   floor: string;
 }) =>
@@ -92,7 +90,7 @@ export const sendAccountBreached = ({
     "account-breached",
     to,
     `${account} is closed`,
-    createElement(AccountBreached, { to, account, reason, equity, floor }),
+    createElement(AccountBreached, { to, account, equity, floor }),
   );
 
 export const sendAccountDeleted = ({ to }: { to: string }) =>

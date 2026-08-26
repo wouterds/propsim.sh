@@ -64,23 +64,23 @@ describe("sendWelcome", () => {
 });
 
 describe("sendAccountBreached", () => {
-  it("should name the rule that ended the account and not the other one", async () => {
-    // given a session closed by the daily limit rather than the drawdown
+  it("should name the trailing drawdown and never the daily limit", async () => {
+    // given the only floor that can close an account
     const sent = captureSend();
 
     // when
     await sendAccountBreached({
       to: "trader@example.com",
       account: "50K Daily",
-      reason: "daily_loss",
-      equity: "$49,400.00",
-      floor: "$49,400.00",
+      equity: "$48,000.00",
+      floor: "$48,000.00",
     });
 
-    // then a swapped lookup would tell the trader they broke a rule they did not
+    // then naming the daily limit here would tell a trader their account is
+    // gone over a rule that only ever ends their day
     const payload = sent();
-    expect(payload.HTMLPart).toContain("daily loss limit");
-    expect(payload.HTMLPart).not.toContain("trailing drawdown");
-    expect(payload.TextPart).toContain("$49,400.00");
+    expect(payload.HTMLPart).toContain("trailing drawdown");
+    expect(payload.HTMLPart).not.toContain("daily loss limit");
+    expect(payload.TextPart).toContain("$48,000.00");
   });
 });
