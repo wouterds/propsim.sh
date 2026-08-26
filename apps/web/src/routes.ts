@@ -18,6 +18,7 @@ export default [
 
   route("health", "routes/health.tsx"),
 
+  route("feed", "routes/feed.tsx"),
   route("robots.txt", "routes/robots.tsx"),
   route("sitemap.xml", "routes/sitemap.tsx"),
 

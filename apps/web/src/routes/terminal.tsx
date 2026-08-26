@@ -28,12 +28,16 @@ import {
   placeOrder,
 } from "~/lib/orders.server";
 import { PRIVATE } from "~/lib/seo";
+import { useLivePrice } from "~/lib/use-live-price";
 import type { Route } from "./+types/terminal";
 
 const DAY = 24 * 60 * 60 * 1000;
 
-/** Slower than a bar would be pointless, faster than the feed moves is waste. */
-const REFRESH = 15_000;
+/**
+ * Only the blotter needs this now: the tape arrives on its own stream. A fill
+ * the matcher wrote shows up within this, against a sweep that runs a minute.
+ */
+const REFRESH = 30_000;
 
 export const meta: Route.MetaFunction = ({ loaderData }) => [
   {
@@ -263,7 +267,29 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
   const blackout = now === null ? null : activeWindow(windows, now);
 
   // Null, not a stand-in. Closing marks to this price and banks it for good.
-  const last = candles.at(-1)?.close ?? null;
+  // Pushed, not polled. The bar still printing is carried forward to it, so
+  // the last candle moves between one closed bar and the next.
+  const live = useLivePrice(instrument.code);
+
+  const bars = useMemo(() => {
+    const settled = candles.at(-1);
+
+    if (live === null || !settled) {
+      return candles;
+    }
+
+    return [
+      ...candles.slice(0, -1),
+      {
+        ...settled,
+        close: live,
+        high: Math.max(settled.high, live),
+        low: Math.min(settled.low, live),
+      },
+    ];
+  }, [candles, live]);
+
+  const last = bars.at(-1)?.close ?? null;
 
   const openPnl = useMemo(() => {
     if (last === null) return null;
@@ -386,7 +412,7 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
               </div>
             ) : (
               <CandleChart
-                candles={candles}
+                candles={bars}
                 priceLines={priceLines}
                 bands={windows}
                 tick={instrument.tick}
