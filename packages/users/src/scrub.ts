@@ -30,8 +30,21 @@ export const scrubUser = async (id: string) => {
 
   await getDb()
     .update(users)
-    // The username goes too, or a deleted account holds a name nobody can take.
-    .set({ email: anonymised, username: null, deletedAt: new Date(), inactivityNotice: null })
+    // Everything a person chose about themselves. The username goes or a deleted
+    // account holds a name nobody can take, and a handle points straight back at
+    // them. What they traded is not theirs to be identified by and stays put.
+    //
+    // `showsAccounts` is a preference rather than a detail about them, so it is
+    // left alone. A deleted profile shows nothing either way.
+    .set({
+      email: anonymised,
+      username: null,
+      twitter: null,
+      youtube: null,
+      twitch: null,
+      deletedAt: new Date(),
+      inactivityNotice: null,
+    })
     .where(eq(users.id, id));
 
   return true;
