@@ -31,7 +31,11 @@ export type CandleRequest = { symbol: string; interval: Interval; range: Range }
 // Also rejects NaN. A floor measured against a NaN low never breaches.
 const finite = (value: number | null | undefined): value is number => Number.isFinite(value);
 
-export const toCandles = (result: ChartResult, request: CandleRequest): Candle[] => {
+export const toCandles = (
+  result: ChartResult,
+  request: CandleRequest,
+  forming = false,
+): Candle[] => {
   const { symbol, interval, range } = request;
   const length = SECONDS[interval];
   const stamps = result.timestamp ?? [];
@@ -59,9 +63,18 @@ export const toCandles = (result: ChartResult, request: CandleRequest): Candle[]
     throw new Error(`Yahoo served ${symbol} coarser than ${interval} over ${range}`);
   }
 
+  // The bar still printing, for a chart that has to look alive. Never for the
+  // matcher: its low can still fall, and a fill decided on it is invented.
+  const wanted = [...closed];
+  const last = stamps.length - 1;
+
+  if (forming && last >= 0 && stamps[last] + length > result.meta.regularMarketTime) {
+    wanted.push(last);
+  }
+
   const candles: Candle[] = [];
 
-  for (const i of closed) {
+  for (const i of wanted) {
     const open = bars?.open?.[i];
     const high = bars?.high?.[i];
     const low = bars?.low?.[i];
@@ -109,5 +122,7 @@ export const toCandles = (result: ChartResult, request: CandleRequest): Candle[]
  * interval and answers past it with a 422: `1m` near 8 days, `2m` near 38,
  * `5m` to `30m` at 60, `1h` near two years.
  */
-export const getCandles = async (request: CandleRequest): Promise<Candle[]> =>
-  toCandles(await fetchChart(request), request);
+export const getCandles = async (
+  request: CandleRequest,
+  options?: { forming?: boolean },
+): Promise<Candle[]> => toCandles(await fetchChart(request), request, options?.forming === true);
