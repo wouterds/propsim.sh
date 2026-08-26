@@ -64,7 +64,8 @@ const AppShell = ({ accounts, email, children }: Props) => {
           <div className="min-h-0 flex-1 overflow-y-auto">
             <div className="flex min-h-full flex-col">{children}</div>
 
-            <div className="mx-auto w-full max-w-6xl px-5 pb-8 sm:px-8">
+            {/* The same gutter the panels above it use, so it lines up with them. */}
+            <div className="px-2 pb-2">
               <SiteFooter boxed />
             </div>
           </div>
