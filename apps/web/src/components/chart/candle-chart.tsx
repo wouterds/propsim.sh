@@ -277,10 +277,13 @@ const CandleChart = ({
         lineVisible: true,
         axisLabelVisible: true,
         title: line.title,
-        axisLabelColor: line.draft ? withAlpha(theme[line.tone], 0.5) : theme[line.tone],
-        // White, like every other filled label. It is also what the series
-        // picks for its own last value label, so the two axis badges agree.
-        axisLabelTextColor: "#ffffff",
+        // A resting order is a filled badge. A draft is the same colour on the
+        // chart's own ground instead, so the two never read as the same thing
+        // sitting at the same price.
+        axisLabelColor: line.draft ? theme.overlay : theme[line.tone],
+        // White on a filled badge, which is what the series picks for its own
+        // last value label, so every filled badge on the axis agrees.
+        axisLabelTextColor: line.draft ? theme[line.tone] : "#ffffff",
       }),
     }));
 
