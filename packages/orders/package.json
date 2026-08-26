@@ -15,6 +15,7 @@
   "dependencies": {
     "@propsim/database": "*",
     "@propsim/engine": "*",
+    "@propsim/mail": "*",
     "drizzle-orm": "^0.45.2"
   },
   "devDependencies": {

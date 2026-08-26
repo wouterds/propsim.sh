@@ -5,6 +5,7 @@ import {
   breachOf,
   carriedInOf,
   equityOf,
+  floorOf,
   ledgerOf,
   peakOf,
   targetOf,
@@ -13,6 +14,7 @@ import {
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { findTradingDay, touchTradingDay } from "./days";
 import { listFills } from "./fills";
+import { notifyBreach } from "./notify";
 
 /** The terms the account opened under, which is what every floor is measured from. */
 export const rulesOf = (row: Account): AccountRules => ({
@@ -30,11 +32,21 @@ const raisePeak = (id: string, peakEquityCents: number) =>
     .set({ peakEquityCents: sql`GREATEST(${accounts.peakEquityCents}, ${peakEquityCents})` })
     .where(eq(accounts.id, id));
 
-const endAccount = (id: string, endedReason: Breach | "target_met") =>
-  getDb()
+/**
+ * Ends the account and says whether this call was the one that did it. The
+ * `ended_at IS NULL` is what makes that answer worth trusting: a second call
+ * changes no row, so a notice fires once without a column to remember it by.
+ *
+ * Stamped at the instant the floor was met, not at the sweep that noticed.
+ */
+const endAccount = async (id: string, endedReason: Breach | "target_met", at: Date) => {
+  const [result] = await getDb()
     .update(accounts)
-    .set({ endedAt: new Date(), endedReason })
+    .set({ endedAt: at, endedReason })
     .where(and(eq(accounts.id, id), isNull(accounts.endedAt)));
+
+  return result.affectedRows > 0;
+};
 
 const findAccount = async (id: string) => {
   const [row] = await getDb().select().from(accounts).where(eq(accounts.id, id)).limit(1);
@@ -69,19 +81,22 @@ export const settle = async (accountId: string, at: Date) => {
   await raisePeak(accountId, peakEquityCents);
 
   const rules = rulesOf(row);
-  const breach = breachOf(rules, {
+  const reading = {
     lowEquityCents: Math.min(day?.lowEquityCents ?? equityCents, equityCents),
     peakEquityCents,
     sessionOpenCents: day?.openEquityCents ?? equityCents,
-  });
+  };
+  const breach = breachOf(rules, reading);
 
   if (breach) {
-    await endAccount(accountId, breach);
+    if (await endAccount(accountId, breach, at)) {
+      await notifyBreach(accountId, breach, reading.lowEquityCents, floorOf(rules, reading));
+    }
 
     return;
   }
 
   if (equityCents >= targetOf(rules)) {
-    await endAccount(accountId, "target_met");
+    await endAccount(accountId, "target_met", at);
   }
 };
