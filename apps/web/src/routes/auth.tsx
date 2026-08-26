@@ -16,6 +16,7 @@ import { CODE_TTL_MINUTES, MIN_PASSWORD } from "~/lib/policy";
 import { safeReturn } from "~/lib/redirect.server";
 import { PRIVATE } from "~/lib/seo";
 import { signIn } from "~/lib/sign-in.server";
+import { allowed, refused, throttled } from "~/lib/throttle.server";
 import { createUser, findUserByEmail } from "~/lib/users.server";
 import { cn } from "~/lib/utils";
 import { issueCode } from "~/lib/verifications.server";
@@ -51,6 +52,7 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
 // The same answer whether the address is unknown or the password is wrong.
 // Anything more specific tells an attacker which addresses are registered.
 const REFUSED = "Email or password is incorrect.";
+const TOO_MANY = "Too many attempts. Wait a few minutes and try again.";
 
 // Through notify: the row is already written by the time this runs, so a
 // provider outage would otherwise 500 an account into existence that its owner
@@ -93,12 +95,17 @@ export const action = async ({ request }: Route.ActionArgs) => {
     return startPending(userId, back);
   }
 
+  if (await throttled(email, request)) {
+    return { error: TOO_MANY };
+  }
+
   const user = await findUserByEmail(email);
 
   if (!user) {
     // Hashed anyway, or the reply comes back fast enough to say the address is
     // unknown without saying it.
     await hashPassword(password);
+    await refused(email, request);
 
     return { error: REFUSED };
   }
@@ -107,13 +114,18 @@ export const action = async ({ request }: Route.ActionArgs) => {
   // reply says which accounts have a password on them.
   if (!user.password) {
     await hashPassword(password);
+    await refused(email, request);
 
     return { error: REFUSED };
   }
 
   if (!(await verifyPassword(password, user.password))) {
+    await refused(email, request);
+
     return { error: REFUSED };
   }
+
+  await allowed(email);
 
   if (!user.verifiedEmailAt) {
     await sendCode(user.id, user.email);
