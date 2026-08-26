@@ -1,5 +1,5 @@
 import { Field } from "@base-ui/react/field";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Form, useNavigation } from "react-router";
 import { type AuthMode, COPY } from "./mode";
 
@@ -11,18 +11,32 @@ const LABEL = "mb-1.5 block text-[11px] text-faint uppercase tracking-wider";
 type Props = {
   mode: AuthMode;
   error?: string;
+  /** Answers whether this submit may go through now. See `useSignupNotice`. */
+  gate: (go: () => void) => boolean;
 };
 
-const AuthForm = ({ mode, error }: Props) => {
+const AuthForm = ({ mode, error, gate }: Props) => {
   const navigation = useNavigation();
   const busy = navigation.state !== "idle";
   const [password, setPassword] = useState("");
+  const form = useRef<HTMLFormElement>(null);
 
   // Signing up asks for it twice, but only once there is something to confirm.
   const confirming = mode === "signup" && password.length > 0;
 
   return (
-    <Form method="post" className="space-y-3">
+    <Form
+      method="post"
+      ref={form}
+      className="space-y-3"
+      onSubmit={(event) => {
+        // Held rather than cancelled. Confirming the notice submits this same
+        // form again, and the gate waves the second one through.
+        if (!gate(() => form.current?.requestSubmit())) {
+          event.preventDefault();
+        }
+      }}
+    >
       <input type="hidden" name="mode" value={mode} />
 
       <Field.Root className="block">

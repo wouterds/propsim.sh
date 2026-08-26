@@ -2,6 +2,8 @@ import { Link } from "react-router";
 
 type Props = {
   to: string;
+  /** Answers whether the redirect may go now. See `useSignupNotice`. */
+  gate: (go: () => void) => boolean;
 };
 
 const GoogleMark = () => (
@@ -25,11 +27,18 @@ const GoogleMark = () => (
   </svg>
 );
 
-const GoogleButton = ({ to }: Props) => (
+const GoogleButton = ({ to, gate }: Props) => (
   // A link, not a form. The round trip starts with a redirect Google has to see.
   <Link
     to={to}
     reloadDocument
+    onClick={(event) => {
+      // A whole document load, the same as the link would have done. Anything
+      // softer never leaves for Google.
+      if (!gate(() => window.location.assign(to))) {
+        event.preventDefault();
+      }
+    }}
     className="inline-flex h-10 w-full items-center justify-center gap-2.5 rounded border border-line bg-sunken font-medium text-ink text-sm transition-colors hover:border-line-strong focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
   >
     <GoogleMark />

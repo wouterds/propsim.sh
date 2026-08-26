@@ -5,6 +5,7 @@ import AuthForm from "~/components/auth/auth-form";
 import GoogleButton from "~/components/auth/google-button";
 import { type AuthMode, COPY } from "~/components/auth/mode";
 import ModeTabs from "~/components/auth/mode-tabs";
+import SignupNotice, { useSignupNotice } from "~/components/auth/signup-notice";
 import Brand from "~/components/layout/brand";
 import GridBackdrop from "~/components/layout/grid-backdrop";
 import { getUserId, startPending } from "~/lib/auth.server";
@@ -125,6 +126,7 @@ export const action = async ({ request }: Route.ActionArgs) => {
 
 const Auth = ({ loaderData, actionData }: Route.ComponentProps) => {
   const [mode, setMode] = useState<AuthMode>("login");
+  const notice = useSignupNotice(mode === "signup");
 
   return (
     <main className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden px-5 py-16">
@@ -156,7 +158,7 @@ const Auth = ({ loaderData, actionData }: Route.ComponentProps) => {
             </p>
           )}
 
-          <AuthForm key={mode} mode={mode} error={actionData?.error} />
+          <AuthForm key={mode} mode={mode} error={actionData?.error} gate={notice.gate} />
 
           {loaderData.withGoogle && (
             <>
@@ -166,7 +168,7 @@ const Auth = ({ loaderData, actionData }: Route.ComponentProps) => {
                 <span className="h-px flex-1 bg-line" />
               </div>
 
-              <GoogleButton to={loaderData.start} />
+              <GoogleButton to={loaderData.start} gate={notice.gate} />
             </>
           )}
         </div>
@@ -185,6 +187,8 @@ const Auth = ({ loaderData, actionData }: Route.ComponentProps) => {
           Forgot your password?
         </Link>
       </div>
+
+      <SignupNotice open={notice.open} onOpenChange={notice.setOpen} onConfirm={notice.confirm} />
     </main>
   );
 };
