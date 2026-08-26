@@ -22,6 +22,12 @@ type TraderAccount = {
  * they earned still add up and nothing on the page points at a person.
  */
 export const loadTrader = async (id: string) => {
+  // The id comes off the address, and the column refuses anything that is not
+  // one. Asking with a word rather than an id is a page that is not there.
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+    return null;
+  }
+
   const [user] = await getDb().select().from(users).where(eq(users.id, id)).limit(1);
 
   if (!user) {

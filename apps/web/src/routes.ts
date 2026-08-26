@@ -12,6 +12,7 @@ export default [
     route("feature-requests", "routes/features.tsx", [route("new", "routes/feature-new.tsx")]),
     route("feature-requests/:slug", "routes/feature.tsx"),
     route("leaderboards", "routes/leaderboards.tsx"),
+    route("traders", "routes/traders.tsx"),
     route("traders/:id", "routes/trader.tsx"),
     route("red-folder-events", "routes/red-folder-events.tsx"),
     route("contact", "routes/contact.tsx"),
