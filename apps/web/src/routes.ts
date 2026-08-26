@@ -14,6 +14,7 @@ export default [
     route("leaderboards", "routes/leaderboards.tsx"),
     route("traders", "routes/traders.tsx"),
     route("traders/:id", "routes/trader.tsx"),
+    route("traders/:id/og.png", "routes/trader-og.tsx"),
     route("red-folder-events", "routes/red-folder-events.tsx"),
     route("contact", "routes/contact.tsx"),
     route("privacy", "routes/privacy.tsx"),

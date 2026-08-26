@@ -8,6 +8,8 @@ type Page = {
   description: string;
   /** The path this page is canonical at, leading slash and no host. */
   path: string;
+  /** A card of its own. Falls back to the site's when a page has nothing to say. */
+  image?: string;
 };
 
 /**
@@ -15,8 +17,9 @@ type Page = {
  * only half of them gets the site wide defaults from the root for the rest,
  * which is how a share ends up captioned with somebody else's page.
  */
-export const pageMeta = ({ title, description, path }: Page) => {
+export const pageMeta = ({ title, description, path, image }: Page) => {
   const url = `${SITE_URL}${path}`;
+  const card = image ? `${SITE_URL}${image}` : OG_IMAGE;
 
   return [
     { title },
@@ -25,13 +28,13 @@ export const pageMeta = ({ title, description, path }: Page) => {
     { property: "og:title", content: title },
     { property: "og:description", content: description },
     { property: "og:url", content: url },
-    { property: "og:image", content: OG_IMAGE },
+    { property: "og:image", content: card },
     { property: "og:image:width", content: "1200" },
     { property: "og:image:height", content: "630" },
     { property: "og:image:alt", content: "propsim.sh, a free prop trading simulator" },
     { name: "twitter:title", content: title },
     { name: "twitter:description", content: description },
-    { name: "twitter:image", content: OG_IMAGE },
+    { name: "twitter:image", content: card },
   ];
 };
 

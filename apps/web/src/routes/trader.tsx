@@ -28,6 +28,7 @@ export const meta: Route.MetaFunction = ({ loaderData }) => {
     title: `${loaderData.name}, propsim.sh`,
     description: `${loaderData.name} has traded ${loaderData.stats.trades} round trips across ${loaderData.counts.total} simulated prop accounts on propsim.sh.`,
     path: `/traders/${loaderData.id}`,
+    image: `/traders/${loaderData.id}/og.png`,
   });
 };
 
