@@ -1,4 +1,4 @@
-import type { CandleRequest } from "./candles";
+import type { CandleRequest, Range } from "./candles";
 import { shared } from "./shared";
 
 const CHART = "https://query1.finance.yahoo.com/v8/finance/chart";
@@ -13,11 +13,18 @@ const AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)";
 const TIMEOUT = 10_000;
 
 /**
- * How long one answer serves everybody, and the clock the dance runs on. The
- * feed's own time comes back with the bars, so a longer hold moves the newest
+ * How long one answer serves everybody. The feed's own time comes back with the
+ * bars and is the clock the dance runs on, so a longer hold moves the newest
  * candle in jumps of several steps instead of one.
+ *
+ * Only the live day is asked for that often. A wider range is read by the sweep
+ * once a minute and by a chart that is not being danced, and holding those for
+ * five seconds would treble the upstream rate for nobody.
  */
-const FRESH_SECONDS = 5;
+const FRESH_SECONDS = 15;
+const DANCING_FRESH_SECONDS = 5;
+
+const freshFor = (range: Range) => (range === "1d" ? DANCING_FRESH_SECONDS : FRESH_SECONDS);
 
 export type ChartResult = {
   meta: { regularMarketTime: number };
@@ -70,6 +77,8 @@ const load = async (request: CandleRequest): Promise<ChartResult> => {
  * chart and the matcher behind them all read the same answer.
  */
 export const fetchChart = (request: CandleRequest) =>
-  shared(`chart:${request.symbol}:${request.interval}:${request.range}`, FRESH_SECONDS, () =>
-    load(request),
+  shared(
+    `chart:${request.symbol}:${request.interval}:${request.range}`,
+    freshFor(request.range),
+    () => load(request),
   );
