@@ -65,11 +65,22 @@ export const toCandles = (
 
   // The bar still printing, for a chart that has to look alive. Never for the
   // matcher: its low can still fall, and a fill decided on it is invented.
+  //
+  // It has to sit a whole number of intervals after the last closed bar. Yahoo
+  // appends the live quote as a row of its own, stamped at the quote time
+  // rather than at a bar open, and that row is a price and not a bar.
   const wanted = [...closed];
-  const last = stamps.length - 1;
+  const settled = closed.at(-1);
 
-  if (forming && last >= 0 && stamps[last] + length > result.meta.regularMarketTime) {
-    wanted.push(last);
+  if (forming && settled !== undefined) {
+    for (let i = settled + 1; i < stamps.length; i++) {
+      const aligned = (stamps[i] - stamps[settled]) % length === 0;
+
+      if (aligned && stamps[i] + length > result.meta.regularMarketTime) {
+        wanted.push(i);
+        break;
+      }
+    }
   }
 
   const candles: Candle[] = [];
