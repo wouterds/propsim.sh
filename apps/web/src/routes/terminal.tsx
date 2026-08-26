@@ -9,6 +9,7 @@ import ChartHeader from "~/components/chart/chart-header";
 import TimeframeSwitcher from "~/components/chart/timeframe-switcher";
 import AccountStrip from "~/components/trading/account-strip";
 import Blotter from "~/components/trading/blotter";
+import { formatPrice } from "~/components/trading/format";
 import NewsBanner from "~/components/trading/news-banner";
 import Panel from "~/components/trading/panel";
 import { barsPerDay, parseTimeframe, rangeFor } from "~/components/trading/timeframes";
@@ -39,12 +40,20 @@ const DAY = 24 * 60 * 60 * 1000;
  */
 const REFRESH = 30_000;
 
-export const meta: Route.MetaFunction = ({ loaderData }) => [
-  {
-    title: loaderData ? `Terminal, ${loaderData.account.name}, propsim.sh` : "Terminal, propsim.sh",
-  },
-  ...PRIVATE,
-];
+/** The tape is the title. A tab among twenty is found by its price, not its name. */
+export const titleFor = (code: string, price: number | null) =>
+  price === null ? `${code}, propsim.sh` : `${code} ${formatPrice(price)}`;
+
+export const meta: Route.MetaFunction = ({ loaderData }) => {
+  if (!loaderData) {
+    return [{ title: "Terminal, propsim.sh" }, ...PRIVATE];
+  }
+
+  return [
+    { title: titleFor(loaderData.instrument.code, loaderData.candles.at(-1)?.close ?? null) },
+    ...PRIVATE,
+  ];
+};
 
 const lastTraded = async (symbol: string) => {
   const candles = await getCandles({ symbol, interval: "1m", range: "1d" });
@@ -290,6 +299,12 @@ const Trading = ({ loaderData }: Route.ComponentProps) => {
   }, [candles, live]);
 
   const last = bars.at(-1)?.close ?? null;
+
+  // `meta` only runs when the loader does. The tape moves in between, and the
+  // tab has to move with it.
+  useEffect(() => {
+    document.title = titleFor(instrument.code, last);
+  }, [instrument.code, last]);
 
   const openPnl = useMemo(() => {
     if (last === null) return null;
