@@ -1,10 +1,12 @@
 import { accounts, getDb } from "@propsim/database";
 import {
+  balanceOf,
   carriedInOf,
   equityOf,
   failedOf,
   ledgerOf,
   peakOf,
+  positionsOf,
   targetOf,
   tradeDateOf,
   trailingFloorOf,
@@ -13,6 +15,7 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 import { findAccount, rulesOf } from "./accounts";
 import { findTradingDay, touchTradingDay } from "./days";
 import { listFills } from "./fills";
+import { flatten } from "./marking";
 import { notifyBreach, notifyNews } from "./notify";
 
 /** Only ever rises, so a fold that proposes less than the stored mark loses. */
@@ -82,8 +85,14 @@ export const settle = async (accountId: string, at: Date) => {
     return;
   }
 
-  if (equityCents >= targetOf(rules)) {
-    await endAccount(accountId, "target_met", at);
+  // Banked, never floating. A target met on an open position is money the
+  // account has not made, and the screen has always counted it this way.
+  if (balanceOf(ledger) >= targetOf(rules)) {
+    if (await endAccount(accountId, "target_met", at)) {
+      // A passed account is done trading, so nothing is left marking against a
+      // tape it can no longer act on. Closed where each contract last printed.
+      await flatten(accountId, positionsOf(ledger), ledger.marks, at);
+    }
   }
 };
 
