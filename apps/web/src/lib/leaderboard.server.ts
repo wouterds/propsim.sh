@@ -38,6 +38,8 @@ const standingOf = (tally: Tally): Standing => {
 
 export type Row = {
   rank: number;
+  /** Their profile, which is the only public page about a trader. */
+  id: string;
   name: string;
   initials: string;
   hue: number;
@@ -48,6 +50,7 @@ export type Row = {
 
 const toRow = (standing: Standing, index: number): Row => ({
   rank: index + 1,
+  id: standing.userId,
   name: standing.name,
   initials: standing.initials,
   hue: standing.hue,

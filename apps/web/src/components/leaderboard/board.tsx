@@ -1,3 +1,4 @@
+import { href, Link } from "react-router";
 import { Avatar } from "~/components/identity/avatar";
 import { formatPercent, formatSigned, TONE_TEXT, toneOf } from "~/lib/format";
 import type { Row } from "~/lib/leaderboard.server";
@@ -22,13 +23,20 @@ const Board = ({ title, hint, empty, rows }: Props) => (
     ) : (
       <ol className="divide-y divide-line/70">
         {rows.map((row) => (
-          <li key={row.name} className="flex items-center gap-3 px-5 py-3">
+          <li key={row.id} className="group relative flex items-center gap-3 px-5 py-3">
             <span className="w-4 shrink-0 text-right text-faint text-xs tabular">{row.rank}</span>
 
             <Avatar persona={row} size={28} />
 
             <div className="min-w-0 flex-1">
-              <p className="truncate text-ink text-sm">{row.name}</p>
+              {/* Stretched over the row, so the whole of it opens the profile
+                  and still opens in a tab like any other link. */}
+              <Link
+                to={href("/traders/:id", { id: row.id })}
+                className="truncate rounded-sm text-ink text-sm after:absolute after:inset-0 group-hover:text-accent focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-accent"
+              >
+                {row.name}
+              </Link>
               <p className="text-[11px] text-faint">
                 {row.accounts === 1 ? "1 account" : `${row.accounts} accounts`}
               </p>
