@@ -23,6 +23,14 @@ export const isOpen = (status: AccountStatus) => status === "live" || status ===
 /** Why an account stopped. `null` while it has not. */
 export type Ending = "daily_loss" | "trailing_drawdown" | "news" | "target_met";
 
+/** Named for the rule, because "breached" alone sends people looking for which. */
+export const ENDING: Record<Ending, string> = {
+  trailing_drawdown: "Closed by the trailing drawdown",
+  daily_loss: "Closed by the daily loss limit",
+  news: "Closed by a red folder release",
+  target_met: "Passed on the profit target",
+};
+
 export type Account = {
   id: string;
   name: string;
