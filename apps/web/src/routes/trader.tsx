@@ -215,14 +215,23 @@ const Trader = ({ loaderData }: Route.ComponentProps) => {
               {shown.map((account) => (
                 <li
                   key={account.id}
-                  className="flex flex-wrap items-center gap-x-4 gap-y-1 border-line/60 border-b px-4 py-3 last:border-b-0"
+                  className="flex items-center gap-3 border-line/60 border-b px-4 py-3 last:border-b-0"
                 >
-                  <span className="text-ink text-sm">{account.plan}</span>
-                  <Badge tone={STATE_TONE[account.state]}>{STATE_LABEL[account.state]}</Badge>
-                  <span className="text-faint text-xs">opened {formatDate(account.openedOn)}</span>
+                  {/* The date sits under the plan rather than beside it. On a
+                      phone a single row wraps and leaves the amount stranded. */}
+                  <span className="min-w-0 flex-1">
+                    <span className="flex flex-wrap items-center gap-2">
+                      <span className="text-ink text-sm">{account.plan}</span>
+                      <Badge tone={STATE_TONE[account.state]}>{STATE_LABEL[account.state]}</Badge>
+                    </span>
+                    <span className="mt-0.5 block text-faint text-xs">
+                      opened {formatDate(account.openedOn)}
+                    </span>
+                  </span>
+
                   <span
                     className={cn(
-                      "ml-auto font-medium text-sm tabular",
+                      "shrink-0 font-medium text-sm tabular",
                       TONE_TEXT[toneOf(account.pnl)],
                     )}
                   >
