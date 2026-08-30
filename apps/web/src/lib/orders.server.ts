@@ -7,6 +7,7 @@ import {
 } from "@propsim/database";
 import {
   type Fill,
+  isOpenAt,
   ledgerOf,
   marketableAt,
   positionsOf,
@@ -69,9 +70,15 @@ export const refuseTicket = (
   ticket: Ticket,
   book: Book,
   locked: boolean,
+  /** The tape's clock, which is the only one the trader can see. */
+  at: Date,
 ): Refusal => {
   if (row.endedAt) {
     return "This account is closed. Open a new one to keep trading.";
+  }
+
+  if (!isOpenAt(at)) {
+    return "The session is shut. It reopens at 17:00 Chicago time, Sunday to Thursday.";
   }
 
   if (!Number.isInteger(ticket.quantity) || ticket.quantity < 1) {
@@ -124,6 +131,7 @@ export const placeOrder = async (
     ticket,
     bookOf(fills, ticket.instrument),
     await lockedFor(row, at),
+    at,
   );
 
   if (refusal) {
