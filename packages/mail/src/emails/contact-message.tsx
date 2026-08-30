@@ -1,4 +1,4 @@
-import { Heading, Text } from "@react-email/components";
+import { Heading, Link, Text } from "@react-email/components";
 import { heading, Layout, paragraph } from "../layout";
 
 export type ContactMessageProps = {
@@ -19,6 +19,8 @@ const label = {
 
 const value = { ...paragraph, margin: "0 0 16px" };
 
+// A mailto rather than a Reply-To header. The forwarder in front of the inbox
+// scores a Reply-To at a webmail address as forged and drops the mail.
 export const ContactMessage = ({ to, name, email, subject, message }: ContactMessageProps) => (
   <Layout
     preview={`${name}: ${subject}`}
@@ -29,7 +31,10 @@ export const ContactMessage = ({ to, name, email, subject, message }: ContactMes
 
     <Text style={label}>From</Text>
     <Text style={value}>
-      {name} · {email}
+      {name} ·{" "}
+      <Link href={`mailto:${email}`} style={{ color: "#e6eaf0" }}>
+        {email}
+      </Link>
     </Text>
 
     <Text style={label}>Message</Text>
@@ -38,12 +43,6 @@ export const ContactMessage = ({ to, name, email, subject, message }: ContactMes
         {block}
       </Text>
     ))}
-
-    {/* No Reply-To header. The forwarder in front of the inbox scores one
-        pointing at a webmail address as forged and drops the mail. */}
-    <Text style={{ ...paragraph, margin: "8px 0 16px" }}>
-      Write to the address above to reach them. A reply to this mail goes nowhere.
-    </Text>
   </Layout>
 );
 
