@@ -19,8 +19,9 @@ LucidDaily terms in August 2026 and matches them exactly:
 | Trailing stops climbing at | 26,100 | 52,100 | 103,100 | 154,600 |
 
 The funded phase of that product uses an **intraday** trailing drawdown against **peak equity**,
-including open trade profit. The evaluation phase lets the buyer pick end-of-day instead. Only the
-intraday reading is modelled, because it is what a funded account always uses.
+including open trade profit. The evaluation phase lets the buyer pick end-of-day instead, and either
+phase can be bought with the daily loss limit switched off. Only intraday with the limit on is
+modelled, because it is what a funded account always uses and the cheapest way to buy one.
 
 ## The Two Floors Are Not The Same Rule
 
@@ -71,7 +72,9 @@ point is the whole game, and it is why `lockAboveStart` is snapshotted onto the 
 read from the plan catalog.
 
 Both floors are read at **the deepest the equity went**, not where it settled. A position that
-breached intraday and closed green has still breached.
+breached intraday and closed green has still breached. Lucid says this of the trailing floor and
+nothing either way of the daily one, so the daily floor on open equity is the platforms' reading
+rather than a published one.
 
 ### The peak is read off the tape, not off the fills
 
@@ -156,7 +159,9 @@ account holding a position across the roll would otherwise move its own daily fl
 ### The close
 
 Lucid closes every position at **16:45 ET**, which is 15:45 CT, Monday to Friday, and reopens at
-18:00 ET Sunday to Thursday. Holding past the close is **not a breach** at any firm. `isOpenAt`
+18:00 ET Sunday to Thursday. Holding past the close is **not a breach** at any firm. The page that
+says so names the sister plans and not LucidDaily, and no LucidDaily page states hours, so this is
+the firm's general rule applied rather than a published one. `isOpenAt`
 says whether an instant is inside the session, and everything that can print reads it:
 
 - A ticket at a shut instant is refused. Closing a position is not a ticket and stays allowed
