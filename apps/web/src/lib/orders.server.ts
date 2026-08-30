@@ -316,9 +316,10 @@ export const modifyOrder = async (
 
     // Moved onto a level the tape has already passed, so it is taken here
     // rather than a few seconds later by the sweep. A bracket is left alone:
-    // it may only ever print behind the position it guards.
+    // it may only ever print behind the position it guards. Nothing prints
+    // while the session is shut.
     const taken =
-      mark === null || order.parentOrderId !== null || order.type === "market"
+      mark === null || !isOpenAt(at) || order.parentOrderId !== null || order.type === "market"
         ? null
         : marketableAt({ side: order.side, type: order.type, price }, mark);
 
