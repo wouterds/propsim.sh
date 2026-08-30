@@ -35,7 +35,7 @@ const PlanTable = () => (
             {PLANS.map((plan) => (
               <tr key={plan.id} className="border-line/60 border-b last:border-b-0">
                 <td className="h-14 px-4">
-                  <span className="font-medium text-ink">{plan.label} Daily</span>
+                  <span className="font-medium text-ink">{plan.label} LucidDaily</span>
                   <span className="block text-[11px] text-faint tabular">
                     {formatDollars(plan.size)} to start
                   </span>

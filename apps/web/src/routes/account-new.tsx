@@ -85,7 +85,7 @@ const NewAccount = ({ loaderData, actionData }: Route.ComponentProps) => {
 
         <div className="mt-6 rounded-lg border border-line bg-raised px-4 py-3">
           <p className="text-[11px] text-faint uppercase tracking-wider">
-            {plan.label} Daily, the rules
+            {plan.label} LucidDaily, the rules
           </p>
           <PlanRules plan={plan} className="mt-2" />
         </div>

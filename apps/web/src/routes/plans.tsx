@@ -37,7 +37,9 @@ const Plans = () => (
           {PLANS.map((plan) => (
             <div key={plan.id} className="flex flex-col rounded-lg border border-line bg-raised">
               <div className="border-line/70 border-b px-4 py-4">
-                <p className="font-semibold text-ink text-lg tracking-tight">{plan.label} Daily</p>
+                <p className="font-semibold text-ink text-lg tracking-tight">
+                  {plan.label} LucidDaily
+                </p>
                 <p className="mt-3 font-semibold text-2xl text-up">Free</p>
               </div>
 
