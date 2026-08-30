@@ -76,6 +76,9 @@ export const settle = async (accountId: string, at: Date) => {
 
   if (outcome === "trailing_drawdown") {
     if (await endAccount(accountId, outcome, at)) {
+      // The sweep flattens before it settles, so this only closes what a fill
+      // took through the floor: a click, or a resting order the tape reached.
+      await flatten(accountId, positionsOf(ledger), ledger.marks, at);
       await notifyBreach(accountId, equityCents, trailingFloorOf(rules, peakEquityCents));
     }
 
