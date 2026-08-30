@@ -39,5 +39,7 @@ describe("refuseTicket", () => {
     // then
     expect(refuseTicket(row, ticket(2, "sell"), book, true)).toBeNull();
     expect(refuseTicket(row, ticket(1), book, true)).toMatch(/daily loss limit/);
+    // and a flip through zero is a new position, not a close
+    expect(refuseTicket(row, ticket(3, "sell"), book, true)).toMatch(/daily loss limit/);
   });
 });

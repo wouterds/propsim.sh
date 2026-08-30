@@ -88,10 +88,13 @@ export const refuseTicket = (
 
   const signed = ticket.side === "buy" ? ticket.quantity : -ticket.quantity;
   const after = Math.abs(book.held + signed);
+  // Only ever less of what is already held. A flip through zero opens a position.
+  const reduces =
+    Math.sign(signed) === -Math.sign(book.held) && Math.abs(signed) <= Math.abs(book.held);
 
-  // A shut session takes nothing that grows the position. Closing stays open to
-  // the trader, because refusing it traps them in the trade that shut them.
-  if (locked && after > Math.abs(book.held)) {
+  // A shut session takes nothing new. Closing stays open to the trader, because
+  // refusing it traps them in the trade that shut them.
+  if (locked && !reduces) {
     return "This session hit the daily loss limit. You can still close what is open.";
   }
 
