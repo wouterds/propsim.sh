@@ -1,6 +1,7 @@
 import { getTape } from "@propsim/datasources";
 import {
   carriedInOf,
+  closeStepOf,
   contractOf,
   type Fill,
   heldThroughOf,
@@ -42,9 +43,41 @@ type Watched = {
  * The book only holds still between two prints, so a bar from before the last
  * fill belongs to a position that no longer exists. Earlier sessions are left
  * alone as well: their floors were measured from an anchor that has closed.
+ * Nothing past the close is read either, because the position is flattened
+ * there.
  */
-const readable = (bars: Printed[], opened: number, tradeDate: string) =>
-  bars.filter((bar) => bar.time >= opened && tradeDateOf(new Date(bar.time)) === tradeDate);
+const readable = (bars: Printed[], opened: number, tradeDate: string, until: number) =>
+  bars.filter(
+    (bar) =>
+      bar.time >= opened && bar.time < until && tradeDateOf(new Date(bar.time)) === tradeDate,
+  );
+
+/**
+ * The close, if the tape has shown it since the last print, and the marks to
+ * flatten at: each contract where it last printed inside the session.
+ */
+const closeOf = (one: Watched, tape: Map<string, Printed[]>) => {
+  const closes = one.positions.flatMap((open) => {
+    const found = closeStepOf(tape.get(open.instrument) ?? [], one.opened);
+
+    return found ? [{ instrument: open.instrument, ...found }] : [];
+  });
+
+  if (closes.length === 0) {
+    return null;
+  }
+
+  const at = Math.min(...closes.map((close) => close.at));
+  const marks = new Map(one.ledger.marks);
+
+  for (const close of closes) {
+    if (close.last) {
+      marks.set(close.instrument, close.last.close);
+    }
+  }
+
+  return { at, marks };
+};
 
 const watchedOf = async (account: LiveAccount): Promise<Watched> => {
   const fills = await listFills(account.id);
@@ -116,6 +149,7 @@ export const marking = async () => {
 
   let liquidated = 0;
   let failed = 0;
+  let closed = 0;
 
   // Every account, not only the ones holding something now. A position carried
   // through a release is a breach the account keeps after it is closed.
@@ -133,11 +167,15 @@ export const marking = async () => {
         continue;
       }
 
+      const close = closeOf(one, tape);
+      const until = close?.at ?? Number.POSITIVE_INFINITY;
       const bars = new Map(
         one.positions.flatMap((open) => {
           const found = tape.get(open.instrument);
 
-          return found ? [[open.instrument, readable(found, one.opened, tradeDate)] as const] : [];
+          return found
+            ? [[open.instrument, readable(found, one.opened, tradeDate, until)] as const]
+            : [];
         }),
       );
 
@@ -162,23 +200,34 @@ export const marking = async () => {
       // fill again and the floor forgets every high the position ever saw.
       await raisePeak(one.account.id, peakEquityCents);
 
-      if (!liquidation) {
+      if (liquidation) {
+        // A contract the tape said nothing about is closed where it last printed,
+        // which is the mark the breach was read at.
+        const marks = new Map([...one.ledger.marks, ...liquidation.marks]);
+
+        await flatten(one.account.id, one.positions, marks, liquidation.at);
+        await settle(one.account.id, liquidation.at);
+        liquidated += 1;
         continue;
       }
 
-      // A contract the tape said nothing about is closed where it last printed,
-      // which is the mark the breach was read at.
-      const marks = new Map([...one.ledger.marks, ...liquidation.marks]);
+      // Flat at the close, which is not a breach. Stamped on the close step
+      // itself, so the fill sits where the trader watched the session shut.
+      if (close) {
+        const at = new Date(close.at);
 
-      await flatten(one.account.id, one.positions, marks, liquidation.at);
-      await settle(one.account.id, liquidation.at);
-      liquidated += 1;
+        await flatten(one.account.id, one.positions, close.marks, at);
+        await settle(one.account.id, at);
+        closed += 1;
+      }
     } catch (error) {
       console.error(`marking skipped account ${one.account.id}`, error);
     }
   }
 
-  if (liquidated || failed) {
-    console.log(`marking liquidated ${liquidated} and failed ${failed} on the calendar`);
+  if (liquidated || failed || closed) {
+    console.log(
+      `marking liquidated ${liquidated}, failed ${failed} on the calendar and closed ${closed}`,
+    );
   }
 };
