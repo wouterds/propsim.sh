@@ -55,10 +55,11 @@ stays shut for the rest of the day. That is the rule, not an accident of the sto
 
 ### What a shut session refuses
 
-Nothing that grows the position. A ticket is refused when it would increase the net size, and a
-resting **entry** order will not print into a shut session. A **bracket** still fills, because it
-only ever reduces a position the account already holds, and cancelling a working stop would raise
-the risk rather than lower it.
+Anything that is not a reduction of what is already held. A ticket is refused unless it takes the
+opposite side of the contract's net position for no more than that position, so a flip through zero
+is refused as the new position it is, and a resting **entry** order will not print into a shut
+session. A **bracket** still fills, because it only ever reduces a position the account already
+holds, and cancelling a working stop would raise the risk rather than lower it.
 
 Closing is always allowed. Refusing it would trap a trader in the trade that shut them.
 
@@ -152,18 +153,56 @@ days a year that run 23 or 25 hours still cut in the same place.
 A session opens on where the previous one left the equity, never on where the account stands now. An
 account holding a position across the roll would otherwise move its own daily floor overnight.
 
+### The close
+
+Lucid closes every position at **16:45 ET**, which is 15:45 CT, Monday to Friday, and reopens at
+18:00 ET Sunday to Thursday. Holding past the close is **not a breach** at any firm. `isOpenAt`
+says whether an instant is inside the session, and everything that can print reads it:
+
+- A ticket at a shut instant is refused. Closing a position is not a ticket and stays allowed
+- `matchesOf` fills nothing on a shut step, so a resting order waits for the reopen
+- The sweep reads the steps up to the first shut one for the floors, then flattens every open
+  contract where it last printed inside the session, stamped on the shut step. `closeStepOf` finds
+  both. Working orders go with the flatten, as they do on a liquidation
+
+All of it on the tape's clock, so the trader is cut off when the chart reaches the close and not
+ten minutes before it.
+
+## Position Limits
+
+One cap per account, `maxMicros`, counted over every contract held at once and read at the ticket.
+A ticket that would take the book over it is refused rather than partly filled. `maxMinis` is
+unenforced, which is currently equivalent because the contract catalog is micros only.
+
+Only the contracts on Lucid's approved products list are on the menu. A contract that left it
+stays in `DELISTED` so a stored fill still prices and an open position can still be closed, and
+nothing else can print in it.
+
+## Consistency
+
+Eval only at Lucid, and the target is eval only, so the two are read together. The account is
+**passed** when the balance has banked the target **and** the largest single day's net profit is at
+most `CONSISTENCY_CAP` of the account profit. Under the target, or over the cap, it keeps trading.
+`consistencyOf` reads closed trips net of commission over `balance - start`, and it is the one
+number both the pass and the rules list show.
+
+Lucid adds a cushion of about 4% on top of the 50% and does not publish the formula, so the strict
+50% is what is enforced. It is not a floor and never ends an account.
+
 ## Not Enforced
 
 Listed so nobody assumes otherwise. Each is published on `/rules` and does nothing.
 
 | Rule | Why not |
 | --- | --- |
-| **16:45 ET flatten** | Nothing closes a position at the session close, and no order is ever marked `expired`, though the status exists. Explicitly not a breach at any firm, so this is fidelity rather than correctness |
-| **Consistency, 50%** | Tints a journal row and gates a payout. It is not a floor that ends an account, so the retroactivity argument for snapshotting it onto the account does not reach it |
+| **Holiday early closes** | The close is 15:45 CT every weekday. A market holiday that shuts earlier is not on any calendar here, so a position rides to the usual close on those days |
 | **Hedging across accounts** | Needs more than one account in view, and the ban is about manufacturing a payout rather than about a single account's risk |
 | **Microscalping, HFT** | Both are flags for a human at a real firm, not automatic breaches |
-| **Position limits** | Only `maxMicros` is checked. `maxMinis` is unenforced, which is currently equivalent because the contract catalog is micros only |
+| **Minis** | `maxMinis` is unenforced, which is currently equivalent because the contract catalog is micros only |
 | **Daily profit ceiling** | Lucid moves a trader to live on hitting it. There is nothing to be moved to here |
+| **Payouts and the buffer** | There is no payout, so nothing reads the buffer balance. The target ends the account instead |
+| **Inactivity** | Lucid deletes an account not traded for 30 days. Nothing here is removed for being quiet, only for a sign in that stops |
+| **Account count** | Lucid caps a household at ten evaluations and five funded. Any number can be opened here |
 | **Slippage and the queue** | A limit fills wherever the tape reached it, with nothing in front of it. With commission modelled this is the last place the simulator is kinder than a broker |
 
 ## One Clock: The Tape's
