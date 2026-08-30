@@ -13,9 +13,9 @@ export const Welcome = ({ to }: WelcomeProps) => (
   >
     <Heading style={heading}>Your account is ready</Heading>
     <Text style={paragraph}>
-      Your simulated account carries the rules a funded account runs on. A daily loss limit measured
-      from the balance you open the day with, and a trailing drawdown measured from the highest
-      equity the account has ever reached.
+      Your simulated account carries Lucid Trading&apos;s LucidDaily rules, number for number. A
+      daily loss limit measured from the equity you open the session with, and a trailing drawdown
+      measured from the highest equity the account has ever reached.
     </Text>
     <Text style={paragraph}>
       You trade live market data on a short delay. The dashboard shows both limits and how much room

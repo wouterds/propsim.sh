@@ -19,9 +19,9 @@ export const AccountNews = ({ to, account, href, release, at }: AccountNewsProps
   >
     <Heading style={heading}>{account} is breached</Heading>
     <Callout label="Red folder news">
-      It was holding a position through {release} at {at}. A daily payout account has to be flat
-      from a minute before a red folder release until a minute after it, and trading through one
-      ends the account whether the trade won or lost.
+      It was holding a position through {release} at {at}. A LucidDaily account has to be flat from
+      a minute before a red folder release until a minute after it, and trading through one ends the
+      account whether the trade won or lost.
     </Callout>
     <Text style={paragraph}>
       Opening inside the window counts the same as carrying one in. The rule is to be flat, not to
@@ -29,8 +29,9 @@ export const AccountNews = ({ to, account, href, release, at }: AccountNewsProps
     </Text>
     <ButtonLink href={href}>View account</ButtonLink>
     <Text style={{ ...paragraph, margin: "16px 0 16px" }}>
-      Nothing was ordered and no money was at stake. The terminal shades the window on the chart and
-      counts down to it, so the next one does not have to be a surprise.
+      Nothing was ordered and no money was at stake. The terminal shows a strip ahead of the next
+      release and a banner while its window is open, and the whole calendar is on the red folder
+      events page, so the next one does not have to be a surprise.
     </Text>
   </Layout>
 );

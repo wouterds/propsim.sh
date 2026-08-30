@@ -13,8 +13,9 @@ export const AccountDeleted = ({ to }: AccountDeletedProps) => (
   >
     <Heading style={heading}>Your account was deleted</Heading>
     <Text style={paragraph}>
-      Everything it held is gone and every device has been signed out. This address is free again,
-      so you can start over with it whenever you want.
+      Your address, name and handles are gone and every device has been signed out. What the
+      accounts traded stays on the board without a name on it, as the rules page says. This address
+      is free again, so you can start over with it whenever you want.
     </Text>
     <Text style={paragraph}>
       If this was not you, somebody had your session. Nothing can be recovered, but start a new

@@ -104,8 +104,8 @@ export const NewsWarning = ({
     </div>
 
     <Text style={paragraph}>
-      The terminal shades the window on the chart and counts down to it, so there is no calendar to
-      keep in another tab.
+      The terminal shows a strip ahead of the release and a banner while the window is open, and the
+      whole calendar is on the red folder events page, so there is nothing to keep in another tab.
     </Text>
 
     <ButtonLink href={`${SITE}/dash`}>Check your positions</ButtonLink>
