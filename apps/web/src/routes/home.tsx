@@ -42,7 +42,7 @@ export const meta: Route.MetaFunction = () => [
   ...pageMeta({
     title: "propsim.sh, a free prop trading simulator",
     description:
-      "A simulated futures account with a prop firm's rules on it. Live CME prices on a short delay, a daily loss limit and a trailing drawdown. Free, and no real money.",
+      "A simulated futures account with Lucid Trading's LucidDaily rules on it. Live CME prices on a short delay, a daily loss limit and a trailing drawdown. Free, and no real money.",
     path: "/",
   }),
   { "script:ld+json": SCHEMA },

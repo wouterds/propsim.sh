@@ -13,9 +13,10 @@ const Hero = () => (
         </h1>
 
         <p className="mt-6 max-w-xl text-[1rem] text-muted leading-relaxed">
-          propsim.sh gives you a simulated futures account with a prop firm's rules on it. You trade
-          live CME prices on a short delay, and every fill runs against the two loss limits that end
-          funded accounts. There is nothing to pay, and none of it is real money.
+          propsim.sh gives you a simulated futures account with Lucid Trading&apos;s LucidDaily
+          rules on it. You trade live CME prices on a short delay, and every fill runs against the
+          two loss limits that end funded accounts. There is nothing to pay, and none of it is real
+          money.
         </p>
 
         <Link

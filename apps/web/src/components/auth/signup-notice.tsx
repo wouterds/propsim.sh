@@ -72,8 +72,8 @@ const SignupNotice = ({ open, onOpenChange, onConfirm }: Props) => {
           </Dialog.Title>
 
           <Dialog.Description className="mt-3 text-muted text-sm leading-relaxed">
-            propsim.sh is a simulator. It puts a prop firm's rules on a practice account so you can
-            find out whether you can hold to them, and that is all it does.
+            propsim.sh is a simulator. It puts Lucid Trading&apos;s LucidDaily rules on a practice
+            account so you can find out whether you can hold to them, and that is all it does.
           </Dialog.Description>
 
           <ul className="mt-4 space-y-2">

@@ -9,7 +9,7 @@ export const meta: Route.MetaFunction = () =>
   pageMeta({
     title: "The rules, propsim.sh",
     description:
-      "How the daily loss limit and the trailing drawdown are measured, when they are checked, and what a breach costs you.",
+      "Lucid Trading's LucidDaily rules as enforced here: how the daily loss limit and the trailing drawdown are measured, when they are checked, and what a breach costs you.",
     path: "/rules",
   });
 
@@ -84,9 +84,9 @@ const GROUPS: Group[] = [
         id: "commission",
         title: "Commission comes out of the same balance",
         body: [
-          "Every fill is charged, so a round turn pays twice. A micro is fifty cents a side, micro gold eighty and micro silver a dollar sixty, which is the schedule the firms publish.",
+          "Every fill is charged, so a round turn pays twice. A micro is fifty cents a side, micro gold eighty and micro silver a dollar sixty, which is the schedule Lucid publishes.",
           "It leaves the balance, so it reaches your equity, so both floors and the profit target count it. A round turn at the full micro cap on a 50K spends forty dollars of a twelve hundred dollar daily limit before the trade is right or wrong about anything.",
-          "Exchange and clearing fees sit on top of this at a real firm. Those are not charged here, so the number you see is the floor of what it would cost you, never the ceiling.",
+          "Exchange and clearing fees sit on top of this at Lucid. Those are not charged here, so the number you see is the floor of what it would cost you, never the ceiling.",
         ],
       },
       {
@@ -110,7 +110,7 @@ const GROUPS: Group[] = [
         title: "Be flat for red folder news",
         body: [
           `You have to be flat from ${BEFORE_MINUTES} minute before a high impact US release through ${AFTER_MINUTES} minute after it. You may not hold a position through that window and you may not open one in it. High impact is the red folder on an economic calendar: payrolls, CPI, the FOMC rate decision.`,
-          "On a daily payout account this is a hard breach. It ends the account rather than the day, and it does so whether the trade won or lost. On the slower plans the same firms sell, trading the news is allowed outright. Paying out every day is what buys the stricter rule.",
+          "On a LucidDaily account this is a hard breach. It ends the account rather than the day, and it does so whether the trade won or lost. On LucidFlex, LucidPro and LucidDirect, trading the news is allowed outright. Paying out every day is what buys the stricter rule.",
           "The terminal warns you in a banner while the window is open and for fifteen minutes after it, and the whole calendar is on the red folder events page, so there is nothing to keep in another tab. Nothing stops you trading into it. Being stopped would hide the rule, and the rule is the point.",
         ],
       },
@@ -154,7 +154,7 @@ const GROUPS: Group[] = [
         body: [
           "You are flat by 16:45 New York time, Monday to Friday, and trading reopens at 18:00 New York time, Sunday to Thursday. Whatever is still open at the close is closed for you where it last printed, every working order is cancelled, and a ticket sent while the session is shut is refused. Being flattened at the close does not fail the account, here or at any firm.",
           "The close is read on the tape's clock, so it lands when your chart reaches 16:45 and not ten minutes before. Your session still cuts at 17:00 Chicago time for every rule that resets, which is the same instant as the reopen.",
-          "On a holiday with an early close a real firm has you flat before the market closes. That calendar is not here, so on those days the usual close is what applies.",
+          "On a holiday with an early close Lucid has you flat before the market closes. That calendar is not here, so on those days the usual close is what applies.",
         ],
       },
       {
@@ -177,8 +177,9 @@ const Rules = () => (
           The rules it enforces
         </h1>
         <p className="mt-6 max-w-2xl text-muted leading-relaxed">
-          These are the rules that end funded accounts. They are worth reading once, slowly, because
-          none of them announces itself while you are in a trade.
+          These are Lucid Trading&apos;s LucidDaily rules, taken from their published terms in
+          August 2026 and enforced here the way they enforce them. They are worth reading once,
+          slowly, because none of them announces itself while you are in a trade.
         </p>
 
         <nav

@@ -38,9 +38,9 @@ const Leaderboards = ({ loaderData }: Route.ComponentProps) => {
               Leaderboards
             </h1>
             <p className="mt-6 text-muted leading-relaxed">
-              Every number here was made on a simulated account against a prop firm's rules. No
-              money was at stake and nothing was ordered. Traders show up under the name they chose,
-              or under one the site drew for them.
+              Every number here was made on a simulated account under LucidDaily rules. No money was
+              at stake and nothing was ordered. Traders show up under the name they chose, or under
+              one the site drew for them.
             </p>
           </div>
 

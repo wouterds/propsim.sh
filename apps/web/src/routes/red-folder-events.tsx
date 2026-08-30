@@ -8,7 +8,7 @@ export const meta: Route.MetaFunction = () =>
   pageMeta({
     title: "Red folder events, propsim.sh",
     description:
-      "Every high impact US release, and the window either side of it where a daily payout account has to be flat.",
+      "Every high impact US release, and the window either side of it where a LucidDaily account has to be flat.",
     path: "/red-folder-events",
   });
 
@@ -92,7 +92,7 @@ const Calendar = ({ loaderData }: Route.ComponentProps) => (
           <p className="mt-6 text-muted leading-relaxed">
             Every high impact US release on this week's calendar. You have to be flat from{" "}
             {BEFORE_MINUTES} minute before one through {AFTER_MINUTES} minute after it, and on a
-            daily payout account being caught inside that window ends the account.
+            LucidDaily account being caught inside that window ends the account.
           </p>
         </div>
       </div>

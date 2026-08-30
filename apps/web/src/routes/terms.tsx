@@ -23,7 +23,7 @@ const SECTIONS = [
     title: "What it is not",
     body: [
       "It is not advice. Nothing here is a recommendation to trade anything, and passing a simulated account says nothing about how the same decisions would go with money behind them.",
-      "It is not affiliated with any prop firm. The rules it enforces are modelled on ones those firms publish, so the practice resembles the real thing, and that is the whole of the relationship.",
+      "It is not Lucid Trading and it is not affiliated with them or with any other prop firm. The rules it enforces are copied from the terms Lucid publishes for their LucidDaily account, so the practice resembles the real thing, and that is the whole of the relationship. LucidDaily and Lucid Trading are their names, not ours.",
     ],
   },
   {
