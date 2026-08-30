@@ -54,7 +54,22 @@ const netOf = (fills: Fill[], instrument: string) => {
   return position.side === "buy" ? position.quantity : -position.quantity;
 };
 
-const refuseTicket = (row: AccountRow, ticket: Ticket, held: number, locked: boolean): Refusal => {
+/** What the book holds, signed on the contract the ticket names and summed over the rest. */
+export type Book = { held: number; elsewhere: number };
+
+const bookOf = (fills: Fill[], instrument: string): Book => ({
+  held: netOf(fills, instrument),
+  elsewhere: positionsOf(ledgerOf(fills))
+    .filter((open) => open.instrument !== instrument)
+    .reduce((total, open) => total + open.quantity, 0),
+});
+
+export const refuseTicket = (
+  row: Pick<AccountRow, "endedAt" | "maxMicros">,
+  ticket: Ticket,
+  book: Book,
+  locked: boolean,
+): Refusal => {
   if (row.endedAt) {
     return "This account is closed. Open a new one to keep trading.";
   }
@@ -72,15 +87,17 @@ const refuseTicket = (row: AccountRow, ticket: Ticket, held: number, locked: boo
   }
 
   const signed = ticket.side === "buy" ? ticket.quantity : -ticket.quantity;
+  const after = Math.abs(book.held + signed);
 
   // A shut session takes nothing that grows the position. Closing stays open to
   // the trader, because refusing it traps them in the trade that shut them.
-  if (locked && Math.abs(held + signed) > Math.abs(held)) {
+  if (locked && after > Math.abs(book.held)) {
     return "This session hit the daily loss limit. You can still close what is open.";
   }
 
-  if (Math.abs(held + signed) > row.maxMicros) {
-    return `This plan holds at most ${row.maxMicros} micros at once.`;
+  // One cap over every contract held, not one per contract.
+  if (after + book.elsewhere > row.maxMicros) {
+    return `This plan holds at most ${row.maxMicros} micros at once, across every contract.`;
   }
 
   return null;
@@ -102,7 +119,7 @@ export const placeOrder = async (
   const refusal = refuseTicket(
     row,
     ticket,
-    netOf(fills, ticket.instrument),
+    bookOf(fills, ticket.instrument),
     await lockedFor(row, at),
   );
 
