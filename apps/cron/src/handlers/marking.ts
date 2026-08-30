@@ -64,7 +64,9 @@ const closeOf = (one: Watched, tape: Map<string, Printed[]>) => {
     return found ? [{ instrument: open.instrument, ...found }] : [];
   });
 
-  if (closes.length === 0) {
+  // Every contract, or none. A tape a step behind would be closed at its last
+  // fill, and the close is certain to arrive on the next sweep.
+  if (closes.length < one.positions.length) {
     return null;
   }
 
@@ -156,7 +158,9 @@ export const marking = async () => {
   // through a release is a breach the account keeps after it is closed.
   for (const one of watched) {
     try {
-      const through = heldThroughOf(one.fills, windows, tapeNow);
+      const close = one.positions.length === 0 ? null : closeOf(one, tape);
+      // Flat from the close, so a release after it was not held through.
+      const through = heldThroughOf(one.fills, windows, Math.min(tapeNow, close?.at ?? tapeNow));
 
       if (through) {
         await failForNews(one.account.id, through.titles.join(", "), through.at);
@@ -168,7 +172,6 @@ export const marking = async () => {
         continue;
       }
 
-      const close = closeOf(one, tape);
       const until = close?.at ?? Number.POSITIVE_INFINITY;
       const bars = new Map(
         one.positions.flatMap((open) => {
