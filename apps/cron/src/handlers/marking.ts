@@ -12,6 +12,7 @@ import {
   type Printed,
   peakOf,
   positionsOf,
+  priceUnits,
   revealedOf,
   tradeDateOf,
 } from "@propsim/engine";
@@ -72,7 +73,7 @@ const closeOf = (one: Watched, tape: Map<string, Printed[]>) => {
 
   for (const close of closes) {
     if (close.last) {
-      marks.set(close.instrument, close.last.close);
+      marks.set(close.instrument, priceUnits(close.last.close));
     }
   }
 
