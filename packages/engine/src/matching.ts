@@ -1,5 +1,6 @@
 import type { Side } from "./fills";
 import { priceUnits } from "./money";
+import { isOpenAt } from "./session";
 
 /**
  * Structural on purpose. A Yahoo candle, a stored bar and a literal in a spec
@@ -109,6 +110,11 @@ export const matchesOf = <T extends Resting>(orders: T[], bars: Bar[]): Match<T>
   }
 
   for (const bar of [...bars].sort((a, b) => a.time - b.time)) {
+    // A shut session prints nothing. The order rests until it reopens.
+    if (!isOpenAt(new Date(bar.time))) {
+      continue;
+    }
+
     let taken = 0;
 
     for (const order of queue) {

@@ -22,6 +22,20 @@ const resting = (order: Partial<Resting> & Pick<Resting, "id" | "side" | "type">
 });
 
 describe("matchesOf", () => {
+  it("should fill nothing on a step shown while the session was shut", () => {
+    // given a buy stop at 100, resting from before the close
+    const order = resting({ id: "a", side: "buy", type: "stop" });
+    // and two steps through it: one at 15:45 Chicago and one after the roll
+    const shut = { ...bar(0, 99, 101, 98), time: new Date("2026-08-25T20:45:00Z").getTime() };
+    const reopened = { ...bar(0, 99, 101, 98), time: new Date("2026-08-25T22:00:00Z").getTime() };
+
+    // when
+    const matches = matchesOf([order], [shut, reopened]);
+
+    // then only the step after the roll printed
+    expect(matches.map((match) => match.at.getTime())).toEqual([reopened.time]);
+  });
+
   it("should leave a limit resting on a bar that only touched its price", () => {
     // given a buy limit at 100 and a bar whose low is exactly 100
     const order = resting({ id: "a", side: "buy", type: "limit" });
