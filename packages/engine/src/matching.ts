@@ -110,7 +110,6 @@ export const matchesOf = <T extends Resting>(orders: T[], bars: Bar[]): Match<T>
   }
 
   for (const bar of [...bars].sort((a, b) => a.time - b.time)) {
-    // A shut session prints nothing. The order rests until it reopens.
     if (!isOpenAt(new Date(bar.time))) {
       continue;
     }

@@ -4,8 +4,8 @@ import type { Printed } from "./dance";
 export const SESSION_OPEN_HOUR = 17;
 
 /** Flat by 16:45 New York, which is a quarter to four in Chicago. */
-export const SESSION_CLOSE_HOUR = 15;
-export const SESSION_CLOSE_MINUTE = 45;
+const SESSION_CLOSE_HOUR = 15;
+const SESSION_CLOSE_MINUTE = 45;
 
 const CHICAGO = new Intl.DateTimeFormat("en-US", {
   timeZone: "America/Chicago",
@@ -48,7 +48,7 @@ export const isOpenAt = (at: Date) => {
   return !closed || rolled;
 };
 
-export type Close = {
+type Close = {
   /** The first step shown while the session was shut. */
   at: number;
   /** The last step shown while it was open, or null when nothing was. */
