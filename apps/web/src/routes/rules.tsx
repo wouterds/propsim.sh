@@ -76,6 +76,7 @@ const GROUPS: Group[] = [
         body: [
           `Your largest winning day, divided by the profit on the account, has to come out at ${Math.round(CONSISTENCY_CAP * 100)}% or less. Make the whole target in one session and you have not passed, you have gambled once and got away with it.`,
           "The denominator is what you have actually made, not what you made on your good days, so a losing day pushes the number the wrong way twice.",
+          "Reaching the target with your best day over the line does not pass you. The account keeps trading until the share comes down, and only then is it passed. It never ends an account on its own.",
           "This one applies while you are proving yourself. Once the account is funded the requirement is gone.",
         ],
       },
@@ -93,7 +94,7 @@ const GROUPS: Group[] = [
         title: "Position limits are counted across everything open",
         body: [
           `Each plan caps what you can hold at once: ${PLANS.map((plan) => `${plan.label} at ${plan.maxMinis} minis`).join(", ")}. Ten micros count as one mini, so the two numbers are one limit said twice.`,
-          "The cap is on what is open at the same moment, not on what you traded over the day.",
+          "The cap is on what is open at the same moment, added up across every contract, not on what you traded over the day. A ticket that would take you over it is refused.",
         ],
       },
     ],
@@ -127,7 +128,7 @@ const GROUPS: Group[] = [
         title: "Hedging across accounts is not trading",
         body: [
           "Taking opposing positions on the same instrument in two accounts is prohibited. Long in one and short in the other guarantees one of them profits whichever way the market goes, which is not a strategy, it is a way of manufacturing a payout.",
-          "It counts across accounts, across instruments that track each other, between minis and micros of the same product, and across firms. Inside one account you may hold both sides, because there is nothing to manufacture.",
+          "It counts across accounts, across instruments that track each other, between minis and micros of the same product, and across firms. Inside one account a firm lets you hold micros one way and minis the other, because there is nothing to manufacture. Here a contract nets, so buying while short only reduces the short.",
           "Detection is automated and the first finding is not the end: the accounts are rolled back to the previous day's balance. A repeat breaches all of them.",
         ],
       },
@@ -151,8 +152,9 @@ const GROUPS: Group[] = [
         id: "hours",
         title: "The session closes, and closing it is not a breach",
         body: [
-          "A real firm has you flat by 16:45 New York time, Monday to Friday, and reopens at 18:00 New York time, Sunday to Thursday. On a holiday with an early close, the early close is the deadline. Being flattened at the close does not fail the account at any firm, and nothing here closes your position for you, so this one is left to you.",
-          "The simulator does not close you out yet. Your session still cuts at 17:00 Chicago time for every rule that resets, so the day a trade belongs to is right, but a position left open rides through the close instead of being flattened at it.",
+          "You are flat by 16:45 New York time, Monday to Friday, and trading reopens at 18:00 New York time, Sunday to Thursday. Whatever is still open at the close is closed for you where it last printed, every working order is cancelled, and a ticket sent while the session is shut is refused. Being flattened at the close does not fail the account, here or at any firm.",
+          "The close is read on the tape's clock, so it lands when your chart reaches 16:45 and not ten minutes before. Your session still cuts at 17:00 Chicago time for every rule that resets, which is the same instant as the reopen.",
+          "On a holiday with an early close a real firm has you flat before the market closes. That calendar is not here, so on those days the usual close is what applies.",
         ],
       },
       {
