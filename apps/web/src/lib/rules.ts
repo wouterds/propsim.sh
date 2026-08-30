@@ -9,7 +9,7 @@ import {
   trailingFloorOf,
 } from "./accounts";
 import { formatMoney } from "./format";
-import { concentrationOf, greenDaysOf } from "./journal";
+import { greenDaysOf } from "./journal";
 
 export type Rule = {
   id: string;
@@ -26,10 +26,25 @@ export type Rule = {
 const endedOn = (account: Account, reason: Account["endedReason"]): boolean =>
   account.endedReason === reason;
 
+const targetDetailOf = (account: Account, left: number, overweight: boolean) => {
+  const plan = planOf(account);
+
+  if (left > 0) {
+    return `${formatMoney(left)} left to reach ${formatMoney(targetOf(account))}.`;
+  }
+
+  if (overweight && account.status !== "passed") {
+    return `Reached, but one session holds too much of it. Keep trading until your best day is ${Math.round(CONSISTENCY_CAP * 100)}% or less of the profit.`;
+  }
+
+  return `Met. ${formatMoney(netPnlOf(account))} against a target of ${formatMoney(plan.profitTarget)}.`;
+};
+
 export const rulesOf = (account: Account): Rule[] => {
   const plan = planOf(account);
   const daysTraded = account.journal.length;
-  const concentration = concentrationOf(account.journal);
+  const concentration = account.consistency;
+  const overweight = concentration !== null && concentration > CONSISTENCY_CAP;
   const left = targetOf(account) - account.balance;
 
   return [
@@ -62,10 +77,7 @@ export const rulesOf = (account: Account): Rule[] => {
     {
       id: "target",
       label: "Profit target",
-      detail:
-        left <= 0
-          ? `Met. ${formatMoney(netPnlOf(account))} against a target of ${formatMoney(plan.profitTarget)}.`
-          : `${formatMoney(left)} left to reach ${formatMoney(targetOf(account))}.`,
+      detail: targetDetailOf(account, left, overweight),
       state: left <= 0 || endedOn(account, "target_met") ? "clean" : "watch",
     },
     {
@@ -75,7 +87,7 @@ export const rulesOf = (account: Account): Rule[] => {
         concentration === null
           ? "No winning day yet. It applies once the account is in profit."
           : `Your best day is ${Math.round(concentration * 100)}% of everything won.`,
-      state: concentration !== null && concentration > CONSISTENCY_CAP ? "watch" : "clean",
+      state: overweight ? "watch" : "clean",
     },
     {
       id: "green",

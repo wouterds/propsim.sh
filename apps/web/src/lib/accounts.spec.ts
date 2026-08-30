@@ -15,6 +15,7 @@ const account = (overrides: Partial<Account> = {}): Account => ({
   peakEquity: plan.size,
   sessionOpenEquity: plan.size,
   feesPaid: 0,
+  consistency: null,
   endedAt: null,
   endedReason: null,
   journal: [],

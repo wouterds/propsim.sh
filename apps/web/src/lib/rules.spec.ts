@@ -16,6 +16,7 @@ const account = (endedReason: Ending | null): Account => ({
   peakEquity: 52_382.5,
   sessionOpenEquity: 50_000,
   feesPaid: 5,
+  consistency: null,
   endedAt: endedReason === null ? null : "2026-08-26T13:51:00.000Z",
   endedReason,
   journal: [],

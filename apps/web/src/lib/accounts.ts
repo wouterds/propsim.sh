@@ -43,6 +43,8 @@ export type Account = {
   sessionOpenEquity: number;
   /** Commission taken out of the balance so far. */
   feesPaid: number;
+  /** Best day over account profit. Null until the account is in profit. */
+  consistency: number | null;
   endedAt: string | null;
   endedReason: Ending | null;
   journal: JournalDay[];

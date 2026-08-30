@@ -1,7 +1,7 @@
 import { planOr } from "@propsim/plans";
 import { describe, expect, it } from "vitest";
 import { type Account, combinedJournalOf } from "./accounts";
-import { concentrationOf, type JournalDay, winRateOf } from "./journal";
+import { type JournalDay, winRateOf } from "./journal";
 
 const day = (pnl: number, trades = 1, wins = 0): JournalDay => ({
   date: "2026-08-25",
@@ -30,32 +30,6 @@ describe("winRateOf", () => {
   });
 });
 
-describe("concentrationOf", () => {
-  it("should return null when nothing was won", () => {
-    // given
-    const days = [day(-100), day(-40)];
-
-    // then
-    expect(concentrationOf(days)).toBeNull();
-  });
-
-  it("should measure the best day against net profit, so a loss makes it worse", () => {
-    // given 800 won and 400 given back, which is 400 of account profit
-    const days = [day(600), day(200), day(-400)];
-
-    // then
-    expect(concentrationOf(days)).toBe(1.5);
-  });
-
-  it("should give nothing back while the account is not in profit", () => {
-    // given a best day that never made the account whole
-    const days = [day(600), day(-900)];
-
-    // then
-    expect(concentrationOf(days)).toBeNull();
-  });
-});
-
 const plan = planOr("daily-50k");
 
 const account = (journal: JournalDay[]): Account => ({
@@ -69,6 +43,7 @@ const account = (journal: JournalDay[]): Account => ({
   peakEquity: plan.size,
   sessionOpenEquity: plan.size,
   feesPaid: 0,
+  consistency: null,
   endedAt: null,
   endedReason: null,
   journal,

@@ -33,18 +33,3 @@ export const worstDayOf = (days: JournalDay[]) =>
     (worst, day) => (worst && worst.pnl <= day.pnl ? worst : day),
     null,
   );
-
-/**
- * Largest single day profit over account profit, which is the formula the firms
- * publish. The denominator is net, so a losing day makes the share worse.
- */
-export const concentrationOf = (days: JournalDay[]) => {
-  const profit = days.reduce((total, day) => total + day.pnl, 0);
-  const best = bestDayOf(days);
-
-  if (profit <= 0 || !best || best.pnl <= 0) {
-    return null;
-  }
-
-  return best.pnl / profit;
-};

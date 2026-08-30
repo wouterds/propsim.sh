@@ -8,6 +8,7 @@ import {
 import {
   balanceOf,
   cents,
+  consistencyOf,
   type DayAnchor,
   dailyFloorOf,
   equityOf,
@@ -207,6 +208,7 @@ const viewOf = (row: AccountRow, ledger: Ledger, anchors: DayAnchor[], now: Date
     equity: toDollars(equityCents),
     peakEquity: toDollars(peakEquityCents),
     feesPaid: toDollars(ledger.feesCents),
+    consistency: consistencyOf(ledger),
     endedAt: row.endedAt ? row.endedAt.toISOString() : null,
     endedReason: row.endedReason,
     // No session row yet. The anchor is where the previous session left the

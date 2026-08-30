@@ -24,6 +24,7 @@ const ACCOUNT: Account = {
   peakEquity: 25_182,
   sessionOpenEquity: 24_914,
   feesPaid: 0,
+  consistency: null,
   endedAt: null,
   endedReason: null,
   journal: [],
