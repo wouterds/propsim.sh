@@ -26,13 +26,26 @@ export const CATEGORIES: Category[] = [
         slug: "what-is-propsim",
         title: "What is propsim.sh?",
         summary:
-          "A simulated futures account with a prop firm's rules on it, traded against live CME prices on a short delay.",
+          "A simulated futures account with Lucid Trading's LucidDaily rules on it, traded against live CME prices on a short delay.",
         body: [
-          "You get a starting balance, a profit target, a daily loss limit and a trailing drawdown. You trade real CME futures prices against them, and the rules are enforced the way a funded account enforces them.",
+          "You get a starting balance, a profit target, a daily loss limit and a trailing drawdown, copied from Lucid Trading's LucidDaily terms. You trade real CME futures prices against them, and the rules are enforced the way Lucid enforces them.",
           "The point is narrow. Prop firms charge for an evaluation and charge again for a reset, and most people who fail one fail on a rule rather than on a bad read. This lets you find out which rule ends you, before you pay anyone to find out for you.",
           "It is not a replay tool and not a backtester. The tape is live.",
         ],
-        related: ["is-it-free", "is-real-money-involved", "is-this-a-replay"],
+        related: ["whose-rules", "is-it-free", "is-real-money-involved", "is-this-a-replay"],
+      },
+      {
+        slug: "whose-rules",
+        title: "Whose rules are these?",
+        summary:
+          "Lucid Trading's LucidDaily account, copied number for number from their published terms in August 2026. We are not Lucid and not affiliated with them.",
+        body: [
+          "Every plan here is the LucidDaily account with the daily loss limit on and an intraday drawdown, which is the cheapest way to buy one. The sizes, the profit targets, the trailing drawdown and where it locks, the daily loss limits, the position caps, the per side commissions, the red folder news window and the 16:45 close are all theirs, checked against their help centre in August 2026.",
+          "One thing is blended. Lucid sells an evaluation with a profit target and a funded account with the intraday drawdown and the news rule. Here you get both at once, so one account tests everything that can end you at either stage.",
+          "LucidDaily and Lucid Trading are their names, not ours. propsim.sh is not Lucid Trading, is not affiliated with them, and passing here carries no weight with them or anyone else. If their terms change, the numbers here change with them.",
+          "Where this differs from the real thing is listed under fidelity, and everything Lucid publishes that is not enforced here is under what is not enforced.",
+        ],
+        related: ["what-is-not-enforced", "bars-not-ticks", "do-you-pay-out"],
       },
       {
         slug: "is-it-free",
@@ -61,7 +74,7 @@ export const CATEGORIES: Category[] = [
         summary:
           "No. Passing an account here proves you met the rules. It does not fund you and it is not an application to any firm.",
         body: [
-          "There is no payout, no funded stage and no route to one. We are not a prop firm, we are not affiliated with one, and passing here carries no weight with any of them.",
+          "There is no payout, no funded stage and no route to one. We are not a prop firm, we are not Lucid Trading or affiliated with them, and passing here carries no weight with them or anyone else.",
           "What you get is the answer to one question: can you hold to these rules for the length of an evaluation. That answer is worth having before you buy one.",
         ],
         related: ["is-real-money-involved", "how-many-days"],
@@ -113,7 +126,7 @@ export const CATEGORIES: Category[] = [
           "Seven CME micros: the four equity index contracts, gold, silver and crude oil. The list is the one Lucid approves.",
         body: [
           "Micro E-mini S&P, Nasdaq, Russell and Dow, plus micro gold, silver and crude oil. Pick one from the contract menu above the chart.",
-          "Micro copper and micro natural gas were offered once and are not on the firm's approved list, so they have left the menu. A position still open in one can be closed and nothing else.",
+          "Micro copper and micro natural gas were offered once and are not on Lucid's approved list, so they have left the menu. A position still open in one can be closed and nothing else.",
           "Micros only for now. The full size and mini contracts are not offered, so the mini position cap on each plan is not reachable yet.",
           "Position limits are counted in micros. The mini limits published on each plan are not reachable yet, because there are no minis to trade.",
         ],
@@ -174,7 +187,7 @@ export const CATEGORIES: Category[] = [
           "As many as you like, on any plan, at the same time. Nothing is charged and nothing is throttled.",
         body: [
           "There is no cap and no cooldown. Run a 25K and a 150K side by side if you want to see how the same trading behaves against different room.",
-          "One rule does span accounts at a real firm: hedging the same instrument across two of them is banned, because it manufactures a payout rather than proving anything. That one is not enforced here, because it needs more than one account in view at once.",
+          "One rule does span accounts at Lucid: hedging the same instrument across two of them is banned, because it manufactures a payout rather than proving anything. That one is not enforced here, because it needs more than one account in view at once.",
         ],
         related: ["starting-again", "what-is-not-enforced"],
       },
@@ -298,7 +311,7 @@ export const CATEGORIES: Category[] = [
         body: [
           "Red folder means the high impact entries on the economic calendar: payrolls, CPI, the FOMC rate decision and their equivalents.",
           "You have to be flat from a minute before the release until a minute after it. Opening a position inside the window counts the same as holding one through it, because the rule is to be flat rather than to finish the window in profit.",
-          "On a daily payout account this ends the account rather than the day, and it counts even if the trade was profitable. Nothing is flattened for you when it happens: the position is the breach, and closing it would rewrite what you were holding when the release printed.",
+          "On a LucidDaily account this ends the account rather than the day, and it counts even if the trade was profitable. Nothing is flattened for you when it happens: the position is the breach, and closing it would rewrite what you were holding when the release printed.",
           "Nothing stops you trading into the window either. Being stopped would hide the rule, and the rule is the point. The terminal warns you in a banner while a window is open and for fifteen minutes after it, and the calendar is on the red folder events page.",
           "The window is judged on the tape's clock, not your wall clock. Because the feed runs behind, the release reaches your chart later than it reaches the exchange, and the rule follows what you were shown.",
         ],
@@ -310,10 +323,10 @@ export const CATEGORIES: Category[] = [
         summary:
           "Yes, per side, so a round turn pays twice. It leaves the balance, so both floors and the profit target count it.",
         body: [
-          "Every fill is charged at the rate the firms publish. A micro is fifty cents a side, micro gold eighty, and micro silver a dollar sixty.",
+          "Every fill is charged at the rate Lucid publishes. A micro is fifty cents a side, micro gold eighty, and micro silver a dollar sixty.",
           "It comes out of the balance, so it reaches your equity, so it reaches both floors and the target. A round turn at the full micro cap on a 50K spends forty dollars of a twelve hundred dollar daily limit before the trade is right or wrong about anything.",
           "The rate is stamped onto each fill as it prints, so a change to the schedule can never reprice a trade you have already taken.",
-          "Exchange, clearing and NFA fees sit on top of this at a real firm. Those are not charged here, so the number you see is the floor of what it would cost you and never the ceiling.",
+          "Exchange, clearing and NFA fees sit on top of this at Lucid. Those are not charged here, so the number you see is the floor of what it would cost you and never the ceiling.",
         ],
         related: ["how-fills-are-decided", "position-limits", "open-positions-count"],
       },
@@ -327,7 +340,7 @@ export const CATEGORIES: Category[] = [
           "The denominator is what you have actually made rather than what you made on your good days, so a losing day pushes the number the wrong way twice.",
           "This one applies while you are proving yourself. Once an account is funded the requirement is gone.",
           "It gates the pass. Reach the target with your best day over half and the account keeps trading until the share comes down, and only then is it passed. It is not a floor and it never ends an account on its own.",
-          "The firm allows a small cushion over the fifty percent and does not publish how it is worked out, so the strict fifty is what applies here.",
+          "Lucid allows a small cushion over the fifty percent and does not publish how it is worked out, so the strict fifty is what applies here.",
         ],
         related: ["how-many-days", "what-is-not-enforced"],
       },
@@ -341,7 +354,7 @@ export const CATEGORIES: Category[] = [
           "Being flattened at the close is not a breach, here or at any firm that sells these accounts. The account carries on at the next open.",
           "The close is read on the tape's clock, so it lands when your chart reaches 16:45 rather than ten minutes before it.",
           "The accounting day rolls at 17:00 Chicago time, which is where your daily loss limit resets and where a new session opens on whatever equity the last one left behind. A session opens on where the previous one left the equity, never on where the account stands now, or a position carried across the roll would move its own daily floor overnight.",
-          "On a holiday with an early close a real firm has you flat before the market closes. That calendar is not here, so on those days the usual close applies.",
+          "On a holiday with an early close Lucid has you flat before the market closes. That calendar is not here, so on those days the usual close applies.",
         ],
         related: ["daily-loss-limit-vs-trailing-drawdown", "what-is-not-enforced"],
       },
@@ -354,7 +367,7 @@ export const CATEGORIES: Category[] = [
           "Automated systems and copiers are permitted, and so is genuine scalping and averaging into a position.",
           "The bans are aimed at manufacturing a payout rather than at trading: hedging the same instrument across two accounts, microscalping to work against how a simulator fills, and high frequency algorithms.",
           "You carry the consequences of your own software. A bot that breaches the account has breached it.",
-          "At a real firm these are flags for a human to look at rather than automatic breaches, and none of them is enforced automatically here either.",
+          "At Lucid these are flags for a human to look at rather than automatic breaches, and none of them is enforced automatically here either.",
         ],
         related: ["what-is-not-enforced", "how-many-accounts"],
       },
@@ -364,7 +377,7 @@ export const CATEGORIES: Category[] = [
     slug: "fidelity",
     title: "Where this differs from a real account",
     description:
-      "Every place the simulator is not the firm. Worth reading, because a difference you do not know about is the one that misleads you.",
+      "Every place the simulator is not Lucid. Worth reading, because a difference you do not know about is the one that misleads you.",
     articles: [
       {
         slug: "bars-not-ticks",
@@ -372,7 +385,7 @@ export const CATEGORIES: Category[] = [
         summary:
           "No. They are read against five second steps of a delayed feed's one minute bars, so the minute that broke a floor is known and the exact second inside it is not.",
         body: [
-          "A real firm reads live ticks. This reads the steps the newest candle is revealed in, taking each open position at the worst price inside a step, which is the low if you are long and the high if you are short.",
+          "Lucid reads live ticks. This reads the steps the newest candle is revealed in, taking each open position at the worst price inside a step, which is the low if you are long and the high if you are short.",
           "A floor crossed and recovered inside a single minute is still caught, because the minute's extreme is what gets read. What is not known is the instant it happened.",
           "Your peak is ratcheted from the same steps, at the favourable end. A step does not say which end printed first, so its own high is never allowed to drag the floor over its own low.",
           "A firm reading live ticks would have caught you in the same minute. The difference is precision within it, not outcome.",
@@ -410,12 +423,12 @@ export const CATEGORIES: Category[] = [
         summary:
           "Holiday early closes, cross account hedging, microscalping, the mini position caps, the daily profit ceiling, and everything to do with payouts.",
         body: [
-          "Each of these is a rule the firm publishes and is worth knowing, but none of them will stop you or end an account here.",
+          "Each of these is a rule Lucid publishes and is worth knowing, but none of them will stop you or end an account here.",
           "The close is 16:45 New York time every weekday. A market holiday that shuts earlier is not on any calendar here, so on those days a position rides to the usual close.",
-          "Cross account hedging needs more than one account in view at once. Microscalping and high frequency trading are flags for a human at a real firm rather than automatic breaches.",
-          "Only the micro position cap is checked, because the catalog is micros only. The daily profit ceiling moves a trader to live at a real firm, and there is nothing here to be moved to.",
+          "Cross account hedging needs more than one account in view at once. Microscalping and high frequency trading are flags for a human at Lucid rather than automatic breaches.",
+          "Only the micro position cap is checked, because the catalog is micros only. The daily profit ceiling moves a trader to live at Lucid, and there is nothing here to be moved to.",
           "There is no payout, so nothing reads a buffer balance or a payout split. The target ends the account instead, once consistency allows it.",
-          "A firm also deletes an account not traded for thirty days and caps how many a household can hold. Neither applies here.",
+          "Lucid also deletes an account not traded for thirty days and caps how many a household can hold. Neither applies here.",
           "Everything else on the rules page is enforced.",
         ],
         related: ["session-hours", "consistency", "position-limits", "bots-and-copiers"],
@@ -435,9 +448,9 @@ export const categoryOf = (slug: string) =>
 /** The handful worth answering before someone has decided to sign up. */
 export const HOME_SLUGS = [
   "what-is-propsim",
+  "whose-rules",
   "is-it-free",
   "is-real-money-involved",
   "where-prices-come-from",
-  "why-the-tape-is-delayed",
   "what-happens-when-you-breach",
 ];
