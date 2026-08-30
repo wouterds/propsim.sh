@@ -78,7 +78,7 @@ export const rulesOf = (account: Account): Rule[] => {
       id: "target",
       label: "Profit target",
       detail: targetDetailOf(account, left, overweight),
-      state: left <= 0 || endedOn(account, "target_met") ? "clean" : "watch",
+      state: (left <= 0 && !overweight) || endedOn(account, "target_met") ? "clean" : "watch",
     },
     {
       id: "consistency",
