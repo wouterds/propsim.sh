@@ -9,7 +9,7 @@ export const meta: Route.MetaFunction = () =>
   pageMeta({
     title: "Account plans, propsim.sh",
     description:
-      "Four simulated futures accounts, from 25K to 150K, each carrying the profit target, trailing drawdown and daily loss limit a funded account carries. All free.",
+      "Four simulated futures accounts, from 25K to 150K, carrying Lucid Trading's LucidDaily rules number for number: the profit target, the trailing drawdown and the daily loss limit. All free.",
     path: "/plans",
   });
 
@@ -21,10 +21,16 @@ const Plans = () => (
           Account plans
         </h1>
         <p className="mt-6 max-w-2xl text-muted leading-relaxed">
-          Every plan carries the rules a funded account carries: a profit target to reach, a daily
-          loss limit that ends the day, and a trailing drawdown that ends the account. They differ
-          in the balance you start with and in how many contracts you can hold. None of them costs
-          anything.
+          Every plan is a copy of Lucid Trading&apos;s LucidDaily account, the one with the daily
+          loss limit on and an intraday drawdown, taken from their published terms in August 2026
+          number for number: the profit target, the trailing drawdown, the daily loss limit, the
+          position cap, the commissions and the news rule. They differ in the balance you start with
+          and in how many contracts you can hold. None of them costs anything.
+        </p>
+        <p className="mt-4 max-w-2xl text-faint text-sm leading-relaxed">
+          LucidDaily is Lucid Trading&apos;s product and name. propsim.sh is not Lucid Trading, is
+          not affiliated with them, and passing here means nothing to them. It is the same rulebook
+          for free, so you can find out how you do under it before you pay for it.
         </p>
 
         <div className="mt-12 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">

@@ -47,8 +47,8 @@ const NewAccount = ({ loaderData, actionData }: Route.ComponentProps) => {
     <main className="mx-auto w-full max-w-4xl px-5 py-8 sm:px-8">
       <h1 className="font-semibold text-ink text-xl tracking-tight">New account</h1>
       <p className="mt-2 max-w-xl text-muted text-sm leading-relaxed">
-        Every plan is free. They differ in the balance you start with and in how much room the rules
-        give you before the account is cut.
+        Every plan is free and carries Lucid Trading&apos;s LucidDaily rules. They differ in the
+        balance you start with and in how much room the rules give you before the account is cut.
       </p>
 
       <Form method="post" className="mt-8">

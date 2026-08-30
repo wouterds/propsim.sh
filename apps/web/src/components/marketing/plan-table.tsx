@@ -9,8 +9,9 @@ const PlanTable = () => (
     <div className="mx-auto max-w-6xl px-5 py-20 sm:px-8">
       <h2 className="font-semibold text-2xl text-ink tracking-tight">Pick a size</h2>
       <p className="mt-3 max-w-xl text-muted leading-relaxed">
-        The same rule sets the funded firms sell, at no cost. A bigger balance buys more room in
-        dollars and no more room in percent, which is the part most people get wrong.
+        Lucid Trading&apos;s LucidDaily rule set, number for number, at no cost. A bigger balance
+        buys more room in dollars and no more room in percent, which is the part most people get
+        wrong.
       </p>
 
       {/* Positioned, so the screen reader label in the header resolves inside the
