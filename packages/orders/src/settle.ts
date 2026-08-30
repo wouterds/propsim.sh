@@ -9,6 +9,7 @@ import {
   tradeDateOf,
   trailingFloorOf,
 } from "@propsim/engine";
+import { CONSISTENCY_CAP } from "@propsim/plans";
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { findAccount, rulesOf } from "./accounts";
 import { touchTradingDay } from "./days";
@@ -71,7 +72,7 @@ export const settle = async (accountId: string, at: Date) => {
 
   // Nothing re-reads the stored low for this. The sweep judged it against the
   // peak of its own moment and ended the account there if it had to.
-  const outcome = outcomeOf(rules, ledger, peakEquityCents);
+  const outcome = outcomeOf(rules, ledger, peakEquityCents, CONSISTENCY_CAP);
 
   if (outcome === "trailing_drawdown") {
     if (await endAccount(accountId, outcome, at)) {

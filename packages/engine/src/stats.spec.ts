@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import type { RoundTrip } from "./fills";
-import { statsOf } from "./stats";
+import { type Fill, ledgerOf, type RoundTrip, type Side } from "./fills";
+import { priceUnits } from "./money";
+import { consistencyOf, statsOf } from "./stats";
 
 const trip = (
   pnlCents: number,
@@ -96,5 +97,54 @@ describe("statsOf", () => {
     expect(stats.sessions).toBe(2);
     expect(stats.bestDayCents).toBe(900);
     expect(stats.worstDayCents).toBe(-300);
+  });
+});
+
+describe("consistencyOf", () => {
+  const START = 5_000_000;
+  let minute = 0;
+
+  const fill = (side: Side, price: number, day: number): Fill => ({
+    instrument: "MES",
+    side,
+    quantity: 1,
+    price: priceUnits(price),
+    feeCents: 0,
+    at: new Date(Date.UTC(2026, 7, day, 14, minute++)),
+    tradeDate: `2026-08-${day}`,
+  });
+
+  it("should say nothing while the account is not in profit", () => {
+    // given a best day that never made the account whole
+    const held = ledgerOf(
+      [
+        fill("buy", 5_000, 25),
+        fill("sell", 5_120, 25),
+        fill("buy", 5_000, 26),
+        fill("sell", 4_820, 26),
+      ],
+      START,
+    );
+
+    // then
+    expect(consistencyOf(held)).toBeNull();
+  });
+
+  it("should measure the best day against net profit, so a loss makes it worse", () => {
+    // given 600 won, 200 won and 400 given back, which is 400 of account profit
+    const held = ledgerOf(
+      [
+        fill("buy", 5_000, 24),
+        fill("sell", 5_120, 24),
+        fill("buy", 5_000, 25),
+        fill("sell", 5_040, 25),
+        fill("buy", 5_000, 26),
+        fill("sell", 4_920, 26),
+      ],
+      START,
+    );
+
+    // then
+    expect(consistencyOf(held)).toBe(1.5);
   });
 });

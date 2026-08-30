@@ -1,4 +1,4 @@
-import type { RoundTrip } from "./fills";
+import { balanceOf, type Ledger, type RoundTrip } from "./fills";
 
 export type TraderStats = {
   trades: number;
@@ -26,13 +26,35 @@ const netOf = (trip: RoundTrip) => trip.pnlCents - trip.feeCents;
 
 const mean = (total: number, count: number) => (count === 0 ? null : Math.round(total / count));
 
+/** What each session banked, net of commission, keyed by trade date. */
+export const dailyNetOf = (trips: RoundTrip[]) => {
+  const byDay = new Map<string, number>();
+
+  for (const trip of trips) {
+    byDay.set(trip.tradeDate, (byDay.get(trip.tradeDate) ?? 0) + netOf(trip));
+  }
+
+  return byDay;
+};
+
+/**
+ * Largest single day profit over account profit, which is the formula the firms
+ * publish. Null until the account is in profit, because a share of nothing
+ * says nothing. The denominator is net, so a losing day makes the share worse.
+ */
+export const consistencyOf = (ledger: Ledger) => {
+  const profit = balanceOf(ledger) - ledger.startingCents;
+  const best = Math.max(0, ...dailyNetOf(ledger.trips).values());
+
+  return profit <= 0 || best <= 0 ? null : best / profit;
+};
+
 /**
  * A trader's whole record, folded from every trip they closed. Commission is
  * taken off before a trip is called a winner, because a trade that made less
  * than it cost to take did not make money.
  */
 export const statsOf = (trips: RoundTrip[]): TraderStats => {
-  const byDay = new Map<string, number>();
   let wins = 0;
   let pnlCents = 0;
   let feesCents = 0;
@@ -53,11 +75,9 @@ export const statsOf = (trips: RoundTrip[]): TraderStats => {
     } else {
       grossLossCents += Math.abs(net);
     }
-
-    byDay.set(trip.tradeDate, (byDay.get(trip.tradeDate) ?? 0) + net);
   }
 
-  const days = [...byDay.values()];
+  const days = [...dailyNetOf(trips).values()];
   const losses = trips.length - wins;
 
   return {
@@ -72,7 +92,7 @@ export const statsOf = (trips: RoundTrip[]): TraderStats => {
     averageWinCents: mean(grossWinCents, wins),
     averageLossCents: mean(grossLossCents, losses),
     averageHeldSeconds: mean(heldSeconds, trips.length),
-    sessions: byDay.size,
+    sessions: days.length,
     bestDayCents: days.length === 0 ? null : Math.max(...days),
     worstDayCents: days.length === 0 ? null : Math.min(...days),
   };

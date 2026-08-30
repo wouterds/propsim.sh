@@ -1,5 +1,6 @@
 import { balanceOf, equityOf, type Ledger } from "./fills";
 import { type AccountRules, failedDuringOf, failedOf, targetOf } from "./floors";
+import { consistencyOf } from "./stats";
 
 /** What a fill stream has done to an account, if anything. */
 export type Outcome = "trailing_drawdown" | "target_met" | null;
@@ -22,6 +23,8 @@ export const outcomeOf = (
   rules: AccountRules,
   ledger: Ledger,
   peakEquityCents: number,
+  /** The share of the profit one session may hold before the target counts. */
+  consistencyCap: number,
 ): Outcome => {
   const failed =
     failedOf(rules, { lowEquityCents: equityOf(ledger), peakEquityCents }) ||
@@ -33,5 +36,11 @@ export const outcomeOf = (
 
   // Banked, never floating. A target met on an open position is money the
   // account has not made, and the screen has always counted it this way.
-  return balanceOf(ledger) >= targetOf(rules) ? "target_met" : null;
+  if (balanceOf(ledger) < targetOf(rules)) {
+    return null;
+  }
+
+  // The target alone passes nothing. One session carrying more than its share
+  // of the profit keeps the account trading until the rest catch up.
+  return (consistencyOf(ledger) ?? 0) <= consistencyCap ? "target_met" : null;
 };
