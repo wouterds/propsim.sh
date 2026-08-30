@@ -23,34 +23,58 @@ describe("refuseTicket", () => {
 
     // then
     expect(
-      refuseTicket(row, ticket(1), { held: 0, elsewhere: 0, working: 0 }, false, shut),
+      refuseTicket(
+        row,
+        ticket(1),
+        { held: 0, elsewhere: 0, working: { buy: 0, sell: 0 } },
+        false,
+        shut,
+      ),
     ).toMatch(/shut/);
     expect(
-      refuseTicket(row, ticket(1), { held: 0, elsewhere: 0, working: 0 }, false, OPEN),
+      refuseTicket(
+        row,
+        ticket(1),
+        { held: 0, elsewhere: 0, working: { buy: 0, sell: 0 } },
+        false,
+        OPEN,
+      ),
     ).toBeNull();
   });
 
   it("should count the cap across every contract held", () => {
     // given thirty micros held on another contract and ten on this one
-    const book = { held: 10, elsewhere: 30, working: 0 };
+    const book = { held: 10, elsewhere: 30, working: { buy: 0, sell: 0 } };
 
     // then one more anywhere is over the cap
     expect(refuseTicket(row, ticket(1), book, false, OPEN)).toMatch(/40 micros/);
     expect(refuseTicket(row, ticket(1, "sell"), book, false, OPEN)).toBeNull();
   });
 
-  it("should count an entry still resting toward the cap", () => {
-    // given nothing held and thirty micros resting on entry orders
-    const book = { held: 0, elsewhere: 0, working: 30 };
+  it("should count an entry still resting toward the cap on its own side", () => {
+    // given nothing held and thirty micros resting on buy entries
+    const book = { held: 0, elsewhere: 0, working: { buy: 30, sell: 0 } };
 
     // then the resting size is exposure the next bar can hand the account
     expect(refuseTicket(row, ticket(10), book, false, OPEN)).toBeNull();
     expect(refuseTicket(row, ticket(11), book, false, OPEN)).toMatch(/40 micros/);
+    // and a short the other way does not stack on it
+    expect(refuseTicket(row, ticket(40, "sell"), book, false, OPEN)).toBeNull();
+  });
+
+  it("should never refuse a reduction, whatever is resting", () => {
+    // given the cap held long, with a resting sell the size of the position
+    const book = { held: 40, elsewhere: 0, working: { buy: 0, sell: 40 } };
+
+    // then taking some of it off is not exposure
+    expect(refuseTicket(row, ticket(20, "sell"), book, false, OPEN)).toBeNull();
+    // and a flip through zero counts what the resting sell would add to the short
+    expect(refuseTicket(row, ticket(60, "sell"), book, false, OPEN)).toMatch(/40 micros/);
   });
 
   it("should let a ticket reach the cap exactly", () => {
     // given
-    const book = { held: 0, elsewhere: 30, working: 0 };
+    const book = { held: 0, elsewhere: 30, working: { buy: 0, sell: 0 } };
 
     // then
     expect(refuseTicket(row, ticket(10), book, false, OPEN)).toBeNull();
@@ -59,7 +83,7 @@ describe("refuseTicket", () => {
 
   it("should let a shut session close but not grow", () => {
     // given a session that hit the daily floor while long two
-    const book = { held: 2, elsewhere: 0, working: 0 };
+    const book = { held: 2, elsewhere: 0, working: { buy: 0, sell: 0 } };
 
     // then
     expect(refuseTicket(row, ticket(2, "sell"), book, true, OPEN)).toBeNull();

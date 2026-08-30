@@ -57,15 +57,16 @@ const netOf = (fills: Fill[], instrument: string) => {
 
 /**
  * What the book holds, signed on the contract the ticket names and summed over
- * the rest, plus every entry still resting. A resting entry is exposure the
- * next bar can hand the account, so the cap counts it before it fills.
+ * the rest, plus every entry still resting, by side. A resting entry is
+ * exposure the next bar can hand the account, so the cap counts it before it
+ * fills, on the side it would fill.
  */
-export type Book = { held: number; elsewhere: number; working: number };
+export type Book = { held: number; elsewhere: number; working: Record<Side, number> };
 
 /** Contracts on entry orders that could still print, less the one being replaced. */
 const workingOf = async (accountId: string, except: string | null) => {
   const rows = await getDb()
-    .select({ quantity: ordersTable.quantity })
+    .select({ side: ordersTable.side, quantity: ordersTable.quantity })
     .from(ordersTable)
     .leftJoin(fillsTable, eq(fillsTable.orderId, ordersTable.id))
     .where(
@@ -79,7 +80,13 @@ const workingOf = async (accountId: string, except: string | null) => {
       ),
     );
 
-  return rows.reduce((total, row) => total + row.quantity, 0);
+  const working = { buy: 0, sell: 0 };
+
+  for (const row of rows) {
+    working[row.side] += row.quantity;
+  }
+
+  return working;
 };
 
 const bookOf = async (
@@ -124,7 +131,6 @@ export const refuseTicket = (
   }
 
   const signed = ticket.side === "buy" ? ticket.quantity : -ticket.quantity;
-  const after = Math.abs(book.held + signed);
   // Only ever less of what is already held. A flip through zero opens a position.
   const reduces =
     Math.sign(signed) === -Math.sign(book.held) && Math.abs(signed) <= Math.abs(book.held);
@@ -135,8 +141,16 @@ export const refuseTicket = (
     return "This session hit the daily loss limit. You can still close what is open.";
   }
 
-  // One cap over every contract held or resting, not one per contract.
-  if (after + book.elsewhere + book.working > row.maxMicros) {
+  if (reduces) {
+    return null;
+  }
+
+  // The worst the book can become if every resting entry prints after this one.
+  const net = book.held + signed;
+  const long = Math.max(0, net) + book.working.buy;
+  const short = Math.max(0, -net) + book.working.sell;
+
+  if (Math.max(long, short) + book.elsewhere > row.maxMicros) {
     return `This plan holds at most ${row.maxMicros} micros at once, across every contract and resting order.`;
   }
 
