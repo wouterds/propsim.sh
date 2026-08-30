@@ -55,14 +55,44 @@ const netOf = (fills: Fill[], instrument: string) => {
   return position.side === "buy" ? position.quantity : -position.quantity;
 };
 
-/** What the book holds, signed on the contract the ticket names and summed over the rest. */
-export type Book = { held: number; elsewhere: number };
+/**
+ * What the book holds, signed on the contract the ticket names and summed over
+ * the rest, plus every entry still resting. A resting entry is exposure the
+ * next bar can hand the account, so the cap counts it before it fills.
+ */
+export type Book = { held: number; elsewhere: number; working: number };
 
-const bookOf = (fills: Fill[], instrument: string): Book => ({
+/** Contracts on entry orders that could still print, less the one being replaced. */
+const workingOf = async (accountId: string, except: string | null) => {
+  const rows = await getDb()
+    .select({ quantity: ordersTable.quantity })
+    .from(ordersTable)
+    .leftJoin(fillsTable, eq(fillsTable.orderId, ordersTable.id))
+    .where(
+      and(
+        eq(ordersTable.accountId, accountId),
+        isNull(ordersTable.endedAt),
+        isNull(ordersTable.parentOrderId),
+        ne(ordersTable.type, "market"),
+        isNull(fillsTable.id),
+        except === null ? undefined : ne(ordersTable.id, except),
+      ),
+    );
+
+  return rows.reduce((total, row) => total + row.quantity, 0);
+};
+
+const bookOf = async (
+  accountId: string,
+  fills: Fill[],
+  instrument: string,
+  except: string | null = null,
+): Promise<Book> => ({
   held: netOf(fills, instrument),
   elsewhere: positionsOf(ledgerOf(fills))
     .filter((open) => open.instrument !== instrument)
     .reduce((total, open) => total + open.quantity, 0),
+  working: await workingOf(accountId, except),
 });
 
 export const refuseTicket = (
@@ -105,9 +135,9 @@ export const refuseTicket = (
     return "This session hit the daily loss limit. You can still close what is open.";
   }
 
-  // One cap over every contract held, not one per contract.
-  if (after + book.elsewhere > row.maxMicros) {
-    return `This plan holds at most ${row.maxMicros} micros at once, across every contract.`;
+  // One cap over every contract held or resting, not one per contract.
+  if (after + book.elsewhere + book.working > row.maxMicros) {
+    return `This plan holds at most ${row.maxMicros} micros at once, across every contract and resting order.`;
   }
 
   return null;
@@ -129,7 +159,7 @@ export const placeOrder = async (
   const refusal = refuseTicket(
     row,
     ticket,
-    bookOf(fills, ticket.instrument),
+    await bookOf(row.id, fills, ticket.instrument),
     await lockedFor(row, at),
     at,
   );
@@ -264,7 +294,7 @@ export const cancelOrder = async (accountId: string, id: string, at: Date) => {
  * points at a row whose price it was taken at.
  */
 export const modifyOrder = async (
-  accountId: string,
+  row: AccountRow,
   id: string,
   price: number,
   quantity: number,
@@ -272,18 +302,25 @@ export const modifyOrder = async (
   /** Null on a quiet feed, which leaves the replacement for the sweep. */
   mark: number | null,
 ): Promise<Refusal> => {
-  const [order] = await getDb()
-    .select()
-    .from(ordersTable)
-    .where(stillWorking(accountId, id))
-    .limit(1);
+  const [order] = await getDb().select().from(ordersTable).where(stillWorking(row.id, id)).limit(1);
 
-  if (!order) {
+  if (!order || order.type === "market") {
     return "That order is no longer working.";
   }
 
-  if (!Number.isInteger(quantity) || quantity < 1 || quantity > MAX_QUANTITY) {
-    return "A ticket needs between one and a hundred contracts.";
+  const replacement = { side: order.side, type: order.type, price };
+
+  // The replacement is a ticket, so it is refused on the same terms as one.
+  const refusal = refuseTicket(
+    row,
+    { ...replacement, instrument: order.instrument, quantity, stopLoss: null, takeProfit: null },
+    await bookOf(row.id, await listFills(row.id), order.instrument, order.id),
+    await lockedFor(row, at),
+    at,
+  );
+
+  if (refusal) {
+    return refusal;
   }
 
   const replacementId = UUIDv7();
@@ -316,12 +353,9 @@ export const modifyOrder = async (
 
     // Moved onto a level the tape has already passed, so it is taken here
     // rather than a few seconds later by the sweep. A bracket is left alone:
-    // it may only ever print behind the position it guards. Nothing prints
-    // while the session is shut.
+    // it may only ever print behind the position it guards.
     const taken =
-      mark === null || !isOpenAt(at) || order.parentOrderId !== null || order.type === "market"
-        ? null
-        : marketableAt({ side: order.side, type: order.type, price }, mark);
+      mark === null || order.parentOrderId !== null ? null : marketableAt(replacement, mark);
 
     if (taken !== null) {
       await writeFill(tx, {
@@ -336,7 +370,7 @@ export const modifyOrder = async (
     }
   });
 
-  await settle(accountId, at);
+  await settle(row.id, at);
 
   return null;
 };

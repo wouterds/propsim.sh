@@ -22,22 +22,35 @@ describe("refuseTicket", () => {
     const shut = new Date("2026-08-25T20:45:00Z");
 
     // then
-    expect(refuseTicket(row, ticket(1), { held: 0, elsewhere: 0 }, false, shut)).toMatch(/shut/);
-    expect(refuseTicket(row, ticket(1), { held: 0, elsewhere: 0 }, false, OPEN)).toBeNull();
+    expect(
+      refuseTicket(row, ticket(1), { held: 0, elsewhere: 0, working: 0 }, false, shut),
+    ).toMatch(/shut/);
+    expect(
+      refuseTicket(row, ticket(1), { held: 0, elsewhere: 0, working: 0 }, false, OPEN),
+    ).toBeNull();
   });
 
   it("should count the cap across every contract held", () => {
     // given thirty micros held on another contract and ten on this one
-    const book = { held: 10, elsewhere: 30 };
+    const book = { held: 10, elsewhere: 30, working: 0 };
 
     // then one more anywhere is over the cap
     expect(refuseTicket(row, ticket(1), book, false, OPEN)).toMatch(/40 micros/);
     expect(refuseTicket(row, ticket(1, "sell"), book, false, OPEN)).toBeNull();
   });
 
+  it("should count an entry still resting toward the cap", () => {
+    // given nothing held and thirty micros resting on entry orders
+    const book = { held: 0, elsewhere: 0, working: 30 };
+
+    // then the resting size is exposure the next bar can hand the account
+    expect(refuseTicket(row, ticket(10), book, false, OPEN)).toBeNull();
+    expect(refuseTicket(row, ticket(11), book, false, OPEN)).toMatch(/40 micros/);
+  });
+
   it("should let a ticket reach the cap exactly", () => {
     // given
-    const book = { held: 0, elsewhere: 30 };
+    const book = { held: 0, elsewhere: 30, working: 0 };
 
     // then
     expect(refuseTicket(row, ticket(10), book, false, OPEN)).toBeNull();
@@ -46,7 +59,7 @@ describe("refuseTicket", () => {
 
   it("should let a shut session close but not grow", () => {
     // given a session that hit the daily floor while long two
-    const book = { held: 2, elsewhere: 0 };
+    const book = { held: 2, elsewhere: 0, working: 0 };
 
     // then
     expect(refuseTicket(row, ticket(2, "sell"), book, true, OPEN)).toBeNull();

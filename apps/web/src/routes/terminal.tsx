@@ -252,7 +252,7 @@ export const action = async ({ params, request }: Route.ActionArgs) => {
 
     return {
       error: await modifyOrder(
-        loaded.row.id,
+        loaded.row,
         String(form.get("id") ?? ""),
         priceUnits(price),
         quantity,
