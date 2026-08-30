@@ -9,8 +9,6 @@ export type Message = {
   subject: string;
   html: string;
   text: string;
-  /** Set so a reply reaches the person who wrote, not the unattended sender. */
-  replyTo?: { email: string; name: string };
 };
 
 type MailjetError = {
@@ -56,9 +54,6 @@ const reason = (payload: SendPayload | null, index = 0) => {
 const shape = (message: Message) => ({
   From: FROM,
   To: [{ Email: message.to }],
-  ...(message.replyTo && {
-    ReplyTo: { Email: message.replyTo.email, Name: message.replyTo.name },
-  }),
   Subject: message.subject,
   TextPart: message.text,
   HTMLPart: message.html,

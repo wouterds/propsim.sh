@@ -39,7 +39,11 @@ export const ContactMessage = ({ to, name, email, subject, message }: ContactMes
       </Text>
     ))}
 
-    <Text style={{ ...paragraph, margin: "8px 0 16px" }}>Reply to reach them directly.</Text>
+    {/* No Reply-To header. The forwarder in front of the inbox scores one
+        pointing at a webmail address as forged and drops the mail. */}
+    <Text style={{ ...paragraph, margin: "8px 0 16px" }}>
+      Write to the address above to reach them. A reply to this mail goes nowhere.
+    </Text>
   </Layout>
 );
 

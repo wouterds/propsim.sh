@@ -25,11 +25,10 @@ const deliver = async (
   to: string,
   subject: string,
   email: ReactElement<object>,
-  replyTo?: { email: string; name: string },
 ) => {
   const html = await render(email);
 
-  await send({ to, subject, html, text: toPlainText(html), replyTo });
+  await send({ to, subject, html, text: toPlainText(html) });
   await logEmail({ recipient: to, subject, template, payload: email.props });
 };
 
@@ -189,7 +188,6 @@ export const sendContactMessage = ({
     to,
     `Contact: ${subject}`,
     createElement(ContactMessage, { to, name, email, subject, message }),
-    { email, name },
   );
 
 /**
