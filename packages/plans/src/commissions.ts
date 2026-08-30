@@ -18,8 +18,7 @@ const PER_SIDE: Record<string, number> = {
   MCL: 50,
   MGC: 80,
   SIL: 160,
-  // Not published for either. Every micro outside the metals is 50, and the
-  // two metals that are published are dearer, so copper is the doubtful one.
+  // Off the menu, and not on the schedule. Only a close can still print in them.
   MHG: 50,
   MNG: 50,
 };

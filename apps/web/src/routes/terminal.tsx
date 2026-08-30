@@ -2,6 +2,7 @@ import type { Candle } from "@propsim/datasources";
 import {
   activeWindow,
   findInstrument,
+  findPriced,
   type Instrument,
   instrumentOr,
   isWorking,
@@ -222,7 +223,9 @@ export const action = async ({ params, request }: Route.ActionArgs) => {
   const intent = String(form.get("intent") ?? "");
 
   // Named, never guessed. A fallback here would fill the wrong contract.
-  const instrument = findInstrument(String(form.get("instrument") ?? ""));
+  const code = String(form.get("instrument") ?? "");
+  // A contract that left the menu can still be closed, and only closed.
+  const instrument = intent === "close" ? findPriced(code) : findInstrument(code);
 
   if (!instrument) {
     return { error: "That is not something this terminal can do." };

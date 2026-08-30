@@ -110,9 +110,10 @@ export const CATEGORIES: Category[] = [
         slug: "what-you-can-trade",
         title: "What can I trade?",
         summary:
-          "Nine CME micros: the four equity index contracts, gold, silver, copper, crude and natural gas.",
+          "Seven CME micros: the four equity index contracts, gold, silver and crude oil. The list is the one Lucid approves.",
         body: [
-          "Micro E-mini S&P, Nasdaq, Russell and Dow, plus micro gold, silver, copper, crude oil and natural gas. Pick one from the contract menu above the chart.",
+          "Micro E-mini S&P, Nasdaq, Russell and Dow, plus micro gold, silver and crude oil. Pick one from the contract menu above the chart.",
+          "Micro copper and micro natural gas were offered once and are not on the firm's approved list, so they have left the menu. A position still open in one can be closed and nothing else.",
           "Micros only for now. The full size and mini contracts are not offered, so the mini position cap on each plan is not reachable yet.",
           "Position limits are counted in micros. The mini limits published on each plan are not reachable yet, because there are no minis to trade.",
         ],

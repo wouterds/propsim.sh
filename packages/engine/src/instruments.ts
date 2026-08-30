@@ -11,11 +11,8 @@ export type Instrument = {
   point: number;
 };
 
-// Micros only. Tick sizes and point values are the CME contract specs, and the
-// two together give the dollar value of one tick.
-//
-// Fills name a contract by code, so a row is never removed. A delisted contract
-// still has to price the trades that were taken in it.
+// The micros on Lucid's approved list. Tick sizes and point values are the CME
+// contract specs, and the two together give the dollar value of one tick.
 export const INSTRUMENTS: Instrument[] = [
   {
     code: "MES",
@@ -45,20 +42,25 @@ export const INSTRUMENTS: Instrument[] = [
   { code: "MGC", symbol: "MGC=F", name: "Micro Gold", group: "Metals", tick: 0.1, point: 10 },
   { code: "SIL", symbol: "SIL=F", name: "Micro Silver", group: "Metals", tick: 0.005, point: 1000 },
   {
-    code: "MHG",
-    symbol: "MHG=F",
-    name: "Micro Copper",
-    group: "Metals",
-    tick: 0.0005,
-    point: 25_000,
-  },
-  {
     code: "MCL",
     symbol: "MCL=F",
     name: "Micro Crude Oil",
     group: "Energy",
     tick: 0.01,
     point: 100,
+  },
+];
+
+// Fills name a contract by code, so a row is never removed. A contract that
+// left the menu still has to price and close the trades that were taken in it.
+export const DELISTED: Instrument[] = [
+  {
+    code: "MHG",
+    symbol: "MHG=F",
+    name: "Micro Copper",
+    group: "Metals",
+    tick: 0.0005,
+    point: 25_000,
   },
   {
     code: "MNG",
@@ -80,9 +82,13 @@ export const instrumentOr = (code: string | null | undefined) =>
 
 export const GROUPS = [...new Set(INSTRUMENTS.map((instrument) => instrument.group))];
 
+/** On the menu or off it. Anything a stored fill can name. */
+export const findPriced = (code: string | null | undefined) =>
+  findInstrument(code) ?? DELISTED.find((instrument) => instrument.code === code) ?? null;
+
 /** Throws rather than falling back. A fill priced by the wrong contract is silent. */
 export const contractOf = (code: string): Instrument => {
-  const instrument = findInstrument(code);
+  const instrument = findPriced(code);
 
   if (!instrument) {
     throw new Error(`unknown contract ${code}`);
