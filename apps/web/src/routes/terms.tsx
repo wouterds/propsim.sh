@@ -30,7 +30,7 @@ const SECTIONS = [
     title: "Your account",
     body: [
       "One person, one account, and an address you can actually receive email at. Keep the password to yourself, and if you think somebody else has it, change it and end the other sessions from the account page.",
-      "Simulated accounts inside it can be reset or removed. One that has not been traded in thirty days is deleted, as the rules page says.",
+      "Simulated accounts inside it can be reset or removed. Nothing is removed for being quiet. A sign in that stops empties the account after 150 days, as the rules page says.",
       "The account itself is yours to end. The settings page deletes it, and there is no waiting on anybody to do it for you.",
     ],
   },

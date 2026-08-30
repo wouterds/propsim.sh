@@ -185,7 +185,7 @@ export const CATEGORIES: Category[] = [
           "The daily loss limit ends the day and the account reopens next session. The trailing drawdown ends the account for good.",
         body: [
           "These are two different outcomes and they are worth keeping apart.",
-          "Breaching the daily loss limit shuts the session. Your position is left alone, closing is still allowed, and nothing that would grow the position is accepted until the next session opens. The account itself is untouched, and it can be thousands above its trailing floor while it sits locked out.",
+          "Breaching the daily loss limit shuts the session. Your position is left alone until the session close, closing is still allowed, and nothing that would grow the position is accepted until the next session opens. The account itself is untouched, and it can be thousands above its trailing floor while it sits locked out.",
           "Breaching the trailing drawdown ends the account. Whatever is open is flattened at the price that met the floor, every working order is cancelled, and the account moves to your closed list.",
           "Being flat through a red folder release is a third outcome, and it ends the account the same way the trailing drawdown does.",
         ],
@@ -410,7 +410,7 @@ export const CATEGORIES: Category[] = [
         summary:
           "Holiday early closes, cross account hedging, microscalping, the mini position caps, the daily profit ceiling, and everything to do with payouts.",
         body: [
-          "Each of these appears on the rules page and is worth knowing, but none of them will stop you or end an account here.",
+          "Each of these is a rule the firm publishes and is worth knowing, but none of them will stop you or end an account here.",
           "The close is 16:45 New York time every weekday. A market holiday that shuts earlier is not on any calendar here, so on those days a position rides to the usual close.",
           "Cross account hedging needs more than one account in view at once. Microscalping and high frequency trading are flags for a human at a real firm rather than automatic breaches.",
           "Only the micro position cap is checked, because the catalog is micros only. The daily profit ceiling moves a trader to live at a real firm, and there is nothing here to be moved to.",
