@@ -168,16 +168,22 @@ says whether an instant is inside the session, and everything that can print rea
 - `matchesOf` fills nothing on a shut step, so a resting order waits for the reopen
 - The sweep reads the steps up to the first shut one for the floors, then flattens every open
   contract where it last printed inside the session, stamped on the shut step. `closeStepOf` finds
-  both. Working orders go with the flatten, as they do on a liquidation
+  both. Working orders go with the flatten, as they do on a liquidation. It waits until every held
+  contract's tape has shown the close, or a tape a step behind would be closed at its last fill
+- The news frontier stops at the close. A position the close flattened was not held through a
+  release after it, whenever the sweep got round to writing the flatten
 
 All of it on the tape's clock, so the trader is cut off when the chart reaches the close and not
 ten minutes before it.
 
 ## Position Limits
 
-One cap per account, `maxMicros`, counted over every contract held at once and read at the ticket.
-A ticket that would take the book over it is refused rather than partly filled. `maxMinis` is
-unenforced, which is currently equivalent because the contract catalog is micros only.
+One cap per account, `maxMicros`, read at the ticket and on a modify, over the **worst the book can
+become**: the net position after this ticket, plus every resting entry on the same side, plus
+whatever is held in other contracts. A resting sell only counts against the short side, so an exit
+left resting does not spend the cap twice. A reduction is never refused, whatever is resting. A
+ticket over the cap is refused rather than partly filled. `maxMinis` is unenforced, which is
+currently equivalent because the contract catalog is micros only.
 
 Only the contracts on Lucid's approved products list are on the menu. A contract that left it
 stays in `DELISTED` so a stored fill still prices and an open position can still be closed, and
@@ -308,7 +314,8 @@ still. A candle dancing forever on a dead market is a worse lie than a frozen on
   once, including against bars the feed has not delivered yet, so an order the
   tape would already have filled can still be pulled. The trader cannot see
   those bars either, so it is symmetric ignorance rather than an edge, but the
-  timestamps are not.
+  timestamps are not. A modify on a quiet feed is stamped the same way, so it
+  can be refused as shut a few minutes before the chart gets there.
 - **Marks stop at the last fill.** The sweep reads the bars since an account's last print, and only
   within the current session. A previous session's floors hung off an anchor that has closed.
 
