@@ -30,6 +30,7 @@ export const loader = async ({ request }: Route.LoaderArgs) => ({
   siteKey: siteKey(),
   guarded: turnstileIsSet(),
   email: await addressOf(request),
+  subject: new URL(request.url).searchParams.get("subject")?.slice(0, LIMITS.subject) ?? "",
 });
 
 export const action = async ({ request }: Route.ActionArgs) => {
@@ -134,6 +135,7 @@ const Contact = ({ loaderData, actionData }: Route.ComponentProps) => {
                 name="subject"
                 maxLength={LIMITS.subject}
                 required
+                defaultValue={loaderData.subject}
                 className={`h-10 ${CONTROL}`}
               />
             </div>
