@@ -1,4 +1,5 @@
 import { Outlet } from "react-router";
+import SaleBanner from "~/components/layout/sale-banner";
 import SiteFooter from "~/components/layout/site-footer";
 import SiteHeader from "~/components/layout/site-header";
 import { getUserId } from "~/lib/auth.server";
@@ -12,6 +13,7 @@ export const loader = async ({ request }: Route.LoaderArgs) => ({
 
 const SiteLayout = ({ loaderData }: Route.ComponentProps) => (
   <div className="flex min-h-dvh flex-col">
+    {!loaderData.signedIn && <SaleBanner />}
     <SiteHeader signedIn={loaderData.signedIn} />
     {/* Every section draws a bottom border, which on a page too short to fill
         the screen leaves a line hanging in the middle of it. The footer's own
